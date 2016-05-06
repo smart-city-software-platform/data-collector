@@ -4,7 +4,7 @@
 
 ## Environment Setup
 
-* Install RVM
+* Install <a href="https://rvm.io/rvm/install">RVM</a>
 * Run on terminal: ```$ rvm install 2.2.0```
 * In the project directory, run:
   * ```$ gem install bundle```
