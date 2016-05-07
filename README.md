@@ -13,6 +13,7 @@
   * If you have any trouble in last step, run ```/bin/bash --login``` and try again
   * ```$ gem install rails --pre --no-ri --no-rdoc```
   * ```$ sudo apt-get install libmysqld-dev libmysqlclient-dev mysql-client```
+  * ```$ sudo apt-get install nodejs```
 * In the project directory, run:
   * ```$ gem install bundle```
   * ```$ bundle install```
