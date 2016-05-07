@@ -14,7 +14,10 @@
 
 ## Environment Setup
 
-* Install <a href="https://rvm.io/rvm/install" target="_blank">RVM</a>
+* Install <a href="https://rvm.io/rvm/install" target="_blank">RVM</a>. Instructions bellow:
+  * ```$ gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3```
+  * ```$ \curl -sSL https://get.rvm.io | bash -s stable```
+  * ```$ source /home/<your_username>/.rvm/scripts/rvm```
 * Run on terminal: 
   * ```$ rvm install 2.2.0```
   * ```$ rvm install ruby```  
