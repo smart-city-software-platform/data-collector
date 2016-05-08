@@ -1,0 +1,44 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Component uuid:</strong>
+  <%= @datum.component_uuid %>
+</p>
+
+<p>
+  <strong>Lat:</strong>
+  <%= @datum.lat %>
+</p>
+
+<p>
+  <strong>Lon:</strong>
+  <%= @datum.lon %>
+</p>
+
+<p>
+  <strong>Capability:</strong>
+  <%= @datum.capability %>
+</p>
+
+<p>
+  <strong>Attribute:</strong>
+  <%= @datum.attribute %>
+</p>
+
+<p>
+  <strong>Type:</strong>
+  <%= @datum.type %>
+</p>
+
+<p>
+  <strong>Unity:</strong>
+  <%= @datum.unity %>
+</p>
+
+<p>
+  <strong>Value:</strong>
+  <%= @datum.value %>
+</p>
+
+<%= link_to 'Edit', edit_datum_path(@datum) %> |
+<%= link_to 'Back', data_path %>
