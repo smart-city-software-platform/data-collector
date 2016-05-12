@@ -34,3 +34,10 @@
   * ```$ bundle exec rake db:migrate```
 * Run the tests:
   * ```$ rspec```
+
+## How to commit your changes?
+
+* Code your tests, make your changes, run and commit
+  * ```$ git add <path_to_file>```. Repeat for other files or ```$ git add --all``` for all files
+  * ```$ git commit -s -m "Commit message"```
+  * ```$ git push origin master:<new branch>```. This will create a remote branch in gitlab with your changes. There you can create a 'Merge Request' to review and integrate your change into master branch.
