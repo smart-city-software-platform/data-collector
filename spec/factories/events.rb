@@ -1,7 +1,7 @@
 
 FactoryGirl.define do
   
-  # create data to fill in the event after its creation
+  # create detail to fill in the event after its creation
   factory :event do
 
     category "push"
@@ -10,11 +10,11 @@ FactoryGirl.define do
 
     factory :event_with_details do
       transient do
-        data_count 1
+        details_count 1
       end
 
       after(:create) do |event, evaluator|
-        create_list(:detail, evaluator.data_count, event: event)
+        create_list(:detail, evaluator.details_count, event: event)
       end
   	end
 
