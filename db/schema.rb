@@ -11,14 +11,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160507221728) do
+ActiveRecord::Schema.define(version: 20160512224355) do
 
   create_table "data", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "component_uuid"
-    t.float    "lat",            limit: 24
-    t.float    "lon",            limit: 24
     t.string   "capability"
-    t.string   "attribute"
     t.float    "type",           limit: 24
     t.string   "unity"
     t.text     "value",          limit: 65535
@@ -27,11 +24,11 @@ ActiveRecord::Schema.define(version: 20160507221728) do
   end
 
   create_table "events", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
-    t.string   "type"
     t.integer  "resource_id"
     t.datetime "date"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
+    t.string   "category"
   end
 
 end
