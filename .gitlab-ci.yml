@@ -1,5 +1,7 @@
 before_script:
   - ruby -v
+  - rvm install 2.2.0
+  - rvm use ruby-2.3.0 --default
   - which ruby
   - gem install bundler --no-ri --no-rdoc
   - bundle check || bundle install
