@@ -22,7 +22,7 @@ describe Event, :type => :model do
   end
 
   it "must have at least one data entry" do
-  	#expect(create(:event_with_data).languages.length).to be(1)
+  	expect(create(:event_with_details).detail.length).to be(1)
   end
 
   it "can be described as a JSON object"
