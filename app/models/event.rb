@@ -1,3 +1,3 @@
 class Event < ApplicationRecord
-  has_many :datum
+  has_many :detail
 end

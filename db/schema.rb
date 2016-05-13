@@ -11,16 +11,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160512224355) do
+ActiveRecord::Schema.define(version: 20160513050553) do
 
-  create_table "data", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "details", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "component_uuid"
     t.string   "capability"
-    t.float    "type",           limit: 24
+    t.string   "type"
     t.string   "unity"
     t.text     "value",          limit: 65535
     t.datetime "created_at",                   null: false
     t.datetime "updated_at",                   null: false
+    t.integer  "event_id"
+    t.index ["event_id"], name: "index_details_on_event_id", using: :btree
   end
 
   create_table "events", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -31,4 +33,5 @@ ActiveRecord::Schema.define(version: 20160512224355) do
     t.string   "category"
   end
 
+  add_foreign_key "details", "events"
 end
