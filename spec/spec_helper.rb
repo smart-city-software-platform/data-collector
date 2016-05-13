@@ -17,6 +17,10 @@
 
 # including factory_girl support
 require 'factory_girl_rails'
+require 'simplecov'
+
+SimpleCov.minimum_coverage 85
+SimpleCov.start
 
 RSpec.configure do |config|
   
