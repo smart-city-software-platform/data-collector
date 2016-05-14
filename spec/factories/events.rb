@@ -1,7 +1,6 @@
-
 FactoryGirl.define do
-  
-  # create detail to fill in the event after its creation
+
+  # Create detail to fill in the event after its creation
   factory :event do
 
     category "push"
@@ -16,7 +15,7 @@ FactoryGirl.define do
       after(:create) do |event, evaluator|
         create_list(:detail, evaluator.details_count, event: event)
       end
-  	end
+    end
 
   end
 end
