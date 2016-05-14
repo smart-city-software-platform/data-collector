@@ -6,8 +6,8 @@ services:
 
 variables:
   # Configure MySQL environment variables (https://hub.docker.com/r/_/mysql/)
-  MYSQL_DATABASE: data_collector
-  MYSQL_ROOT_PASSWORD: admin
+  MYSQL_DATABASE: root
+  MYSQL_ROOT_PASSWORD: 100senha
 
 before_script:
   - ruby -v
