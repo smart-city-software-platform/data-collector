@@ -6,16 +6,16 @@ services:
 
 variables:
   # Configure MySQL environment variables (https://hub.docker.com/r/_/mysql/)
-  MYSQL_DATABASE: root
-  MYSQL_ROOT_PASSWORD: 100senha
+  MYSQL_DATABASE: data_collector_test
+  MYSQL_ROOT_PASSWORD: admin
 
 before_script:
   - ruby -v
   - which ruby
   - gem install bundler --no-ri --no-rdoc
   - bundle check || bundle install
-  - bundle exec rake db:create
-  - bundle exec rake db:migrate
+  - bundle exec rake db:create RAILS_ENV=test
+  - bundle exec rake db:migrate RAILS_ENV=test
 
 rspec:
   script:
