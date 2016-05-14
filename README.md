@@ -26,7 +26,7 @@
   * If you have any trouble in last step, run ```/bin/bash --login``` and try again
   * ```$ gem install rails --pre --no-ri --no-rdoc```
   * ```$ sudo apt-get install mysql-server``` use 'admin' as development password
-  * ```$ sudo apt-get install nodejs```
+  * ```$ sudo apt-get install libmysqlclient-dev```
 * In the project directory, run:
   * ```$ gem install bundle```
   * ```$ bundle install```
