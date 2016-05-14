@@ -11,12 +11,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160513050553) do
+ActiveRecord::Schema.define(version: 20160514214414) do
 
   create_table "details", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "component_uuid"
     t.string   "capability"
-    t.string   "type"
+    t.string   "data_type"
     t.string   "unit"
     t.text     "value",          limit: 65535
     t.datetime "created_at",                   null: false
