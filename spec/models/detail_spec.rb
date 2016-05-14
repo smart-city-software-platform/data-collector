@@ -14,15 +14,25 @@ describe Detail, :type => :model do
     FactoryGirl.build(:detail, :component_uuid => "").should_not be_valid
   end
 
-  it "has an attribute, category and value" do
-    expect(detail.attribute).should_not be_nil
-    expect(detail.attribute).should_not eq('')
-    FactoryGirl.build(:detail, :attribute => "").should_not be_valid
+  it "has a capability" do
+    expect(detail.capability).should_not be_nil
+    expect(detail.capability).should_not eq('')
+    FactoryGirl.build(:detail, :capability => "").should_not be_valid
+  end
 
-    expect(detail.category).should_not be_nil
-    expect(detail.category).should_not eq('')
-    FactoryGirl.build(:detail, :category => "").should_not be_valid
+  it "has a type" do
+    expect(detail.type).should_not be_nil
+    expect(detail.type).should_not eq('')
+    FactoryGirl.build(:detail, :type => "").should_not be_valid
+  end
 
+  it "has a unit of measurement" do
+    expect(detail.unit).should_not be_nil
+    expect(detail.unit).should_not eq('')
+    FactoryGirl.build(:detail, :unit => "").should_not be_valid
+  end
+
+  it "has a value" do
     expect(detail.value).should_not be_nil
     expect(detail.value).should_not eq('')
     FactoryGirl.build(:detail, :value => "").should_not be_valid

@@ -17,7 +17,7 @@ class DataControllerTest < ActionDispatch::IntegrationTest
 
   test "should create datum" do
     assert_difference('Datum.count') do
-      post data_url, params: { datum: { attribute: @datum.attribute, capability: @datum.capability, component_uuid: @datum.component_uuid, lat: @datum.lat, lon: @datum.lon, type: @datum.type, unity: @datum.unity, value: @datum.value } }
+      post data_url, params: { datum: { attribute: @datum.attribute, capability: @datum.capability, component_uuid: @datum.component_uuid, lat: @datum.lat, lon: @datum.lon, type: @datum.type, unit: @datum.unit, value: @datum.value } }
     end
 
     assert_redirected_to datum_path(Datum.last)
@@ -34,7 +34,7 @@ class DataControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update datum" do
-    patch datum_url(@datum), params: { datum: { attribute: @datum.attribute, capability: @datum.capability, component_uuid: @datum.component_uuid, lat: @datum.lat, lon: @datum.lon, type: @datum.type, unity: @datum.unity, value: @datum.value } }
+    patch datum_url(@datum), params: { datum: { attribute: @datum.attribute, capability: @datum.capability, component_uuid: @datum.component_uuid, lat: @datum.lat, lon: @datum.lon, type: @datum.type, unit: @datum.unit, value: @datum.value } }
     assert_redirected_to datum_path(@datum)
   end
 

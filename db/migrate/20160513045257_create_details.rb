@@ -4,7 +4,7 @@ class CreateDetails < ActiveRecord::Migration[5.0]
       t.string :component_uuid
       t.string :capability
       t.string :type
-      t.string :unity
+      t.string :unit
       t.text :value
 
       t.timestamps

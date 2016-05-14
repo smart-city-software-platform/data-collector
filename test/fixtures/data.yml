@@ -7,7 +7,7 @@ one:
   capability: MyString
   attribute: MyString
   type: 1.5
-  unity: MyString
+  unit: MyString
   value: MyText
 
 two:
@@ -17,5 +17,5 @@ two:
   capability: MyString
   attribute: MyString
   type: 1.5
-  unity: MyString
+  unit: MyString
   value: MyText

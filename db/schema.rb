@@ -17,7 +17,7 @@ ActiveRecord::Schema.define(version: 20160513050553) do
     t.string   "component_uuid"
     t.string   "capability"
     t.string   "type"
-    t.string   "unity"
+    t.string   "unit"
     t.text     "value",          limit: 65535
     t.datetime "created_at",                   null: false
     t.datetime "updated_at",                   null: false
