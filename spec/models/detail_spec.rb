@@ -14,7 +14,7 @@ describe Detail, :type => :model do
     FactoryGirl.build(:detail, :component_uuid => "").should_not be_valid
   end
 
-  it "has an attribute, category and value"
+  it "has an attribute, category and value" do
     expect(detail.attribute).should_not be_nil
     expect(detail.attribute).should_not eq('')
     FactoryGirl.build(:detail, :attribute => "").should_not be_valid
@@ -28,7 +28,7 @@ describe Detail, :type => :model do
     FactoryGirl.build(:detail, :value => "").should_not be_valid
   end
 
-  it "belongs to an event"
+  it "belongs to an event" do
     expect(detail).should belongs_to detail.event
   end
 
