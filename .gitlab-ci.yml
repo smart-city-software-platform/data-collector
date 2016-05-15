@@ -12,7 +12,6 @@ variables:
 before_script:
   - ruby -v
   - which ruby
-  - sed -i '/database: data_collector_test/ i\  host: mysql' config/database.yml
   - gem install bundler --no-ri --no-rdoc
   - bundle check || bundle install
   - bundle exec rake db:create RAILS_ENV=test
@@ -20,4 +19,5 @@ before_script:
 
 rspec:
   script:
+    - sed -i '/database: data_collector_test/ i\  host: mysql' config/database.yml
     - bundle exec rspec
