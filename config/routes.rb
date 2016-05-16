@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
-  resources :events
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+  
+  resources :events, only: [:show, :index], defaults: {format: :json} do
+  	resources :details,
+  				defaults: {format: :json},
+  				only: [:show, :index]
+  end
+
 end
