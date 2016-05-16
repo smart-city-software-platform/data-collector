@@ -9,19 +9,21 @@ describe Event, :type => :model do
   end
 
   it "has a date of occurence" do
-    expect(event.date).should_not be_nil
-    expect(event.date).should_not eq('')
-    FactoryGirl.build(:event, :date => "").should_not be_valid
+    expect(event.date).not_to be_nil
+    expect(event.date).not_to eq('')
+    expect(FactoryGirl.build(:event, :date => "")).not_to be_valid
+    expect(FactoryGirl.build(:event, :date => nil)).not_to be_valid
   end
 
   it "is sent by a resource adapter" do
     expect(event.resource_id).to_not be_nil
-    FactoryGirl.build(:event, :resource_id => "").should_not be_valid
+    expect(FactoryGirl.build(:event, :resource_id => "")).not_to be_valid
+    expect(FactoryGirl.build(:event, :resource_id => nil)).not_to be_valid
   end
 
   it "has a valid resource id" do
     expect(event.resource_id).to be > 0
-    expect(event.resource_id).should_not eq('')
+    expect(event.resource_id).not_to eq('')
   end
 
   it "must have at least one data entry" do
