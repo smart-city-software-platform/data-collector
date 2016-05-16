@@ -48,7 +48,10 @@ describe Detail, :type => :model do
   end
 
   it "belongs to an event" do
-    #FIXME expect(detail).to belong_to detail.event
+    expect(detail.event_id).not_to be_nil
+    expect(detail.event_id).not_to eq('')
+    expect(FactoryGirl.build(:detail, :event_id => "")).not_to be_valid
+    expect(FactoryGirl.build(:detail, :event_id => nil)).not_to be_valid
   end
 
 end
