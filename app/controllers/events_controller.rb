@@ -3,18 +3,22 @@ class EventsController < ApplicationController
 
   # GET /events
   def index
-    @events = Event.all.includes(:detail)
-    
-    resource_id = params[:resource_id]
-    resource_ids = params[:resource_ids]
-    if (resource_id != nil)
-      @events = @events.where("resource_id = ?", resource_id)
-    elsif (resource_ids != nil && resource_ids.is_a?(Array))
-      @events = @events.where("resource_id IN (?)", resource_ids)
-    end
-    
-    if (params[:type] != nil)
-      @events = @events.where("type = ?", params[:type])
+    begin
+      @events = Event.all.includes(:detail)
+      
+      resource_id = params[:resource_id]
+      resource_ids = params[:resource_ids]
+      if (resource_id != nil)
+        @events = @events.where("resource_id = ?", resource_id)
+      elsif (resource_ids != nil && resource_ids.is_a?(Array))
+        @events = @events.where("resource_id IN (?)", resource_ids)
+      end
+      
+      if (params[:type] != nil)
+        @events = @events.where("type = ?", params[:type])
+      end
+    rescue Exception
+      render :json => { :error => "Internal Server Error" }, :status => 500
     end
 
   end
@@ -22,7 +26,7 @@ class EventsController < ApplicationController
   # GET /events/1
   def show
     if @status == :record_not_found
-      render :json => { :error => "Bad Request: event not found" }, :status => 400      
+      render :json => { :error => "Bad Request: event not found" }, :status => 400
     else
       render :json => @event
     end
@@ -40,6 +44,6 @@ class EventsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def event_params
-      params.require(:event).permit(:type, :resource_id, :date)
+      params.require(:event).permit(:type, :resource_id, resource_ids: [])
     end
 end

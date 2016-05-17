@@ -14,11 +14,11 @@ p "Creating new events..."
                 		date: Faker::Time.between(DateTime.now - 1, DateTime.now),
                 		category: ["pull", "push"].sample)
 
-  7.times do |j|
+  3.times do |j|
   	event.detail.create!(component_uuid: Faker::Code.ean, # a fake number
-  				   capability: ["temperature", "pressure", "humidity", "luminosity", "manipulate_led"],
+  				   capability: ["temperature", "pressure", "humidity", "luminosity", "manipulate_led"].sample,
   				   data_type: "double",
-  				   unit: "", # unit must be specific depending the data type
+  				   unit: "none", # unit must be specific depending on the data type
   				   value: Faker::Number.decimal(2, 3)
   		)
   end
