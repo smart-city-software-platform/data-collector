@@ -3,7 +3,6 @@ require 'rails_helper'
 describe Detail, :type => :model do
 
   pending "add some examples to (or delete) #{__FILE__}"
-  pending "can be described as a JSON object"  # Test in controller later
 
   let(:detail) { create(:detail) }
 
