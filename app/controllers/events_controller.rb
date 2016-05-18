@@ -1,9 +1,6 @@
 class EventsController < ApplicationController
   before_action :set_event, only: [:show]
 
-  # Treat argument errors; there may be a better exception to catch...
-  rescue_from ActionView::Template::Error, with: :respond_argument_error
-
   # GET /events
   def index
     @events = Event.all.includes(:detail)
@@ -14,15 +11,18 @@ class EventsController < ApplicationController
     limit = params[:limit]
     start = params[:start]
 
+    # Validate 'limit' and 'start' parameters (they must be positive integers)
+    [limit, start].each do |arg|
+      if !arg.nil? && arg !~ /\A\+?\d+\z/
+        render :json => { :error => "Bad Request: event not found" }, :status => 400
+        break  # Prevents DoubleRenderError
+      end
+    end
+
     # Set pagination limit (how many events will be returned)
     @events = @events.limit(limit) unless limit.nil?
-
-    # Set pagination offset (index of first event to be returned)
-    if (start =~ /\A[-+]?[^-0-9]+\z/) 
-      render :json => { :error => "Bad Request: event not found" }, :status => 400
-    else
-      @events = @events.offset(start)
-    end
+    # Set pagination limit and offset (index of first event to be returned)
+    @events = @events.offset(start) unless limit.nil?
 
     begin
       if (resource_id != nil)
@@ -59,11 +59,6 @@ class EventsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def event_params
-      params.require(:event).permit(:type, :resource_id, resource_ids: [])
-    end
-
-    # Received an invalid argument: send a Bad Request error.
-    def respond_argument_error
-      render :json => { :error => "Bad Request: error in request argument" }, :status => 400
+      params.require(:event).permit(:limit, :start, :type, :resource_id, resource_ids: [])
     end
 end

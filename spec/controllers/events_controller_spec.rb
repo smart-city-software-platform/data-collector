@@ -25,7 +25,6 @@ describe EventsController, :type => :controller do
       expect(response.status).to eq(200)
     end
 
-    # FIXME: Not returning 400 for some unknown reason...
     it "returns a 400 status code when sending invalid pagination arguments" do
       # Lists of invalid arguments
       err_limit = [-1, 1.23, "foobar"]
@@ -41,7 +40,7 @@ describe EventsController, :type => :controller do
           get :index, params: { start: start }
           expect(response.status).to eq(400)
 
-          # Expect error with each 'limit' and 'start'
+          # Expect error with each 'limit' and 'start' combined
           get :index, params: { limit: limit, start: start }
           expect(response.status).to eq(400)
         end
@@ -58,7 +57,6 @@ describe EventsController, :type => :controller do
 
   # /events/:event_id
   describe "GET :show" do
-    # FIXME: Not sure what's happening here...
     it "renders the event show template" do
       get :show, params: { id: event.id }
       expect(response).to render_template("show")
@@ -71,9 +69,9 @@ describe EventsController, :type => :controller do
 
     it "returns a 400 status code when sending an invalid 'event_id'" do
       # List of invalid arguments
-      ids = [-5, 2.3, "foobar"]
+      err_ids = [-5, 2.3, "foobar"]
 
-      ids.each do |id|
+      err_ids.each do |id|
         get :show, params: { id: id }
         expect(response.status).to eq(400)
       end
