@@ -6,14 +6,23 @@ class EventsController < ApplicationController
     begin
       @events = Event.all.includes(:detail)
       
+      # Read parameters from request
       resource_id = params[:resource_id]
       resource_ids = params[:resource_ids]
+      limit = params[:limit]
+      start = params[:start]
+
+      # Set pagination limit (how many events will be returned)
+      @events = @events.limit(limit) unless limit.nil?
+      # Set pagination offset (index of first event to be returned)
+      @events = @events.offset(start) unless start.nil?
+
       if (resource_id != nil)
         @events = @events.where("resource_id = ?", resource_id)
       elsif (resource_ids != nil && resource_ids.is_a?(Array))
         @events = @events.where("resource_id IN (?)", resource_ids)
       end
-      
+
       if (params[:type] != nil)
         @events = @events.where("type = ?", params[:type])
       end
