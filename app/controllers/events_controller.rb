@@ -31,9 +31,6 @@ class EventsController < ApplicationController
         @events = @events.where("resource_id IN (?)", resource_ids)
       end
 
-      if (params[:type] != nil)
-        @events = @events.where("type = ?", params[:type])
-      end
     rescue Exception
       render :json => { :error => "Internal Server Error" }, :status => 500
     end
@@ -59,7 +56,7 @@ class EventsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def event_params
-      params.require(:event).permit(:type, :resource_id, resource_ids: [])
+      params.require(:event).permit(:limit, :start, :resource_id, resource_ids: [])
     end
 
     # Received an invalid argument: send a Bad Request error.
