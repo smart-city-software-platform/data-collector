@@ -39,8 +39,6 @@ class EventsController < ApplicationController
   def show
     if @status == :record_not_found
       render :json => { :error => "Bad Request: event not found" }, :status => 400
-    else
-      render :json => @event
     end
   end
 
