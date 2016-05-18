@@ -15,7 +15,12 @@ class EventsController < ApplicationController
       # Set pagination limit (how many events will be returned)
       @events = @events.limit(limit) unless limit.nil?
       # Set pagination offset (index of first event to be returned)
-      @events = @events.offset(start) unless start.nil?
+      
+      if (start =~ /\A[-+]?[^-0-9]+\z/) 
+	render :json => { :error => "Bad Request: event not found" }, :status => 400
+      elsif
+	@events = @events.offset(start)
+      end	
 
       if (resource_id != nil)
         @events = @events.where("resource_id = ?", resource_id)
