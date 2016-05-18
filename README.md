@@ -1,44 +1,28 @@
+# Smart City Plat - Data Collector
+
 ![Build Status](https://gitlab.com/smart-city-platform/data_collector/badges/master/build.svg)
+[![Mezuro](https://img.shields.io/badge/mezuro-green-green.svg)](http://mezuro.org/en/repositories/73)
+[![Mezuro](https://img.shields.io/badge/freenode-%40data__collector-blue.svg)]()
 
-# README
+---
 
-## Git Configuration
-* Setup a <a href="https://gitlab.com/profile/keys" target="_blank">ssh key</a>
-* In your development machine:
-  * ```$ sudo apt-get install git```
-  * ```$ git clone git@gitlab.com:smart-city-platform/data_collector.git```
-  * ```$ cd data_collector```
-  * ```$ git config user.name "Your Username"```
-  * ```$ git config user.email "your@mail.com"```
-  
+# Welcome to Data Collector
 
-## Environment Setup
+The Data Collector's main goal is to provide methods to search data collected
+from Resources. In other words, to offer a range of information on different
+sensors, which are classified mainly into two types:
 
-* Install <a href="https://rvm.io/rvm/install" target="_blank">RVM</a>. Instructions bellow:
-  * ```$ gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3```
-  * ```$ \curl -sSL https://get.rvm.io | bash -s stable```
-  * ```$ source /home/<your_username>/.rvm/scripts/rvm```
-* Run on terminal: 
-  * ```$ rvm install 2.2.0```
-  * ```$ rvm install ruby```  
-  * ```$ rvm alias create default ruby-2.3.0```
-  * ```$ rvm use ruby-2.3.0 --default```
-  * If you have any trouble in last step, run ```/bin/bash --login``` and try again
-  * ```$ gem install rails --pre --no-ri --no-rdoc```
-  * ```$ sudo apt-get install mysql-server``` use 'admin' as development password
-  * ```$ sudo apt-get install libmysqlclient-dev```
-* In the project directory, run:
-  * ```$ gem install bundle```
-  * ```$ bundle install```
-  * ```$ bundle exec rake db:create```
-  * ```$ bundle exec rake db:migrate```
-  * ```$ bundle exec rake db:seed```
-* Run the tests:
-  * ```$ rspec```
+Push: When resource agents notify the Data Collector that new data is available.
 
-## How to commit your changes?
+Pull: When the Data Collector requests information to a Resource.
 
-* Code your tests, make your changes, run and commit
-  * ```$ git add <path_to_file>```. Repeat for other files or ```$ git add --all``` for all files
-  * ```$ git commit -s -m "Commit message"```
-  * ```$ git push origin master:<new branch>```. This will create a remote branch in gitlab with your changes. There you can create a 'Merge Request' to review and integrate your change into master branch.
+This service is used both by applications and the Catalog Service, and offers
+developers access to information coming from different sensors scattered
+throughout the city. For example, with this service one could obtain data of
+all temperature sensors on USP.
+
+# Environment setup
+
+If you need help, look at:
+
+* [Basic setup](https://gitlab.com/smart-city-platform/data_collector/wikis/basic-setup)
