@@ -14,8 +14,8 @@ gem 'jquery-rails'
 gem 'jbuilder', '~> 2.0'
 
 group :development, :test do
-  gem 'rspec-rails'
-  gem 'rspec-expectations'
+  gem 'rspec-rails', '3.5.0.beta1'
+  gem 'rspec-expectations', '3.5.0.beta1'
   gem 'factory_girl_rails', '~> 4.0'
   gem 'faker'
   gem 'rails-controller-testing'
