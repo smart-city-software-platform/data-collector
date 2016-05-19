@@ -2,8 +2,6 @@ require 'rails_helper'
 
 describe Detail, :type => :model do
 
-  pending "add some examples to (or delete) #{__FILE__}"
-
   let(:detail) { create(:detail) }
 
   it "has a valid factory" do
