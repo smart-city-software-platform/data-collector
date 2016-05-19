@@ -46,6 +46,7 @@ describe EventsController, :type => :controller do
         end
       end
     end
+
   end
 
   describe "GET :index to json" do
@@ -83,6 +84,35 @@ describe EventsController, :type => :controller do
       get :show, params: { id: event.id }
       expect(response.content_type).to eq("application/json")
     end
+  end
+
+  context "with render_views" do
+    render_views
+
+    before :each do
+      headers = {
+        "ACCEPT" => "application/json"
+      }
+    end
+
+    describe "GET :index" do
+      it "renders the correct template and completes the url route" do
+        get :index, :format => :json
+        expect(response).to render_template(:index)
+        expect(response.status).to eq(200)
+        expect(response.body).to_not be_nil
+        expect(response.body.empty?).to be_falsy
+        expect(response.content_type).to eq("application/json")
+      end
+
+      it "filter the events by capability" do
+        get :index, :format => :json, params: {capability: 'temperature'}
+        expect(response).to render_template(:index)
+        expect(response.status).to eq(200)
+        expect(response.body).to_not be_nil
+        expect(response.body.empty?).to be_falsy
+      end
+   end
   end
 
 end
