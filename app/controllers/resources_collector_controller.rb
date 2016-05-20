@@ -20,9 +20,8 @@ class ResourcesCollectorController < ApplicationController
   end
 
   private
-
+    # Define valid parameters for requests
     def resource_collector_param
       params.require(:resources_collector).permit(:resource_id, :date, :category)
     end
-
 end

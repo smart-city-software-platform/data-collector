@@ -8,13 +8,13 @@
 
 # Welcome to Data Collector
 
-The Data Collector's main goal is to provide methods to search data collected
-from Resources. In other words, to offer a range of information on different
+The *Data Collector*'s main goal is to provide methods to search data collected
+from *Resources*. In other words, to offer a range of information on different
 sensors, which are classified mainly into two types:
 
-Push: When resource agents notify the Data Collector that new data is available.
+**Push:** When resource agents notify the Data Collector that new data is available.
 
-Pull: When the Data Collector requests information to a Resource.
+**Pull:** When the Data Collector requests information to a Resource.
 
 This service is used both by applications and the Catalog Service, and offers
 developers access to information coming from different sensors scattered
