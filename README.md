@@ -21,7 +21,7 @@ developers access to information coming from different sensors scattered
 throughout the city. For example, with this service one could obtain data of
 all temperature sensors on USP.
 
-# Environment setup
+# Setup and references
 
 If you need help, look at:
 
