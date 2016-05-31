@@ -1,13 +1,13 @@
 image: ruby:2.3
 
-# More about services: http://docs.gitlab.com/ee/ci/services/mysql.html
+# More about services: http://docs.gitlab.com/ee/ci/services/postgres.html
 services:
-  - mysql:latest
+  - postgres:latest
 
 variables:
-  # Configure MySQL environment variables (https://hub.docker.com/r/_/mysql/)
-  MYSQL_DATABASE: data_collector_test
-  MYSQL_ROOT_PASSWORD: admin
+  # Configure PostGreSQL environment variables (https://hub.docker.com/_/postgres/)
+  POSTGRES_PASSWORD: admin
+  POSTGRES_DB: data_collector_test
 
 before_script:
   - ruby -v
@@ -19,5 +19,5 @@ before_script:
   - bundle exec rake db:migrate RAILS_ENV=test
 
 rspec:
-  script:    
+  script:
     - bundle exec rspec

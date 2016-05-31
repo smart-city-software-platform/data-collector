@@ -13,19 +13,22 @@
 
 ActiveRecord::Schema.define(version: 20160518193901) do
 
-  create_table "details", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
+  create_table "details", force: :cascade do |t|
     t.string   "component_uuid"
     t.string   "capability"
     t.string   "data_type"
     t.string   "unit"
-    t.text     "value",          limit: 65535
-    t.datetime "created_at",                   null: false
-    t.datetime "updated_at",                   null: false
+    t.text     "value"
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
     t.integer  "event_id"
     t.index ["event_id"], name: "index_details_on_event_id", using: :btree
   end
 
-  create_table "events", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "events", force: :cascade do |t|
     t.integer  "resource_id"
     t.datetime "date"
     t.datetime "created_at",  null: false
