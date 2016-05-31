@@ -31,11 +31,4 @@ describe Event, :type => :model do
     expect(create(:event_with_details, details_count: 666).detail.length).to be(666)
   end
 
-  it "has to belong to push or pull category" do
-    expect(event.category).to include('push')
-    expect(event.category).to_not be(/0-9/)
-    event.category = 'pull'
-    expect(event.category).to include('pull')
-  end
-
 end

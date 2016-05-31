@@ -11,8 +11,7 @@ p "Creating new events..."
 
 1000.times do |index|
   event = Event.create!(resource_id: Faker::Number.number(8),
-                		date: Faker::Time.between(DateTime.now - 1, DateTime.now),
-                		category: ["pull", "push"].sample)
+                		date: Faker::Time.between(DateTime.now - 1, DateTime.now))
 
   3.times do |j|
   	event.detail.create!(component_uuid: Faker::Code.ean, # a fake number

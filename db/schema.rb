@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160514214414) do
+ActiveRecord::Schema.define(version: 20160518193901) do
 
   create_table "details", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "component_uuid"
@@ -30,7 +30,6 @@ ActiveRecord::Schema.define(version: 20160514214414) do
     t.datetime "date"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
-    t.string   "category"
   end
 
   add_foreign_key "details", "events"

@@ -21,7 +21,7 @@ describe ResourcesCollectorController, :type => :controller do
     end
 
     it 'verify if request stored data' do
-      event_params = {category: 'push', resource_id: 152, date: DateTime.now}
+      event_params = {resource_id: 152, date: DateTime.now}
       expect{post :create, params: {resources_collector: event_params}}.
             to change(Event, :count).by(1)
     end
@@ -31,7 +31,7 @@ describe ResourcesCollectorController, :type => :controller do
   context 'verify update method' do
     it 'verify request ends successfully' do
       last_event = Event.last
-      put :update, params: {id: last_event.id, resources_collector: {category: 'pull'}}
+      put :update, params: {id: last_event.id, resources_collector: {resource_id: 777}}
       is_expected.to have_http_status(200)
     end
 
@@ -40,13 +40,6 @@ describe ResourcesCollectorController, :type => :controller do
       put :update, params: {id: last_event.id, resources_collector: {resource_id: 777}}
       last_event = Event.last
       expect(last_event.resource_id).to eq(777)
-    end
-
-    it 'verify if request updated data (check category)' do
-      last_event = Event.last
-      put :update, params: {id: last_event.id, resources_collector: {category: 'pull'}}
-      last_event = Event.last
-      expect(last_event.category).to eq('pull')
     end
 
     it 'verify if request updated data (check date)' do

@@ -3,7 +3,6 @@ FactoryGirl.define do
   # Create detail to fill in the event after its creation
   factory :event do
 
-    category "push"
     resource_id 152
     date DateTime.new(2016, 2, 3)
 
