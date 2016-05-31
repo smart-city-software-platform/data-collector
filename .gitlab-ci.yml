@@ -6,7 +6,6 @@ services:
 
 variables:
   # Configure PostGreSQL environment variables (https://hub.docker.com/_/postgres/)
-  POSTGRES_USER: root
   POSTGRES_PASSWORD: admin
   POSTGRES_DB: data_collector_test
 
@@ -20,5 +19,5 @@ before_script:
   - bundle exec rake db:migrate RAILS_ENV=test
 
 rspec:
-  script:    
+  script:
     - bundle exec rspec
