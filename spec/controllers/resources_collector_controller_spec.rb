@@ -21,7 +21,7 @@ describe ResourcesCollectorController, :type => :controller do
     end
 
     it 'verify if request stored data' do
-      event_params = {resource_id: 152, date: DateTime.now}
+      event_params = {resource_uuid: 'ab631116-2837-11e6-b67b-9e71128cae77', date: DateTime.now}
       expect{post :create, params: {resources_collector: event_params}}.
             to change(Event, :count).by(1)
     end
@@ -31,15 +31,15 @@ describe ResourcesCollectorController, :type => :controller do
   context 'verify update method' do
     it 'verify request ends successfully' do
       last_event = Event.last
-      put :update, params: {id: last_event.id, resources_collector: {resource_id: 777}}
+      put :update, params: {id: last_event.id, resources_collector: {resource_uuid: '575b2ab2-2838-11e6-b67b-9e71128cae77'}}
       is_expected.to have_http_status(200)
     end
 
-    it 'verify if request updated data (check resource_id)' do
+    it 'verify if request updated data (check resource_uuid)' do
       last_event = Event.last
-      put :update, params: {id: last_event.id, resources_collector: {resource_id: 777}}
+      put :update, params: {id: last_event.id, resources_collector: {resource_uuid: '575b2ab2-2838-11e6-b67b-9e71128cae77'}}
       last_event = Event.last
-      expect(last_event.resource_id).to eq(777)
+      expect(last_event.resource_uuid).to eq('575b2ab2-2838-11e6-b67b-9e71128cae77')
     end
 
     it 'verify if request updated data (check date)' do
