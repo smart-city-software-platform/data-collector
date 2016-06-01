@@ -16,14 +16,16 @@ describe Event, :type => :model do
   end
 
   it "is sent by a resource adapter" do
-    expect(event.resource_id).to_not be_nil
-    expect(FactoryGirl.build(:event, :resource_id => "")).not_to be_valid
-    expect(FactoryGirl.build(:event, :resource_id => nil)).not_to be_valid
+    expect(event.resource_uuid).to_not be_nil
+    expect(FactoryGirl.build(:event, :resource_uuid => "")).not_to be_valid
+    expect(FactoryGirl.build(:event, :resource_uuid => nil)).not_to be_valid
   end
 
   it "has a valid resource id" do
-    expect(event.resource_id).to be > 0
-    expect(event.resource_id).not_to eq('')
+    expect(event.resource_uuid).not_to eq('')
+
+    uuid_pattern = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+    expect(uuid_pattern.match(event.resource_uuid)).not_to be_nil
   end
 
   it "must have at least one data entry" do

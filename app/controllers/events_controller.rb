@@ -5,8 +5,8 @@ class EventsController < ApplicationController
   def index
     @events = Event.all.includes(:detail)
 
-    resource_id = params[:resource_id]
-    resource_ids = params[:resource_ids]
+    resource_uuid = params[:resource_uuid]
+    resource_uuids = params[:resource_uuids]
     limit = params[:limit]
     start = params[:start]
     capability = params[:capability]
@@ -24,10 +24,10 @@ class EventsController < ApplicationController
 
     # Search database using provided parameters
     begin
-      if (resource_id != nil)
-        @events = @events.where("resource_id = ?", resource_id)
-      elsif (resource_ids != nil && resource_ids.is_a?(Array))
-        @events = @events.where("resource_id IN (?)", resource_ids)
+      if (resource_uuid != nil)
+        @events = @events.where("resource_uuid = ?", resource_uuid)
+      elsif (resource_uuids != nil && resource_uuids.is_a?(Array))
+        @events = @events.where("resource_uuid IN (?)", resource_uuids)
       end
       
       if (capability != nil)
@@ -59,6 +59,6 @@ class EventsController < ApplicationController
 
     # Define valid parameters for requests
     def event_params
-      params.require(:event).permit(:limit, :start, :resource_id, :capability, resource_ids: [])
+      params.require(:event).permit(:limit, :start, :resource_uuid, :capability, resource_uuids: [])
     end
 end

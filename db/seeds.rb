@@ -10,11 +10,11 @@ Event.delete_all
 p "Creating new events..."
 
 1000.times do |index|
-  event = Event.create!(resource_id: Faker::Number.number(8),
+  event = Event.create!(resource_uuid: SecureRandom.uuid, # a fake uuid code based on RFC4122
                 		date: Faker::Time.between(DateTime.now - 1, DateTime.now))
 
   3.times do |j|
-  	event.detail.create!(component_uuid: Faker::Code.ean, # a fake number
+  	event.detail.create!(component_uuid: SecureRandom.uuid, # a fake uuid code based on RFC4122
   				   capability: ["temperature", "pressure", "humidity", "luminosity", "manipulate_led"].sample,
   				   data_type: "double",
   				   unit: "none", # unit must be specific depending on the data type
