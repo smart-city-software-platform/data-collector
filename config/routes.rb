@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
 
-  get 'details/index'
-  get 'details/show'
+  #get 'details/index'
+  #get 'details/show'
 
   resources :events, only: [:show, :index], defaults: {format: :json} do
   	resources :details,
