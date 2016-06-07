@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 describe EventsController, :type => :controller do
-  
+
   let(:event) { create(:event) }
 
   before :each do
@@ -44,14 +44,14 @@ describe EventsController, :type => :controller do
         end
       end
     end
-   
+
     it "Returns a 400 status code when sending invalid data ranges argunments" do
-     # List of invalid arguments	
-     err_data = ["foobar",9.68]
-     # Expect errors whit all combinations of invalid arguments 
+     # List of invalid arguments
+     err_data = ["foobar", 9.68]
+     # Expect errors with all combinations of invalid arguments
      err_data.each do |data|
-	     get :index, params: {start_range: data, end_range: data}
-	     expect(response.status).to eq(400)
+       get :index, params: {start_range: data, end_range: data}
+       expect(response.status).to eq(400)
      end
     end
   end
@@ -113,7 +113,7 @@ describe EventsController, :type => :controller do
       end
 
       it "filter the events by capability" do
-        get :index, :format => :json, params: {capability: 'temperature'}
+        get :index, :format => :json, params: { capability: 'temperature' }
         expect(response).to render_template(:index)
         expect(response.status).to eq(200)
         expect(response.body).to_not be_nil
@@ -121,12 +121,16 @@ describe EventsController, :type => :controller do
       end
 
       it "Filter the events by date range" do
-        get :index, :format => :json, params:{start_range: '2016-06-03T13:18:57', end_range: '2016-06-03T13:25:00'}
+        get :index, :format => :json,
+            params: {
+              start_range: '2016-06-03T13:18:57',
+              end_range: '2016-06-03T13:25:00'
+            }
         expect(response).to render_template(:index)
         expect(response.status).to eq(200)
         expect(response.body).to_not be_nil
         expect(response.body.empty?).to be_falsy
-      end  
+      end
    end
 
     describe "GET :show" do
@@ -141,4 +145,3 @@ describe EventsController, :type => :controller do
     end
   end
 end
-

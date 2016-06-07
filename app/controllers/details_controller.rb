@@ -1,5 +1,5 @@
 class DetailsController < ApplicationController
-  
+
   before_action :set_event
   before_action :set_detail, only: [:show]
 
@@ -41,6 +41,6 @@ class DetailsController < ApplicationController
       rescue ActiveRecord::RecordNotFound
         @status = :record_not_found
       end
-    end  
+    end
 
 end

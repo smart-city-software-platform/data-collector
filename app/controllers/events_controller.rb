@@ -10,58 +10,51 @@ class EventsController < ApplicationController
     limit = params[:limit]
     start = params[:start]
     capability = params[:capability]
-    start_range = params[:start_range]	
+    start_range = params[:start_range]
     end_range = params[:end_range]
-	
-    # Validate 'start_range' and 'end_range' parameters (they must be datetime)
-    
+
+    # Validate 'start_range' and 'end_range' as DateTimes
     [start_range,end_range].each do |arg|
-       if !arg.nil? 
-       	begin 
-       	 (DateTime.parse(arg))
+      if !arg.nil?
+        begin
+          DateTime.parse(arg)
         rescue
-         render :json => { :error => "Bad Request: event not found" }, :status => 400
-         break
-        end 
-       end	
+          render :json => { :error => "Bad Request: event not found" }, :status => 400
+          break # Prevents DoubleRenderError ('render' occurring two times)
+        end
+      end
     end
- #!arg.nil? && arg !~ /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/
+
     # Validate 'limit' and 'start' parameters (they must be positive integers)
     [limit, start].each do |arg|
       if !arg.nil? && arg !~ /\A\+?\d+\z/
         render :json => { :error => "Bad Request: event not found" }, :status => 400
-        break  # Prevents DoubleRenderError (i.e., 'render' occurring two times)
+        break # Prevents DoubleRenderError
       end
     end
-
-    @events = @events.limit(limit) unless limit.nil?
-    @events = @events.offset(start) unless limit.nil?
 
     # Search database using provided parameters
     begin
-      if (resource_uuid != nil)
+      @events = @events.limit(limit) unless limit.nil?
+      @events = @events.offset(start) unless limit.nil?
+
+      @events = @events.where("date >= ?", start_range) unless start_range.nil?
+      @events = @events.where("date <= ?",end_range) unless end_range.nil?
+
+      if !resource_uuid.nil?
         @events = @events.where("resource_uuid = ?", resource_uuid)
-      elsif (resource_uuids != nil && resource_uuids.is_a?(Array))
+      elsif !resource_uuids.nil? && resource_uuids.is_a?(Array)
         @events = @events.where("resource_uuid IN (?)", resource_uuids)
       end
-      
-      if (capability != nil)
+
+      if !capability.nil?
         @events = @events.where(:details => {:capability => capability})
       end
 
-	  if (start_range != nil)
-	    @events =  @events.where("date >= ?", start_range)
-	  end
-
-	  if (end_range != nil)
-	    @events = @events.where("date <= ?",end_range)
-	  end
-  	 
-   
     rescue Exception
       render :json => { :error => "Internal Server Error" }, :status => 500
     end
-   
+
   end
 
   # GET /events/:event_id
