@@ -14,13 +14,14 @@ class EventsController < ApplicationController
     # Validate 'limit' and 'start' parameters (they must be positive integers)
     [limit, start].each do |arg|
       if !arg.nil? && arg !~ /\A\+?\d+\z/
-        render :json => { :error => "Bad Request: event not found" }, :status => 400
+        render :json => { :error => "Bad Request: event not found" },
+               :status => 400
         break  # Prevents DoubleRenderError (i.e., 'render' occurring two times)
       end
     end
 
     @events = @events.limit(limit) unless limit.nil?
-    @events = @events.offset(start) unless limit.nil?
+    @events = @events.offset(start) unless start.nil?
 
     # Search database using provided parameters
     begin
@@ -43,7 +44,8 @@ class EventsController < ApplicationController
   # GET /events/:event_id
   def show
     if @status == :record_not_found
-      render :json => { :error => "Bad Request: event not found" }, :status => 400
+      render :json => { :error => "Bad Request: event not found" },
+             :status => 400
     end
   end
 
@@ -59,6 +61,7 @@ class EventsController < ApplicationController
 
     # Define valid parameters for requests
     def event_params
-      params.require(:event).permit(:limit, :start, :resource_uuid, :capability, resource_uuids: [])
+      params.require(:event).permit(:limit, :start, :resource_uuid, :capability,
+                                    resource_uuids: [])
     end
 end
