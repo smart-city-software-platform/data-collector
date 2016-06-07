@@ -10,7 +10,17 @@ class EventsController < ApplicationController
     limit = params[:limit]
     start = params[:start]
     capability = params[:capability]
-
+    start_range = params[:start_range]	
+    end_range = params[:end_range]
+	
+    # Validate 'start_range' and 'end_range' parameters (they must be datetime)
+    [start_range,end_range].each do |arg|
+      if !arg.nil? && !arg.is_a?(DateTime)
+      	render :json => { :error => "Bad Request: event not found"}, :status => 400
+      	break
+      end	
+    end				
+ #!arg.nil? && arg !~ /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/
     # Validate 'limit' and 'start' parameters (they must be positive integers)
     [limit, start].each do |arg|
       if !arg.nil? && arg !~ /\A\+?\d+\z/
@@ -34,10 +44,19 @@ class EventsController < ApplicationController
         @events = @events.where(:details => {:capability => capability})
       end
 
+	  if (start_range != nil and end_range != nil)
+	    @events =  @events.where("date >= ? AND date <= ? ", start_range, end_range)	
+	  elsif (start_range != nil)
+	    @events =  @events.where("date >= ?", start_range)
+	  elsif (end_range != nil)
+	    @events = @events.where("date <= ?",end_range)
+	  end
+  	 
+   
     rescue Exception
       render :json => { :error => "Internal Server Error" }, :status => 500
     end
-
+   
   end
 
   # GET /events/:event_id
