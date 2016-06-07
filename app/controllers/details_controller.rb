@@ -19,7 +19,8 @@ class DetailsController < ApplicationController
 
   def check_filter_id
     if @status == :record_not_found
-      render :json => { :error => "Bad Request: event/detail not found" }, :status => 400
+      render :json => { :error => "Bad Request: event/detail not found" },
+             :status => 400
     end
   end
 

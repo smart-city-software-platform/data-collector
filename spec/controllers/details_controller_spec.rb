@@ -87,7 +87,8 @@ describe DetailsController, :type => :controller do
     describe "GET :show" do
 
       it "renders the correct json and completes the url route" do
-        get :show, :format => :json, params: { event_id: event.id, id: event.detail[0].id }
+        get :show, :format => :json,
+            params: { event_id: event.id, id: event.detail[0].id }
         expect(response).to render_template(:show)
         expect(response.status).to eq(200)
         expect(response.body).to_not be_nil

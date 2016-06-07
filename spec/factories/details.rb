@@ -5,7 +5,7 @@ FactoryGirl.define do
     event_id "123"
     capability "temperature"
     data_type "double"
-    unit "celsius"  # Unit of measurement
+    unit "celsius" # Unit of measurement
     value "27"
 
     event

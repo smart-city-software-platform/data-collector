@@ -60,7 +60,8 @@ class EventsController < ApplicationController
   # GET /events/:event_id
   def show
     if @status == :record_not_found
-      render :json => { :error => "Bad Request: event not found" }, :status => 400
+      render :json => { :error => "Bad Request: event not found" },
+             :status => 400
     end
   end
 
@@ -76,6 +77,7 @@ class EventsController < ApplicationController
 
     # Define valid parameters for requests
     def event_params
-      params.require(:event).permit(:limit, :start, :resource_uuid, :capability, resource_uuids: [])
+      params.require(:event).permit(:limit, :start, :resource_uuid, :capability,
+                                    resource_uuids: [])
     end
 end
