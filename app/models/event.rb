@@ -6,6 +6,6 @@ class Event < ApplicationRecord
   after_create :send_notification 
 
   def send_notification
-    broadcast("/events/listen", self)
+    broadcast("/events", self)
   end
 end
