@@ -1,6 +1,7 @@
 class EventsController < ApplicationController
   before_action :set_event, only: [:show]
-
+  skip_before_action :verify_authenticity_token
+  
   # GET /events
   def index
     @events = Event.all.includes(:detail)
@@ -47,6 +48,13 @@ class EventsController < ApplicationController
       render :json => { :error => "Bad Request: event not found" },
              :status => 400
     end
+  end
+
+  def create
+    event = Event.create!(resource_uuid: SecureRandom.uuid,
+                  date: Faker::Time.between(DateTime.now - 1, DateTime.now))
+
+    redirect_to action: "show", id: event.id
   end
 
   private

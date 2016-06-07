@@ -10,5 +10,6 @@ Rails.application.routes.draw do
   end
 
   resources :resources_collector, only: [:create, :update]
+  resources :events, only: [:create]
 
 end
