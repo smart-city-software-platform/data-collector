@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
 
-  get 'home/index'
+  get 'pubsub/demo'
 
   resources :events, only: [:show, :index], defaults: {format: :json} do
   	resources :details,
