@@ -1,7 +1,6 @@
 Rails.application.routes.draw do
 
-  #get 'details/index'
-  #get 'details/show'
+  get 'home/index'
 
   resources :events, only: [:show, :index], defaults: {format: :json} do
   	resources :details,
@@ -10,5 +9,6 @@ Rails.application.routes.draw do
   end
 
   resources :resources_collector, only: [:create, :update]
+  resources :events, only: [:create]
 
 end

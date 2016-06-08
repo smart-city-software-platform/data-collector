@@ -1,6 +1,7 @@
 class EventsController < ApplicationController
   before_action :set_event, only: [:show]
-
+  skip_before_action :verify_authenticity_token
+  
   # GET /events
   def index
     @events = Event.all.includes(:detail)
@@ -65,6 +66,13 @@ class EventsController < ApplicationController
     end
   end
 
+  def create
+    event = Event.create!(resource_uuid: SecureRandom.uuid,
+                  date: Faker::Time.between(DateTime.now - 1, DateTime.now))
+
+    broadcast("/events", event)
+  end
+
   private
     # Try to get event ID from parameters
     def set_event
@@ -80,4 +88,11 @@ class EventsController < ApplicationController
       params.require(:event).permit(:limit, :start, :resource_uuid, :capability,
                                     resource_uuids: [])
     end
+
+    # Notify the client whose are feeding for new event data
+    def broadcast(channel, msg)
+      message = {:channel => channel, :data => msg}
+      uri = URI.parse("http://#{ request.host }:9292/collector")
+      Net::HTTP.post_form(uri, :message => message.to_json)
+    end    
 end
