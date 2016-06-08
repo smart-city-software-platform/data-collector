@@ -70,7 +70,8 @@ class EventsController < ApplicationController
     event = Event.create!(resource_uuid: SecureRandom.uuid,
                   date: Faker::Time.between(DateTime.now - 1, DateTime.now))
 
-    redirect_to action: "show", id: event.id
+    #redirect_to action: "show", id: event.id
+    broadcast("/events", event)
   end
 
   private
@@ -88,4 +89,10 @@ class EventsController < ApplicationController
       params.require(:event).permit(:limit, :start, :resource_uuid, :capability,
                                     resource_uuids: [])
     end
+
+    def broadcast(channel, msg)
+      message = {:channel => channel, :data => msg}
+      uri = URI.parse("http://localhost:9292/collector")
+      Net::HTTP.post_form(uri, :message => message.to_json)
+    end    
 end
