@@ -1,0 +1,20 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+<script src="http://localhost:9292/collector.js"></script>
+
+<h1>Pub/Sub demo</h1>
+<p>Do a POST to the server in order to see the publish/subscribe in action right here! <br/>
+curl -X POST http://localhost:3000/events<br/><br/>
+
+<div id='events-listener'></div>
+</p>
+
+<script type="text/javascript">
+$(function() {
+  console.log('Starting the server listening')
+  var faye = new Faye.Client('http://localhost:9292/collector');
+  faye.subscribe("/events", function(data) {
+	console.log(eval(data));
+	$('#events-listener').append("<p>"+ JSON.stringify(data, undefined, 2) +"</p>");
+  });
+});
+</script>
