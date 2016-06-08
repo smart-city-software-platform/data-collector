@@ -1,5 +1,5 @@
 class DetailsController < ApplicationController
-  
+
   before_action :set_event
   before_action :set_detail, only: [:show]
 

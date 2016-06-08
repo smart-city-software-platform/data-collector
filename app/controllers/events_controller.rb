@@ -11,28 +11,44 @@ class EventsController < ApplicationController
     limit = params[:limit]
     start = params[:start]
     capability = params[:capability]
+    start_range = params[:start_range]
+    end_range = params[:end_range]
+
+    # Validate 'start_range' and 'end_range' as DateTimes
+    [start_range,end_range].each do |arg|
+      if !arg.nil?
+        begin
+          DateTime.parse(arg)
+        rescue
+          render :json => { :error => "Bad Request: event not found" }, :status => 400
+          break # Prevents DoubleRenderError ('render' occurring two times)
+        end
+      end
+    end
 
     # Validate 'limit' and 'start' parameters (they must be positive integers)
     [limit, start].each do |arg|
       if !arg.nil? && arg !~ /\A\+?\d+\z/
-        render :json => { :error => "Bad Request: event not found" },
-               :status => 400
-        break  # Prevents DoubleRenderError (i.e., 'render' occurring two times)
+        render :json => { :error => "Bad Request: event not found" }, :status => 400
+        break # Prevents DoubleRenderError
       end
     end
 
-    @events = @events.limit(limit) unless limit.nil?
-    @events = @events.offset(start) unless start.nil?
-
     # Search database using provided parameters
     begin
-      if (resource_uuid != nil)
+      @events = @events.limit(limit) unless limit.nil?
+      @events = @events.offset(start) unless limit.nil?
+
+      @events = @events.where("date >= ?", start_range) unless start_range.nil?
+      @events = @events.where("date <= ?",end_range) unless end_range.nil?
+
+      if !resource_uuid.nil?
         @events = @events.where("resource_uuid = ?", resource_uuid)
-      elsif (resource_uuids != nil && resource_uuids.is_a?(Array))
+      elsif !resource_uuids.nil? && resource_uuids.is_a?(Array)
         @events = @events.where("resource_uuid IN (?)", resource_uuids)
       end
-      
-      if (capability != nil)
+
+      if !capability.nil?
         @events = @events.where(:details => {:capability => capability})
       end
 
