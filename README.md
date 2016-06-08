@@ -20,6 +20,7 @@ all temperature sensors on USP.
 If you need help, look at:
 
 * [Basic setup](https://gitlab.com/smart-city-platform/data_collector/wikis/basic-setup)
+* [Publish/Subscribe](https://gitlab.com/smart-city-platform/data_collector/wikis/pub-sub)
 * [Our API](https://social.stoa.usp.br/poo2016/projeto/group-3-data-collector)
 * [Base architecture overview](http://s32.postimg.org/a16hueg79/Arquitetura_geral_da_plataforma_de_cidades_intel.jpg)
 * Data Collector's [Class Diagram](documentation/classDiagram.png)
