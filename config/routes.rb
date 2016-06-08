@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
 
+  get 'home/index'
+
   resources :events, only: [:show, :index], defaults: {format: :json} do
   	resources :details,
   				defaults: {format: :json},

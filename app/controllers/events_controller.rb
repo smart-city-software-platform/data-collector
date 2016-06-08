@@ -70,7 +70,6 @@ class EventsController < ApplicationController
     event = Event.create!(resource_uuid: SecureRandom.uuid,
                   date: Faker::Time.between(DateTime.now - 1, DateTime.now))
 
-    #redirect_to action: "show", id: event.id
     broadcast("/events", event)
   end
 
@@ -90,9 +89,10 @@ class EventsController < ApplicationController
                                     resource_uuids: [])
     end
 
+    # Notify the client whose are feeding for new event data
     def broadcast(channel, msg)
       message = {:channel => channel, :data => msg}
-      uri = URI.parse("http://localhost:9292/collector")
+      uri = URI.parse("http://#{ request.host }:9292/collector")
       Net::HTTP.post_form(uri, :message => message.to_json)
     end    
 end
