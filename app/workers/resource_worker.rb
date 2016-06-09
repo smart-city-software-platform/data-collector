@@ -18,7 +18,7 @@ class ResourceWorker
     get_loop()
   end
 
-  # Using 'GET components/:id' from Resource Adaptor (I suppose ':id' is 'uuid'?)
+  # Using 'GET components/:id' from Resource Adaptor (I suppose ':id' is 'uuid')
   def get_loop
     while !cancelled?
       # Do a GET request to the resource url
@@ -32,13 +32,13 @@ class ResourceWorker
 
       # Update database (stop thread if error occurs)
       resource = Event.find(@uuid)
-      return unless resource.update(response)
+      return unless resource.update(response.body)
 
       # Wait until next GET
       sleep @timestep
   end
 
   def cancelled?
-    true # TODO: Kill thread when PUT event occurs
+    true # TODO: Kill thread when PUT event occurs (needs thread monitoring)
   end
 end
