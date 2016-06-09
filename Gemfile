@@ -15,6 +15,8 @@ gem 'jbuilder', '~> 2.0'
 gem 'faye'
 gem 'thin'
 
+gem 'sidekiq'
+
 group :development, :test do
   gem 'rspec-rails', '~> 3.5.0.beta4'
   gem 'rspec-expectations', '~> 3.5.0.beta4'
