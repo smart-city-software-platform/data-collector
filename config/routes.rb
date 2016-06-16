@@ -10,5 +10,6 @@ Rails.application.routes.draw do
 
   resources :resources_collector, only: [:create, :update]
   resources :events, only: [:create]
+  resources :resources, only: [:create, :update]
 
 end
