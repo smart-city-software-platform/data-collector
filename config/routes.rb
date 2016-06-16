@@ -10,6 +10,6 @@ Rails.application.routes.draw do
 
   resources :resources_collector, only: [:create, :update]
   resources :events, only: [:create]
-  resources :resources, only: [:create, :update]
+  resources :platform_resources, only: [:create, :update], path: 'resources'
 
 end
