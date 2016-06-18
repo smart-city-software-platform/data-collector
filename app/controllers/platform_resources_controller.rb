@@ -1,6 +1,6 @@
 class PlatformResourcesController < ApplicationController
   skip_before_action :verify_authenticity_token
-  before_action :find_platform_resource, only: [:edit]
+  before_action :find_platform_resource, only: [:update]
 
   def create
     platform_resource = PlatformResource.new(platform_resource_params)
@@ -25,7 +25,7 @@ class PlatformResourcesController < ApplicationController
       @retrieved_resource.update(platform_resource_params)
       if capability_params
         capabilities_hash = capability_params
-        capabilities_array = capability_hash[:capabilities]
+        capabilities_array = capabilities_hash[:capabilities]
         target_to_remove = @retrieved_resource.capabilities
                                 .where("name not in (?)", capabilities_array)
         # Removing old capabilities
