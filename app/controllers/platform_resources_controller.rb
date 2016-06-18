@@ -1,6 +1,6 @@
 class PlatformResourcesController < ApplicationController
   skip_before_action :verify_authenticity_token
-  before_filter :find_platform_resource, only: [:edit]
+  before_action :find_platform_resource, only: [:edit]
 
   def create
     platform_resource = PlatformResource.new(platform_resource_params)
