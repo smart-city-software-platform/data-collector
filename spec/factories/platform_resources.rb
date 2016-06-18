@@ -28,5 +28,20 @@ FactoryGirl.define do
       status "off"
     end
 
+    trait :resource_with_capability do
+      uri "http://localhost:3000/basic_resources/491/components/300/collect"
+      uuid "ab631116-2837-11e6-b67b-9e71128cae77"
+      status "off"
+      collect_interval 300
+      capabilities ["temperature", "weight", "luminosity"]
+    end
+
+    trait :resource_empty_capability do
+      uri "http://localhost:3000/basic_resources/491/components/300/collect"
+      uuid "ab631116-2837-11e6-b67b-9e71128cae77"
+      status "off"
+      collect_interval 300
+      capabilities []
+    end
   end
 end
