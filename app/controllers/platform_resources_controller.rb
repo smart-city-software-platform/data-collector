@@ -40,6 +40,7 @@ class PlatformResourcesController < ApplicationController
             end
           end
         end
+        render json: {data: @retrieved_resource}, status: 201
         # TODO: Restart data collect
       else
         # TODO: Find right exception

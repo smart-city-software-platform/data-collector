@@ -6,9 +6,9 @@ FactoryGirl.define do
 
     # Factory with not all necessary attributes
     factory :missing_args do
-      uri "http://localhost:3000/basic_resources/1/components/1/collect"
-      uuid "ab631116-2837-11e6-b67b-9e71128cae77"
-      status "on"
+      uri 'http://localhost:3000/basic_resources/1/components/1/collect'
+      uuid 'ab631116-2837-11e6-b67b-9e71128cae77'
+      status 'on'
 
       # Factory with an on purpose attribute typo
       factory :typo do
@@ -26,9 +26,10 @@ FactoryGirl.define do
 
         # Factory with 'capabilities' as a valid array
         factory :with_capability do
-          capabilities ["temperature", "weight", "luminosity"]
+          capabilities ['temperature', 'weight', 'luminosity']
         end
       end
+
     end
   end
 end

@@ -5,21 +5,13 @@ RSpec.describe PlatformResourcesController, type: :controller do
   subject {response}
 
   # Create objects from factories
-  let(:empty_capability) {
-    FactoryGirl.build(:empty_capability)
-  }
+  let(:empty_capability) { FactoryGirl.build(:empty_capability) }
 
-  let(:missing_args_params) {
-    FactoryGirl.attributes_for(:missing_args)
-  }
+  let(:missing_args_params) { FactoryGirl.attributes_for(:missing_args) }
 
-  let(:typo_params) {
-    FactoryGirl.attributes_for(:typo)
-  }
+  let(:typo_params) { FactoryGirl.attributes_for(:typo) }
 
-  let(:essential_args_params) {
-    FactoryGirl.attributes_for(:essential_args)
-  }
+  let(:essential_args_params) { FactoryGirl.attributes_for(:essential_args) }
 
   let (:empty_capability_params) {
     FactoryGirl.attributes_for(:empty_capability)
@@ -155,6 +147,35 @@ RSpec.describe PlatformResourcesController, type: :controller do
         expect(resource.uuid).to eq(with_capability_params[:uuid])
       end
     end
+  # End of post context
+  end
+
+  context 'Verify update method by PUT using data with no capabilities' do
+
+    before :each do
+      @platform_hash = essential_args_params
+      PlatformResource.create(@platform_hash)
+    end
+
+    it 'Verify request after put' do
+      @platform_hash[:uri] = 'http://localhost:3000/basic_resources/3/components/3/collect'
+      put :update, params: {uuid: @platform_hash[:uuid], data: @platform_hash}
+      is_expected.to have_http_status(201)
+    end
+
+    it 'Verify if PUT request was stored successfully' do
+      @platform_hash[:uri] = 'http://localhost:3000/basic_resources/3/components/3/collect'
+      put :update, params: {uuid: @platform_hash[:uuid], data: @platform_hash}
+      platform = PlatformResource.last
+      expect(platform.uri).to eq(@platform_hash[:uri])
+    end
+
+    after :each do
+      remove = PlatformResource.last
+      remove.delete
+      @platform_hash = nil
+    end
+
   end
 
 end
