@@ -1,47 +1,34 @@
+# Defines factories for creating PlatformResource objects
 FactoryGirl.define do
+
+  # Abstract factory for PlatformResource
   factory :platform_resource do
 
-    trait :default_no_capability do
+    # Factory with not all necessary attributes
+    factory :missing_args do
       uri "http://localhost:3000/basic_resources/1/components/1/collect"
       uuid "ab631116-2837-11e6-b67b-9e71128cae77"
       status "on"
-      collect_interval 60
-    end
 
-    trait :default_2_no_capability do
-      uri "http://localhost:3000/basic_resources/491/components/300/collect"
-      uuid "ab631116-2837-11e6-b67b-9e71128cae77"
-      status "off"
-      collect_interval 300
-    end
+      # Factory with an on purpose attribute typo
+      factory :typo do
+        collect_intervallllll 60
+      end
 
-    trait :typo_no_capability do
-      uri "http://localhost:3000/basic_resources/2/components/2/collect"
-      uuid "ab631116-2837-11e6-b67b-9e71128cae77"
-      status "off"
-      collect_intervallllll 60
-    end
+      # Resource with all necessary attributes
+      factory :essential_args do
+        collect_interval 30
 
-    trait :missing_argument do
-      uri "http://localhost:3000/basic_resources/2/components/2/collect"
-      uuid "ab631116-2837-11e6-b67b-9e71128cae77"
-      status "off"
-    end
+        # Factory with 'capabilities' as an empty array
+        factory :empty_capability do
+          capabilities []
+        end
 
-    trait :resource_with_capability do
-      uri "http://localhost:3000/basic_resources/491/components/300/collect"
-      uuid "ab631116-2837-11e6-b67b-9e71128cae77"
-      status "off"
-      collect_interval 300
-      capabilities ["temperature", "weight", "luminosity"]
-    end
-
-    trait :resource_empty_capability do
-      uri "http://localhost:3000/basic_resources/491/components/300/collect"
-      uuid "ab631116-2837-11e6-b67b-9e71128cae77"
-      status "off"
-      collect_interval 300
-      capabilities []
+        # Factory with 'capabilities' as a valid array
+        factory :with_capability do
+          capabilities ["temperature", "weight", "luminosity"]
+        end
+      end
     end
   end
 end
