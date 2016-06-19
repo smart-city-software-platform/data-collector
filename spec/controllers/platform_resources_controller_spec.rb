@@ -135,8 +135,26 @@ RSpec.describe PlatformResourcesController, type: :controller do
       expect(Capability.count).to eq(second_cap.size)
     end
 
-    it 'Verify if capability was stored correctly'
-    it 'Verify relation between capability and platform resource'
+    it 'Verify relation between capability and platform resource' do
+      post :create, params: {data: with_capability_params}
+      is_expected.to have_http_status(201)
+
+      # For each capability in the sent data...
+      with_capability_params[:capabilities].each do |name|
+        # Get the capability id
+        cap_id = Capability.find_by_name(name).id
+
+        # Use the model that relates Capability and Platform Resource to find
+        # out the corresponding platform resource id
+        resourceCapability = PlatformResourceCapability.find_by_capability_id(cap_id)
+        resource_id = resourceCapability.platform_resource_id
+
+        # Check if the uuid in the Platform Resource model is correct by
+        # comparing it to the sent data's uuid
+        resource = PlatformResource.find_by_id(resource_id)
+        expect(resource.uuid).to eq(with_capability_params[:uuid])
+      end
+    end
   end
 
 end
