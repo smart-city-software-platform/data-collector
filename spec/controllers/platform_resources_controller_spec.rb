@@ -1,4 +1,5 @@
 require 'rails_helper'
+require 'securerandom'
 
 RSpec.describe PlatformResourcesController, type: :controller do
 
@@ -158,16 +159,61 @@ RSpec.describe PlatformResourcesController, type: :controller do
     end
 
     it 'Verify request after put' do
-      @platform_hash[:uri] = 'http://localhost:3000/basic_resources/3/components/3/collect'
+      new_uri = 'http://localhost:3000/basic_resources/3/components/3/collect'
+      @platform_hash[:uri] = new_uri
       put :update, params: {uuid: @platform_hash[:uuid], data: @platform_hash}
       is_expected.to have_http_status(201)
     end
 
     it 'Verify if PUT request was stored successfully' do
-      @platform_hash[:uri] = 'http://localhost:3000/basic_resources/3/components/3/collect'
+      new_uri = 'http://localhost:3000/basic_resources/3/components/3/collect'
+      @platform_hash[:uri] = new_uri
       put :update, params: {uuid: @platform_hash[:uuid], data: @platform_hash}
       platform = PlatformResource.last
       expect(platform.uri).to eq(@platform_hash[:uri])
+    end
+
+    it 'Verify if uuid update correctly' do
+      new_uuid = SecureRandom.uuid
+      original_uuid = @platform_hash[:uuid]
+      @platform_hash[:uuid] = new_uuid
+      put :update, params: {uuid: original_uuid, data: @platform_hash}
+      platform = PlatformResource.last
+      expect(platform.uuid).to eq(new_uuid)
+    end
+
+    it 'Verify if status update correctly' do
+      new_status = 'blablabla'
+      @platform_hash[:status] = new_status
+      put :update, params: {uuid: @platform_hash[:uuid], data: @platform_hash}
+      platform = PlatformResource.last
+      expect(platform.status).to eq(new_status)
+    end
+
+    it 'Verify if collect_interval update correctly' do
+      collect_new = 360
+      @platform_hash[:collect_interval] = collect_new
+      put :update, params: {uuid: @platform_hash[:uuid], data: @platform_hash}
+      platform = PlatformResource.last
+      expect(platform.collect_interval).to eq(collect_new)
+    end
+
+    it 'Verify if wrong uuid raise exception' do
+      new_status = 'off_xpto'
+      @platform_hash[:status] = new_status
+      wrong_uuid = 'notvalid'
+      put :update, params: {uuid: wrong_uuid, data: @platform_hash}
+      is_expected.to have_http_status(404)
+    end
+
+    it 'Typo should be recognized' do
+      uuid = @platform_hash[:uuid]
+      @platform_hash.delete(:status)
+      @platform_hash[:stratussss] = 'veryinvalid'
+      old_platform = PlatformResource.last
+      put :update, params: {uuid: uuid, data: @platform_hash}
+      platform = PlatformResource.last
+      expect(platform).to eq(old_platform)
     end
 
     after :each do
