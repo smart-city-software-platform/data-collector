@@ -5,49 +5,29 @@ class PlatformResourcesController < ApplicationController
   def create
     platform_resource = PlatformResource.new(platform_resource_params)
     if platform_resource.save
-      capabilities_hash = capability_params
-      capabilities_array = capabilities_hash[:capabilities]
-      if capabilities_array.kind_of? Array
-        capabilities_array.each do |capability_name|
-          capability = Capability.find_or_create_by(name: capability_name)
-          platform_resource.capabilities << capability
-        end
-      end
+      capabilities = get_capabilities
+      assotiate_capability_with_resource(capabilities, platform_resource)
       render json: {data: platform_resource}, status: 201
     else
-      render json: { error: "Internal Server Error" }, status: 500
+      render json: { error: 'Internal Server Error' }, status: 500
     end
   end
 
   def update
     begin
       raise ActiveRecord::RecordNotFound unless @retrieved_resource
-      @retrieved_resource.update(platform_resource_params)
-      if capability_params
-        capabilities_hash = capability_params
-        capabilities_array = capabilities_hash[:capabilities]
-        target_to_remove = @retrieved_resource.capabilities
-                                .where("name not in (?)", capabilities_array)
-        # Removing old capabilities
-        @retrieved_resource.capabilities.delete(target_to_remove)
+      @retrieved_resource.update!(platform_resource_params)
 
-        # Add new capabilities
-        if capabilities_array.kind_of? Array
-          capabilities_array.each do |capability_name|
-            capability = Capability.find_or_create_by(name: capability_name)
-            unless @retrieved_resource.capabilities.include?(capability)
-              @retrieved_resource.capabilities << capability
-            end
-          end
-        end
-        render json: {data: @retrieved_resource}, status: 201
-        # TODO: Restart data collect
-      else
-        # TODO: Find right exception
-        raise ActiveRecord::RecordNotFound
-      end
+      capabilities = get_capabilities
+      remove_needed_capabilities(capabilities, @retrieved_resource)
+
+      assotiate_capability_with_resource(capabilities, @retrieved_resource)
+
+      render json: {data: @retrieved_resource}, status: 201
+
+      # TODO: Restart data collect thread
     rescue ActiveRecord::RecordNotFound
-      render json: { error: "Not found" }, status: 404
+      render json: { error: 'Not found' }, status: 404
     end
   end
 
@@ -63,6 +43,31 @@ class PlatformResourcesController < ApplicationController
 
     def find_platform_resource
       @retrieved_resource = PlatformResource.find_by_uuid(params[:uuid])
+    end
+
+    def get_capabilities
+      capability_params[:capabilities]
+    end
+
+    def assotiate_capability_with_resource(capabilities, resource)
+      if capabilities.kind_of? Array
+        capabilities.each do |capability_name|
+          capability = Capability.find_or_create_by(name: capability_name)
+          unless resource.capabilities.include?(capability)
+            resource.capabilities << capability
+          end
+        end
+      end
+    end
+
+    def remove_needed_capabilities(capabilities, resource)
+      # If no capabilities are present inside hash, just remove all
+      if capabilities.nil?
+        resource.capabilities.delete_all
+      else
+        rm = resource.capabilities.where("name not in (?)", capabilities)
+        resource.capabilities.delete(rm)
+      end
     end
 
 end
