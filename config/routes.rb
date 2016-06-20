@@ -8,9 +8,10 @@ Rails.application.routes.draw do
   				only: [:show, :index]
   end
 
-  resources :resources_collector, only: [:create, :update]
   resources :events, only: [:create]
-  resources :platform_resources, only: [:create, :update], param: :uuid, path: 'resources'
+  resources :platform_resources,
+            only: [:create, :update],
+            param: :uuid, path: 'resources'
 
   scope 'resources', via: [:post], defaults: {format: :json} do
   	match 'data', :as => 'resources_data', :to => 'sensor_values#resources_data'
