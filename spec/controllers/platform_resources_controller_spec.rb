@@ -22,6 +22,19 @@ RSpec.describe PlatformResourcesController, type: :controller do
     FactoryGirl.attributes_for(:with_capability)
   }
 
+  let (:with_few_capability_params) {
+    FactoryGirl.attributes_for(:with_capability_second)
+  }
+
+  let (:with_similar_capability_params) {
+    FactoryGirl.attributes_for (:with_similar_capability)
+  }
+
+  let (:with_more_capability_params) {
+    FactoryGirl.attributes_for (:with_more_capability)
+  }
+
+
   it 'Has a valid factory' do
     expect(empty_capability).to be_valid
   end
@@ -219,6 +232,77 @@ RSpec.describe PlatformResourcesController, type: :controller do
     after :each do
       remove = PlatformResource.last
       remove.delete
+      @platform_hash = nil
+    end
+  # End of context
+  end
+
+  context 'Verify update method by PUT using data with no capabilities' do
+
+    before :each do
+      @platform_hash = with_capability_params
+      capabilities = @platform_hash[:capabilities]
+      @platform_hash.delete(:capabilities)
+      platform = PlatformResource.new(@platform_hash)
+      platform.save
+      capabilities.each do |name|
+        tmp = Capability.new(name: name)
+        tmp.save
+        platform.capabilities << tmp
+      end
+    end
+
+    it 'Update resource with capabilities inside PUT' do
+      new_capability = with_capability_params
+      put :update, params: {uuid: new_capability[:uuid], data: new_capability}
+      is_expected.to have_http_status(201)
+      platform = PlatformResource.last
+      capability_array = []
+      platform.capabilities.each do |capability|
+        capability_array.push (capability.name)
+      end
+      expect(capability_array).to match_array(new_capability[:capabilities])
+    end
+
+    it 'Update resource without capabilities inside PUT' do
+      no_capability = empty_capability_params
+      no_capability[:status] = 'meeeeeeee'
+      put :update, params: {uuid: no_capability[:uuid], data: no_capability}
+      is_expected.to have_http_status(201)
+      platform = PlatformResource.last
+      capability_array = []
+      platform.capabilities.each do |capability|
+        capability_array.push (capability.name)
+      end
+      expect(capability_array).to match_array([])
+    end
+
+    it 'Update resource that changes all capabilities' do
+      new_capability = with_few_capability_params
+      put :update, params: {uuid: new_capability[:uuid], data: new_capability}
+      is_expected.to have_http_status(201)
+      platform = PlatformResource.last
+      capability_array = []
+      platform.capabilities.each do |capability|
+        capability_array.push (capability.name)
+      end
+      expect(capability_array).to match_array(new_capability[:capabilities])
+    end
+
+    it 'Update resource that changes few capabilities' do
+      new_capability = with_more_capability_params
+      put :update, params: {uuid: new_capability[:uuid], data: new_capability}
+      is_expected.to have_http_status(201)
+      platform = PlatformResource.last
+      capability_array = []
+      platform.capabilities.each do |capability|
+        capability_array.push (capability.name)
+      end
+      expect(capability_array).to match_array(new_capability[:capabilities])
+
+    end
+
+    after :each do
       @platform_hash = nil
     end
 

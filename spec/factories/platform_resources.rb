@@ -28,6 +28,21 @@ FactoryGirl.define do
         factory :with_capability do
           capabilities ['temperature', 'weight', 'luminosity']
         end
+
+        factory :with_similar_capability do
+          capabilities ['temperature', 'luminosity']
+        end
+
+        factory :with_more_capability do
+          capabilities ['temperature', 'luminosity', 'movement',
+                        'radioactivity', 'speed']
+        end
+
+        # Factory with 'capabilities' as a valid array
+        factory :with_capability_second do
+          capabilities ['humidity', 'pressure']
+        end
+
       end
 
     end
