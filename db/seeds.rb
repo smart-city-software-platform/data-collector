@@ -36,6 +36,7 @@ puts '.' * 50
 puts 'Removing old data...'
 puts '.' * 50
 
+SensorValue.delete_all
 PlatformResource.delete_all
 Capability.delete_all
 PlatformResourceCapability.delete_all
@@ -75,5 +76,12 @@ puts '.' * 50
     capability_name = Faker::Hipster.word
     cap = Capability.create(name: capability_name)
     resource.capabilities << cap
+
+    2.times do |j|
+      SensorValue.create!(capability: cap,
+                          platform_resource: resource,
+                          date: Faker::Time.between(DateTime.now - 1, DateTime.now),
+                          value: Faker::Number.decimal(2, 3))
+    end
   end
 end
