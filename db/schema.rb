@@ -62,8 +62,12 @@ ActiveRecord::Schema.define(version: 20160616234313) do
   create_table "sensor_values", force: :cascade do |t|
     t.string   "value"
     t.datetime "date"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.integer  "capability_id"
+    t.integer  "platform_resource_id"
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+    t.index ["capability_id"], name: "index_sensor_values_on_capability_id", using: :btree
+    t.index ["platform_resource_id"], name: "index_sensor_values_on_platform_resource_id", using: :btree
   end
 
   add_foreign_key "details", "events"
