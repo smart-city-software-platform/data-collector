@@ -165,6 +165,16 @@ RSpec.describe PlatformResourcesController, type: :controller do
   end
 
   context 'Verify update method by PUT using data with no capabilities' do
+    RSpec.shared_examples 'params put' do |key, new_value, description|
+      it ": #{description}" do
+        new_hash = FactoryGirl.attributes_for (:essential_args)
+        new_hash[key] = new_value
+        put :update, params: {uuid: new_hash[:uuid], data: new_hash}
+        is_expected.to have_http_status(201)
+        platform = PlatformResource.last
+        expect(eval("platform.#{key.to_s}")).to eq(new_hash[key])
+      end
+    end
 
     before :each do
       @platform_hash = essential_args_params
@@ -178,13 +188,20 @@ RSpec.describe PlatformResourcesController, type: :controller do
       is_expected.to have_http_status(201)
     end
 
-    it 'Verify if PUT request was stored successfully' do
-      new_uri = 'http://localhost:3000/basic_resources/3/components/3/collect'
-      @platform_hash[:uri] = new_uri
-      put :update, params: {uuid: @platform_hash[:uuid], data: @platform_hash}
-      platform = PlatformResource.last
-      expect(platform.uri).to eq(@platform_hash[:uri])
-    end
+    message = 'Verify request after put 2'
+    verify = :uri
+    new_value = 'http://localhost:3000/basic_resources/3/components/3/collect'
+    include_examples 'params put', verify, new_value, message
+
+    message = 'Verify if status update correctly'
+    verify = :status
+    new_value = 'blablabla'
+    include_examples 'params put', verify, new_value, message
+
+    message = 'Verify if collect_interval update correctly'
+    verify = :collect_interval
+    new_value = 360
+    include_examples 'params put', verify, new_value, message
 
     it 'Verify if uuid update correctly' do
       new_uuid = SecureRandom.uuid
@@ -193,22 +210,6 @@ RSpec.describe PlatformResourcesController, type: :controller do
       put :update, params: {uuid: original_uuid, data: @platform_hash}
       platform = PlatformResource.last
       expect(platform.uuid).to eq(new_uuid)
-    end
-
-    it 'Verify if status update correctly' do
-      new_status = 'blablabla'
-      @platform_hash[:status] = new_status
-      put :update, params: {uuid: @platform_hash[:uuid], data: @platform_hash}
-      platform = PlatformResource.last
-      expect(platform.status).to eq(new_status)
-    end
-
-    it 'Verify if collect_interval update correctly' do
-      collect_new = 360
-      @platform_hash[:collect_interval] = collect_new
-      put :update, params: {uuid: @platform_hash[:uuid], data: @platform_hash}
-      platform = PlatformResource.last
-      expect(platform.collect_interval).to eq(collect_new)
     end
 
     it 'Verify if wrong uuid raise exception' do
@@ -239,6 +240,20 @@ RSpec.describe PlatformResourcesController, type: :controller do
 
   context 'Verify update method by PUT using data with no capabilities' do
 
+    RSpec.shared_examples 'change data and verify' do |hash_capability, description|
+      it ": #{description}" do
+        new_capability = hash_capability
+        put :update, params: {uuid: new_capability[:uuid], data: new_capability}
+        is_expected.to have_http_status(201)
+        platform = PlatformResource.last
+        capability_array = []
+        platform.capabilities.each do |capability|
+          capability_array.push (capability.name)
+        end
+        expect(capability_array).to match_array(new_capability[:capabilities])
+      end
+    end
+
     before :each do
       @platform_hash = with_capability_params
       capabilities = @platform_hash[:capabilities]
@@ -252,55 +267,21 @@ RSpec.describe PlatformResourcesController, type: :controller do
       end
     end
 
-    it 'Update resource with capabilities inside PUT' do
-      new_capability = with_capability_params
-      put :update, params: {uuid: new_capability[:uuid], data: new_capability}
-      is_expected.to have_http_status(201)
-      platform = PlatformResource.last
-      capability_array = []
-      platform.capabilities.each do |capability|
-        capability_array.push (capability.name)
-      end
-      expect(capability_array).to match_array(new_capability[:capabilities])
-    end
+    message = 'Update resource with capabilities inside PUT'
+    input = FactoryGirl.attributes_for (:with_capability)
+    include_examples 'change data and verify', input, message
 
-    it 'Update resource without capabilities inside PUT' do
-      no_capability = empty_capability_params
-      no_capability[:status] = 'meeeeeeee'
-      put :update, params: {uuid: no_capability[:uuid], data: no_capability}
-      is_expected.to have_http_status(201)
-      platform = PlatformResource.last
-      capability_array = []
-      platform.capabilities.each do |capability|
-        capability_array.push (capability.name)
-      end
-      expect(capability_array).to match_array([])
-    end
+    message = 'Update resource without capabilities inside PUT'
+    input = FactoryGirl.attributes_for (:empty_capability)
+    include_examples 'change data and verify', input, message
 
-    it 'Update resource that changes all capabilities' do
-      new_capability = with_few_capability_params
-      put :update, params: {uuid: new_capability[:uuid], data: new_capability}
-      is_expected.to have_http_status(201)
-      platform = PlatformResource.last
-      capability_array = []
-      platform.capabilities.each do |capability|
-        capability_array.push (capability.name)
-      end
-      expect(capability_array).to match_array(new_capability[:capabilities])
-    end
+    message = 'Update resource that changes all capabilities'
+    input = FactoryGirl.attributes_for (:with_capability_second)
+    include_examples 'change data and verify', input, message
 
-    it 'Update resource that changes few capabilities' do
-      new_capability = with_more_capability_params
-      put :update, params: {uuid: new_capability[:uuid], data: new_capability}
-      is_expected.to have_http_status(201)
-      platform = PlatformResource.last
-      capability_array = []
-      platform.capabilities.each do |capability|
-        capability_array.push (capability.name)
-      end
-      expect(capability_array).to match_array(new_capability[:capabilities])
-
-    end
+    message = 'Update resource that changes few capabilities'
+    input = FactoryGirl.attributes_for (:with_more_capability)
+    include_examples 'change data and verify', input, message
 
     after :each do
       @platform_hash = nil
