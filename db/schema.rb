@@ -11,10 +11,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160601194751) do
+ActiveRecord::Schema.define(version: 20160616234313) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "capabilities", force: :cascade do |t|
+    t.string   "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "details", force: :cascade do |t|
     t.string   "component_uuid"
@@ -33,6 +39,35 @@ ActiveRecord::Schema.define(version: 20160601194751) do
     t.datetime "date"
     t.datetime "created_at",    null: false
     t.datetime "updated_at",    null: false
+  end
+
+  create_table "platform_resource_capabilities", force: :cascade do |t|
+    t.integer  "capability_id"
+    t.integer  "platform_resource_id"
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+    t.index ["capability_id"], name: "index_platform_resource_capabilities_on_capability_id", using: :btree
+    t.index ["platform_resource_id"], name: "index_platform_resource_capabilities_on_platform_resource_id", using: :btree
+  end
+
+  create_table "platform_resources", force: :cascade do |t|
+    t.string   "uri"
+    t.string   "uuid"
+    t.string   "status"
+    t.integer  "collect_interval"
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
+  end
+
+  create_table "sensor_values", force: :cascade do |t|
+    t.string   "value"
+    t.datetime "date"
+    t.integer  "capability_id"
+    t.integer  "platform_resource_id"
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+    t.index ["capability_id"], name: "index_sensor_values_on_capability_id", using: :btree
+    t.index ["platform_resource_id"], name: "index_sensor_values_on_platform_resource_id", using: :btree
   end
 
   add_foreign_key "details", "events"
