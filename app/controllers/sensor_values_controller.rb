@@ -2,7 +2,7 @@ class SensorValuesController < ApplicationController
 
   skip_before_action :verify_authenticity_token
   before_action :find_platform_resource, only: [:resource_data, :resource_data_last]
-  
+
   def resources_data
     @sensor_values = SensorValue.all.includes(:capability)
   	render :json => @sensor_values
@@ -12,15 +12,27 @@ class SensorValuesController < ApplicationController
     begin
       raise ActiveRecord::RecordNotFound unless @retrieved_resource
 
-      @sensor_values = SensorValue.all.includes(:capability)
-      @sensor_values = @sensor_values.where('platform_resource_id = ?', @retrieved_resource.id)
+      capability_hash = {}
+      @sensor_values = SensorValue.where('platform_resource_id = ?',
+																					@retrieved_resource.id).where('capability_id IS NOT NULL')
+      all_capabilities = Capability.where('id in (?)', @sensor_values.pluck(:capability_id).uniq)
+      all_capabilities.map { |cap| capability_hash[cap.id] = cap.name}
 
-  	  render :json => @sensor_values
+      response = []
+      @sensor_values.find_each do |value|
+				build_value = {}
+				build_value['value'] = value.value
+				build_value['date'] = value.date
+				build_value['capability'] = capability_hash[value.capability_id]
+				response << build_value
+      end
+
+  	  render json: {data: response}
 
     rescue ActiveRecord::RecordNotFound
       render json: { error: 'Resource not found' }, status: 404
-    rescue Exception
-      render json: { error: 'Internal server error' }, status: 500
+    #rescue Exception
+    #  render json: { error: 'Internal server error' }, status: 500
     end
 
   end
