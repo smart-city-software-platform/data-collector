@@ -19,6 +19,8 @@ class SensorValuesController < ApplicationController
 
     rescue ActiveRecord::RecordNotFound
       render json: { error: 'Resource not found' }, status: 404
+    rescue Exception
+      render json: { error: 'Internal server error' }, status: 500
     end
 
   end
@@ -28,7 +30,20 @@ class SensorValuesController < ApplicationController
   end
 
   def resource_data_last
-  	render :json => {:message => "resource_data_last not implemented"}
+    begin
+      raise ActiveRecord::RecordNotFound unless @retrieved_resource
+
+      @sensor_values = SensorValue.select('DISTINCT ON(capability_id) sensor_values.*')
+                          .where('platform_resource_id = ?', @retrieved_resource.id)
+                          .order('capability_id, date DESC')
+
+      render :json => @sensor_values
+
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: 'Resource not found' }, status: 404
+    rescue Exception
+      render json: { error: 'Internal server error' }, status: 500
+    end
   end
 
   private
