@@ -118,8 +118,8 @@ class SensorValuesController < ApplicationController
                     .order('capability_id, date DESC')
 
       generate_response
-    rescue Exception
-      render json: { error: 'Internal server error' }, status: 500
+    #rescue Exception
+    #  render json: { error: 'Internal server error' }, status: 500
     end
   end
 
@@ -142,16 +142,25 @@ class SensorValuesController < ApplicationController
     end
 
     def generate_response
-      response = []
-      @sensor_values.each do |value|
-                build_value = {}
-                build_value['value'] = value.value
-                build_value['date'] = value.date
-                build_value['capability'] = value.capability.name
-                response << build_value
+      resources = {}
+      @sensor_values.each do |value|                
+                s_value = {}
+                s_value['value'] = value.value
+                s_value['date'] = value.date
+
+				resource  = resources[value.platform_resource.uuid] == nil ? {} : resources[value.platform_resource.uuid]
+				capabilities = resource['capabilities'] == nil ? {} : resource['capabilities']
+				capability = capabilities[value.capability.name] == nil ? [] : capabilities[value.capability.name]
+				capability << s_value
+				
+				capabilities[value.capability.name] = capability
+				resource['uuid'] = value.platform_resource.uuid
+				resource['capabilities'] = capabilities				
+
+                resources[value.platform_resource.uuid] = resource
       end
 
-      render json: {data: response}
+      render json: {resources: resources.values}
     end
 
     # Notify the client whose are feeding for new resource sensors data
