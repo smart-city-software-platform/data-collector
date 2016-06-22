@@ -13,6 +13,8 @@ class SensorValuesController < ApplicationController
 
   def set_sensor_values_last
     @sensor_values = SensorValue.select('DISTINCT ON(capability_id) sensor_values.*')
+                                .where('capability_id IS NOT NULL')
+                                .order('capability_id, date DESC')
   end
 
   def filter_by_uuids
@@ -52,19 +54,18 @@ class SensorValuesController < ApplicationController
   end
 
   def resources_data    
-    generate_response
+    begin
+      generate_response
+    rescue Exception
+      render json: { error: 'Internal server error' }, status: 500
+    end    
   end
 
   def resource_data
     begin
-      raise ActiveRecord::RecordNotFound unless @retrieved_resource
-
-      @sensor_values.where('platform_resource_id = ?', @retrieved_resource.id)
-      				.where('capability_id IS NOT NULL')
+      @sensor_values.where('platform_resource_id = ?', @retrieved_resource.id)      				
 
       generate_response
-    rescue ActiveRecord::RecordNotFound
-      render json: { error: 'Resource not found' }, status: 404
     rescue Exception
       render json: { error: 'Internal server error' }, status: 500
     end
@@ -73,9 +74,6 @@ class SensorValuesController < ApplicationController
 
   def resources_data_last
     begin
-      @sensor_values.where('capability_id IS NOT NULL')
-                    .order('capability_id, date DESC')
-    
       generate_response
     rescue Exception
       render json: { error: 'Internal server error' }, status: 500
@@ -85,14 +83,10 @@ class SensorValuesController < ApplicationController
 
   def resource_data_last
     begin
-      raise ActiveRecord::RecordNotFound unless @retrieved_resource
-
       @sensor_values.where('platform_resource_id = ?', @retrieved_resource.id)
                     .order('capability_id, date DESC')
 
       generate_response
-    rescue ActiveRecord::RecordNotFound
-      render json: { error: 'Resource not found' }, status: 404
     rescue Exception
       render json: { error: 'Internal server error' }, status: 500
     end
@@ -101,7 +95,13 @@ class SensorValuesController < ApplicationController
   private
 
     def find_platform_resource
-      @retrieved_resource = PlatformResource.find_by_uuid(params[:uuid])
+      begin        
+        @retrieved_resource = PlatformResource.find_by_uuid(params[:uuid])
+        raise ActiveRecord::RecordNotFound unless @retrieved_resource
+
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Resource not found' }, status: 404
+      end
     end
 
     def sensor_value_params
