@@ -1,8 +1,5 @@
-
-<img src="http://oportuno.co/usp/collect250.png" alt="logo data collector" width="250" height="250" style="display: block;
-    margin-left: auto;
-    margin-right: auto" /> 
-# Smart City Plat - Data Collector
+<p align="center"><img src="documentation/collect250.png" alt="logo data collector" width="250" height="250"/> </p>
+<p align="center"><h1 align="center"> Smart City Plat - Data Collector</h1></p>
 
 ![Build Status](https://gitlab.com/smart-city-platform/data_collector/badges/master/build.svg)
 [![Mezuro](https://img.shields.io/badge/mezuro-green-green.svg)](http://mezuro.org/en/repositories/73)
@@ -18,6 +15,10 @@ This service is used both by applications and the Catalog Service, and offers
 developers access to information coming from different sensors scattered
 throughout the city. For example, with this service one could obtain data of
 all temperature sensors on USP.
+
+# Classe's diagram
+
+<p align="center"><img src="documentation/ClassDiagram.png" alt="Class Diagram" width="1372" height="769" /></p>
 
 # Setup and references
 
