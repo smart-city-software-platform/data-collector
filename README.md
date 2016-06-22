@@ -16,9 +16,17 @@ developers access to information coming from different sensors scattered
 throughout the city. For example, with this service one could obtain data of
 all temperature sensors on USP.
 
-# Classe's diagram
+# Architecture
 
-<p align="center"><img src="documentation/ClassDiagram.png" alt="Class Diagram" width="1372" height="769" /></p>
+<p align="center"><img src="documentation/PCI-diagram.png" alt="Class Diagram" /></p>
+
+# How to use
+
+> We development a [step-by-step](https://gitlab.com/smart-city-platform/data_collector/wikis/basic-setup) to configure the application.
+After configuring the application, it should be possible to request data and filter it from a some parameters.
+
+> We make a [manual](https://social.stoa.usp.br/poo2016/projeto/group-3-data-collector) to understand our api.In this manual can be found a data structure used to return the data and some usage examples.
+
 
 # Setup and references
 
