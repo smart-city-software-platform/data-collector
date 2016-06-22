@@ -5,10 +5,10 @@ class SensorValuesController < ApplicationController
   before_action :set_sensor_values, only: [:resources_data, :resource_data]
   before_action :set_sensor_values_last, only: [:resources_data_last, :resource_data_last]
   before_action :filter_by_uuids, only: [:resources_data, :resources_data_last]
-  before_action :filter_by_date
+  before_action :filter_by_date, :filter_by_capabilities
 
   def set_sensor_values
-    @sensor_values = SensorValue.all
+    @sensor_values = SensorValue.all.includes(:capability)
   end
 
   def set_sensor_values_last
@@ -46,11 +46,11 @@ class SensorValuesController < ApplicationController
   end
 
   def filter_by_capabilities
-    #capabilities_name = JSON[capabilities_value]
-    #if capabilities_name
-    #ids = Capability.where("name in (?)", capabilities_name).pluck(:id)
-    #@sensor_values.where("capability_id in (?)", ids)
-    #end
+    capabilities_name = params[:capabilities]
+    if capabilities_name
+      ids = Capability.where("name in (?)", capabilities_name).pluck(:id)
+      @sensor_values.where("capability_id in (?)", ids)
+    end
   end
 
   def resources_data    
@@ -106,7 +106,7 @@ class SensorValuesController < ApplicationController
 
     def sensor_value_params
       params.require(:sensor_value)
-            .permit(:limit, :start, :start_range, :end_range, :uuid, :capability, uuids: [])
+            .permit(:limit, :start, :start_range, :end_range, :uuid, :capability, uuids: [], capabilities: [])
     end
 
     def generate_response
