@@ -1,3 +1,7 @@
+
+<img src="http://oportuno.co/usp/collect250.png" alt="logo data collector" width="250" height="250" style="display: block;
+    margin-left: auto;
+    margin-right: auto" /> 
 # Smart City Plat - Data Collector
 
 ![Build Status](https://gitlab.com/smart-city-platform/data_collector/badges/master/build.svg)
