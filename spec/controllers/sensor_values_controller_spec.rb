@@ -41,6 +41,10 @@ RSpec.describe SensorValuesController, type: :controller do
       expect(response.content_type).to eq("application/json")
     end
 
+    it "Returns a 400 status code when sending invalid data ranges argunments" do
+      do_wrong_date_filter('resources_data', false)
+    end
+
   end
 
   describe "POST resources/:uuid/data" do
@@ -65,6 +69,19 @@ RSpec.describe SensorValuesController, type: :controller do
       expect(response.body).to_not be_nil
       expect(response.body.empty?).to be_falsy
       expect(response.content_type).to eq("application/json")
+    end
+
+    it "returns a 404 status code when sending an invalid 'resource uuid'" do
+      invalid_uuids = [-5, 2.3, "foobar"]
+
+      invalid_uuids.each do |uuid|
+        post 'resource_data', params: { uuid: uuid }
+        expect(response.status).to eq(404)
+      end
+    end
+
+    it "Returns a 400 status code when sending invalid data ranges argunments" do
+      do_wrong_date_filter('resource_data', true)
     end
 
   end
@@ -92,6 +109,11 @@ RSpec.describe SensorValuesController, type: :controller do
       expect(response.body.empty?).to be_falsy
       expect(response.content_type).to eq("application/json")
     end
+
+    it "Returns a 400 status code when sending invalid data ranges argunments" do
+      do_wrong_date_filter('resources_data_last', false)
+    end
+
   end
 
   describe "POST resources/:uuid/data/last" do
@@ -116,6 +138,32 @@ RSpec.describe SensorValuesController, type: :controller do
       expect(response.body).to_not be_nil
       expect(response.body.empty?).to be_falsy
       expect(response.content_type).to eq("application/json")
+    end
+
+    it "returns a 404 status code when sending an invalid 'resource uuid'" do
+      invalid_uuids = [-5, 2.3, "foobar"]
+
+      invalid_uuids.each do |uuid|
+        post 'resource_data_last', params: { uuid: uuid }
+        expect(response.status).to eq(404)
+      end
+    end
+
+    it "Returns a 400 status code when sending invalid data ranges argunments" do
+      do_wrong_date_filter('resource_data_last', true)
+    end
+
+  end
+
+  def do_wrong_date_filter(route, use_uuid)
+    err_data = ["foobar", 9.68]    
+
+    err_data.each do |data|
+      params = { uuid: sensor_value_default.platform_resource.uuid, start_range: data, end_range: data}
+      params.except!(:uuid) unless use_uuid
+
+      post route, params: params
+      expect(response.status).to eq(400)
     end
   end
 
