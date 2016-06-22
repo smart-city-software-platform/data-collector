@@ -118,8 +118,8 @@ class SensorValuesController < ApplicationController
                     .order('capability_id, date DESC')
 
       generate_response
-    #rescue Exception
-    #  render json: { error: 'Internal server error' }, status: 500
+    rescue Exception
+      render json: { error: 'Internal server error' }, status: 500
     end
   end
 
