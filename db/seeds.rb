@@ -7,31 +7,6 @@ puts '=' * 50
 puts 'This operations will take some time...'
 puts '=' * 50
 
-p "Removing old events/details entries..."
-
-Detail.delete_all
-Event.delete_all
-
-p "Creating new events..."
-
-100.times do |index|
-  # SecureRandom creates fake uuid codes, based on RFC4122
-  event = Event.create!(resource_uuid: SecureRandom.uuid,
-                        date: Faker::Time.between(DateTime.now - 1, DateTime.now))
-
-  3.times do |j|
-    event.detail.create!(component_uuid: SecureRandom.uuid,
-             capability: ["temperature", "pressure", "humidity",
-                          "luminosity", "manipulate_led"].sample,
-             data_type: "double",
-             unit: "none", # Unit must be specific depending on the data type
-             value: Faker::Number.decimal(2, 3)
-      )
-  end
-end
-
-p "Created #{Event.count} events"
-
 puts '.' * 50
 puts 'Removing old data...'
 puts '.' * 50
@@ -85,3 +60,5 @@ puts '.' * 50
     end
   end
 end
+
+puts "Created #{SensorValue.count} 'sensor_values'"
