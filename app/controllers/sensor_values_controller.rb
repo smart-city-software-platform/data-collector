@@ -5,7 +5,7 @@ class SensorValuesController < ApplicationController
   before_action :set_sensor_values, only: [:resources_data, :resource_data]
   before_action :set_sensor_values_last, only: [:resources_data_last, :resource_data_last]
   before_action :filter_by_uuids, only: [:resources_data, :resources_data_last]
-  before_action :filter_by_date, :filter_by_capabilities
+  before_action :filter_by_date, :filter_by_capabilities, :filter_by_value
 
   def set_sensor_values
     @sensor_values = SensorValue.all.includes(:capability)
@@ -56,6 +56,32 @@ class SensorValuesController < ApplicationController
     end
   end
 
+  def filter_by_value
+    return unless params[:range]
+
+    capability_hash = params[:range]
+
+    capability_hash.each do |capability_name, range_hash|
+      capability = Capability.where(name: capability_name)
+      if capability
+        @sensor_values = @sensor_values.where(capability_id: capability.id)
+        min = range_hash['min']
+        max = range_hash['max']
+        equal = range_hash['equal']
+        if equal
+          @sensor_values = @sensor_values.where(value: equal)
+        else
+          if max
+            @sensor_values = @sensor_values.where("value <= ?", max)
+          end
+          if min
+            @sensor_values = @sensor_values.where("value >= ?", min)
+          end
+        end
+      end
+    end
+  end
+
   # http://localhost:3000/resources/data
   def resources_data
     begin
@@ -68,7 +94,7 @@ class SensorValuesController < ApplicationController
   def resource_data
     begin
       @sensor_values = @sensor_values.where('platform_resource_id = ?',
-																							@retrieved_resource.id)
+                                            @retrieved_resource.id)
 
       generate_response
     rescue Exception
@@ -111,7 +137,8 @@ class SensorValuesController < ApplicationController
 
     def sensor_value_params
       params.require(:sensor_value)
-            .permit(:limit, :start, :start_range, :end_range, :uuid, :capability, uuids: [], capabilities: [])
+            .permit(:limit, :start, :start_range, :end_range, :uuid, :range,
+                    :capability, uuids: [], capabilities: [])
     end
 
     def generate_response
