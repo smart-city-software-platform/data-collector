@@ -21,7 +21,7 @@ class SensorValuesController < ApplicationController
     uuids = params[:uuids]
     if !uuids.nil? && uuids.is_a?(Array)
       @ids = PlatformResource.where("uuid IN (?)", uuids).pluck(:id)
-      @sensor_values.where("platform_resource_id IN (?)", @ids)
+      @sensor_values = @sensor_values.where("platform_resource_id IN (?)", @ids)
     end
   end
 
@@ -35,35 +35,40 @@ class SensorValuesController < ApplicationController
         begin
           DateTime.parse(arg)
         rescue
-          render :json => { :error => "Bad Request: event not found" }, :status => 400
+          render json: { error: 'Bad Request: event not found' }, status: 400
           break # Prevents DoubleRenderError ('render' occurring two times)
         end
       end
     end
-
-    @sensor_values.where("date >= ?", @start_date) unless @start_date.nil?
-    @sensor_values.where("date <= ?", @end_date) unless @start_date.nil?
+    unless @start_date.nil?
+      @sensor_values = @sensor_values.where("date >= ?", @start_date)
+    end
+    unless @start_date.nil?
+      @sensor_values = @sensor_values.where("date <= ?", @end_date)
+    end
   end
 
   def filter_by_capabilities
     capabilities_name = params[:capabilities]
     if capabilities_name
       ids = Capability.where("name in (?)", capabilities_name).pluck(:id)
-      @sensor_values.where("capability_id in (?)", ids)
+      @sensor_values = @sensor_values.where("capability_id in (?)", ids)
     end
   end
 
-  def resources_data    
+  # http://localhost:3000/resources/data
+  def resources_data
     begin
       generate_response
     rescue Exception
       render json: { error: 'Internal server error' }, status: 500
-    end    
+    end
   end
 
   def resource_data
     begin
-      @sensor_values.where('platform_resource_id = ?', @retrieved_resource.id)      				
+      @sensor_values = @sensor_values.where('platform_resource_id = ?',
+																							@retrieved_resource.id)
 
       generate_response
     rescue Exception
@@ -95,7 +100,7 @@ class SensorValuesController < ApplicationController
   private
 
     def find_platform_resource
-      begin        
+      begin
         @retrieved_resource = PlatformResource.find_by_uuid(params[:uuid])
         raise ActiveRecord::RecordNotFound unless @retrieved_resource
 
