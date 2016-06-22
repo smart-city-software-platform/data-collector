@@ -118,8 +118,8 @@ class SensorValuesController < ApplicationController
                     .order('capability_id, date DESC')
 
       generate_response
-    #rescue Exception
-    #  render json: { error: 'Internal server error' }, status: 500
+    rescue Exception
+      render json: { error: 'Internal server error' }, status: 500
     end
   end
 
@@ -143,21 +143,20 @@ class SensorValuesController < ApplicationController
 
     def generate_response
       resources = {}
-      @sensor_values.each do |value|                
-                s_value = {}
-                s_value['value'] = value.value
-                s_value['date'] = value.date
+      @sensor_values.each do |value|
+        collected = {}
+        collected['value'] = value.value
+        collected['date'] = value.date
 
-				resource  = resources[value.platform_resource.uuid] == nil ? {} : resources[value.platform_resource.uuid]
-				capabilities = resource['capabilities'] == nil ? {} : resource['capabilities']
-				capability = capabilities[value.capability.name] == nil ? [] : capabilities[value.capability.name]
-				capability << s_value
-				
-				capabilities[value.capability.name] = capability
-				resource['uuid'] = value.platform_resource.uuid
-				resource['capabilities'] = capabilities				
+        resource  = resources[value.platform_resource.uuid] || {}
+        capabilities = resource['capabilities'] || {}
+        capability = capabilities[value.capability.name] || []
+        capability << collected
 
-                resources[value.platform_resource.uuid] = resource
+        capabilities[value.capability.name] = capability
+        resource['uuid'] = value.platform_resource.uuid
+        resource['capabilities'] = capabilities
+        resources[value.platform_resource.uuid] = resource
       end
 
       render json: {resources: resources.values}
