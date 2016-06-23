@@ -107,7 +107,7 @@ RSpec.describe PlatformResourcesController, type: :controller do
 
     it 'Accepts POST data with a mix of already created capabilities and new one' do
       first_cap = ["a", "b", "c"]
-      second_cap = ["a", "b", "x"]
+      second_cap = ["a", "b", "x", "y"]
 
       first_params = FactoryGirl.attributes_for(:with_capability,
                                                 capabilities: first_cap)
@@ -118,7 +118,9 @@ RSpec.describe PlatformResourcesController, type: :controller do
       is_expected.to have_http_status(201)
       post :create, params: {data: second_params}
       is_expected.to have_http_status(201)
-
+      num_new_capabilities = PlatformResource.where(uuid: second_params[:uuid])
+                                            .first.capabilities.count
+      expect(num_new_capabilities).to eq(second_cap.uniq.size)
       expect(Capability.count).to eq((first_cap + second_cap).uniq.size)
     end
 
@@ -133,9 +135,14 @@ RSpec.describe PlatformResourcesController, type: :controller do
 
       post :create, params: {data: first_params}
       is_expected.to have_http_status(201)
+      num_capabilities_before = PlatformResource.where(uuid: first_params[:uuid])
+                                              .first.capabilities.count
       post :create, params: {data: second_params}
       is_expected.to have_http_status(201)
+      num_capabilities_after = PlatformResource.where(uuid: first_params[:uuid])
+                                              .first.capabilities.count
 
+      expect(num_capabilities_after).to eq(num_capabilities_before)
       # Must match with size of both arrays
       expect(Capability.count).to eq(first_cap.size)
       expect(Capability.count).to eq(second_cap.size)
