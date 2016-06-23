@@ -97,6 +97,10 @@ RSpec.describe SensorValuesController, type: :controller do
       do_wrong_date_filter('resources_data', false)
     end
 
+    it 'Returns a 400 status code when sending invalid data ranges argunments' do
+      do_wrong_date_filter('resources_data', false)
+    end
+
     it 'Verify correct return with one uuid' do
       post 'resources_data', params: {sensor_value: {uuids: [@uuids[0]]}}
       expect(response.status).to eq(200)
