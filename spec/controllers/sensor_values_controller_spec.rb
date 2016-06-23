@@ -12,38 +12,110 @@ RSpec.describe SensorValuesController, type: :controller do
     expect(sensor_value_default).to be_valid
   end
 
-  describe "POST resources/data" do
-    it "returns http success" do
+  RSpec.shared_examples 'check http status' do |description, target, status|
+    it ": #{description}" do
+      post target
+      expect(response).to have_http_status(status)
+    end
+  end
+
+  context 'POST resources/data' do
+
+    before :each do
+      total = 4
+      status_opt = ['on', 'off', 'unknown', 'wtf']
+      list_of_capabilities = ['no', 'temperature', 'humidity', 'pressure']
+      @uuids = []
+      @uris = []
+      @collect_intervals = []
+      @status_list = []
+
+      # Template values to using
+      total.times do |index|
+        uri = "/basic_resources/#{Faker::Number.between(1,10)}/components/" +
+              "#{Faker::Number.between(1,10)}/collect"
+        @uuids.push(SecureRandom.uuid)
+        @uris.push(uri)
+        @collect_intervals.push(Faker::Number.between(60, 1000))
+        @status_list.push(status_opt[rand(status_opt.size)])
+      end
+
+      # Creating data on database
+      total.times do |index|
+        resource = PlatformResource.create!(uuid: @uuids[index],
+                              uri: @uris[index],
+                              status: @status_list[index],
+                              collect_interval: @collect_intervals[index])
+        total_cap = Faker::Number.between(1,3)
+        # Create capabilities
+        total_cap.times do |index|
+          capability = Capability.create(name: list_of_capabilities[index])
+          resource.capabilities << capability
+
+          2.times do |j|
+            SensorValue.create!(capability: capability,
+                          platform_resource: resource,
+                          date: Faker::Time.between(DateTime.now - 1, DateTime.now),
+                          value: Faker::Number.decimal(2, 3))
+          end
+        end
+      end
+    end
+
+    message = 'Simple request to resource_data, expect success'
+    include_examples 'check http status', message, 'resources_data', :success
+
+    message = 'returns a 200 status code when accessing normally'
+    include_examples 'check http status', message, 'resources_data', 200
+
+    it 'returns a json object array' do
       post 'resources_data'
-      expect(response).to have_http_status(:success)
+      expect(response.content_type).to eq('application/json')
     end
 
-    #it "assigns @sensor_values" do
-    #  post 'resources_data'
-    #  expect(assigns(:sensor_values)).to eq([sensor_value_default])
-    #end
-
-    it "returns a 200 status code when accessing normally" do
-      get 'resources_data'
-      expect(response.status).to eq(200)
-    end
-
-    it "returns a json object array" do
-      get 'resources_data'
-      expect(response.content_type).to eq("application/json")
-    end
-
-    it "renders the correct json and completes the url route" do
-      post 'resources_data', :format => :json
+    it 'renders the correct json and completes the url route' do
+      post 'resources_data', format: :json
       expect(response.status).to eq(200)
       expect(response.body).to_not be_nil
       expect(response.body.empty?).to be_falsy
-      expect(response.content_type).to eq("application/json")
+      expect(response.content_type).to eq('application/json')
     end
 
-    it "Returns a 400 status code when sending invalid data ranges argunments" do
+    it 'Returns a 400 status code when sending invalid data ranges argunments' do
       do_wrong_date_filter('resources_data', false)
     end
+
+    it 'Verify correct return with one uuid' do
+      post 'resources_data', params: {sensor_value: {uuids: [@uuids[0]]}}
+      expect(response.status).to eq(200)
+      expect(response.body).to_not be_nil
+      expect(response.body.empty?).to be_falsy
+      returned_json = JSON.parse(response.body)
+
+      retrieved_resource = returned_json['resources']
+      expect(retrieved_resource.size).to eq(1)
+      uuid = retrieved_resource.first['uuid']
+      expect(uuid).to eq(@uuids[0])
+
+      json_capabilities = retrieved_resource.first['capabilities']
+
+      platform = PlatformResource.find_by_uuid(@uuids[0])
+      real_capabilities = platform.capabilities.pluck(:name)
+      retrieved_capabilities = json_capabilities.keys
+			expect(real_capabilities).to match_array(retrieved_capabilities)
+
+      platform.capabilities.each do |cap|
+        sensor_values = SensorValue.where(capability_id: cap.id,
+                              platform_resource_id: platform.id).pluck(:value)
+        retrieved_values = []
+        json_capabilities[cap.name].each do |capability|
+          retrieved_values << capability['value']
+        end
+      expect(sensor_values).to match_array(retrieved_values)
+      end
+    end
+
+    it 'Verify correct return with a list of uuids'
 
   end
 
@@ -149,14 +221,14 @@ RSpec.describe SensorValuesController, type: :controller do
       end
     end
 
-    it "Returns a 400 status code when sending invalid data ranges argunments" do
+    it 'Returns a 400 status code when sending invalid data ranges argunments' do
       do_wrong_date_filter('resource_data_last', true)
     end
 
   end
 
   def do_wrong_date_filter(route, use_uuid)
-    err_data = ["foobar", 9.68]    
+    err_data = ['foobar', 9.68]
 
     err_data.each do |data|
       params = { uuid: sensor_value_default.platform_resource.uuid, start_range: data, end_range: data}
