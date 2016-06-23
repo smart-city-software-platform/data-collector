@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe SensorValuesController, type: :controller do
 
-  let(:sensor_value_default) { create(:sensor_value) }
+  let(:sensor_value_default) { create(:default_sensor_value) }
 
   before :each do
     request.env["HTTP_ACCEPT"] = 'application/json'

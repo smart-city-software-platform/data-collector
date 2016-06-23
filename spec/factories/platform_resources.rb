@@ -15,6 +15,10 @@ FactoryGirl.define do
         collect_intervallllll 60
       end
 
+      factory :resource_default_2 do
+        uuid '9f77c561-3046-4363-87c4-6a4cc3c61c6e'
+        collect_interval 30
+      end
       # Resource with all necessary attributes
       factory :essential_args do
         collect_interval 30

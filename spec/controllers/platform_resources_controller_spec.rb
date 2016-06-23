@@ -128,14 +128,16 @@ RSpec.describe PlatformResourcesController, type: :controller do
       second_cap = ["a", "b"]
 
       first_params = FactoryGirl.attributes_for(:with_capability,
-                                                capabilities: first_cap)
+                                                capabilities: first_cap,
+                                                 uuid: SecureRandom.uuid)
       second_params = FactoryGirl.attributes_for(:with_capability,
-                                                 capabilities: second_cap)
+                                                 capabilities: second_cap,
+                                                 uuid: SecureRandom.uuid)
 
       post :create, params: {data: first_params}
-      is_expected.to have_http_status(201)
+      expect(response).to have_http_status(201)
       post :create, params: {data: second_params}
-      is_expected.to have_http_status(201)
+      expect(response).to have_http_status(201)
 
       # Must match with size of both arrays
       expect(Capability.count).to eq(first_cap.size)
