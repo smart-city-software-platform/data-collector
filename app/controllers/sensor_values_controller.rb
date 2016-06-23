@@ -73,16 +73,12 @@ class SensorValuesController < ApplicationController
         else
           if max && max.is_float?
             @sensor_values.reject do |value|
-              if value.to_f.nil? || value.to_f > max.to_f
-                true
-              end
+              true if value.to_f.nil? || value.to_f > max.to_f
             end
           end
           if min && min.is_float?
             @sensor_values.reject do |value|
-              if value.to_f.nil? || value.to_f < min.to_f
-                true
-              end
+              true if value.to_f.nil? || value.to_f < min.to_f
             end
           end
         end
