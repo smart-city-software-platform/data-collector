@@ -35,7 +35,7 @@ class SensorValuesController < ApplicationController
         begin
           DateTime.parse(arg)
         rescue
-          render json: { error: 'Bad Request: event not found' }, status: 400
+          render json: { error: 'Bad Request: resource not found' }, status: 400
           break # Prevents DoubleRenderError ('render' occurring two times)
         end
       end
@@ -62,20 +62,28 @@ class SensorValuesController < ApplicationController
     capability_hash = params[:range]
 
     capability_hash.each do |capability_name, range_hash|
-      capability = Capability.where(name: capability_name)
+      capability = Capability.find_by_name(capability_name)
       if capability
-        @sensor_values = @sensor_values.where(capability_id: capability.id)
+        @sensor_values = @sensor_values.where('capability_id = ?', capability.id)
         min = range_hash['min']
         max = range_hash['max']
         equal = range_hash['equal']
         if equal
           @sensor_values = @sensor_values.where(value: equal)
         else
-          if max
-            @sensor_values = @sensor_values.where("value <= ?", max)
+          if max && max.is_float?
+            @sensor_values.reject do |value|
+              if value.to_f.nil? || value.to_f > max.to_f
+                true
+              end
+            end
           end
-          if min
-            @sensor_values = @sensor_values.where("value >= ?", min)
+          if min && min.is_float?
+            @sensor_values.reject do |value|
+              if value.to_f.nil? || value.to_f < min.to_f
+                true
+              end
+            end
           end
         end
       end
