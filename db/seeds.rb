@@ -46,14 +46,14 @@ puts '.' * 50
                   Faker::Number.between(60, 1000))
 
 
-  total_capability = Faker::Number.between(1, 20)
+  total_capability = Faker::Number.between(1, 5)
   total_capability.times do |index|
     capability_name = Faker::Hipster.word
     cap = Capability.find_or_create_by(name: capability_name)
     resource.capabilities << cap unless 
 				resource.capabilities.where(name: capability_name).exists?
 
-    2.times do |j|
+    Faker::Number.between(1, 5).times do |j|
       SensorValue.create!(capability: cap,
 										platform_resource: resource,
 										date: Faker::Time.between(DateTime.now - 1, DateTime.now),
