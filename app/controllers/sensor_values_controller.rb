@@ -18,7 +18,7 @@ class SensorValuesController < ApplicationController
   end
 
   def filter_by_uuids
-    uuids = params[:uuids]
+    uuids = sensor_value_params[:uuids]
     if !uuids.nil? && uuids.is_a?(Array)
       @ids = PlatformResource.where("uuid IN (?)", uuids).pluck(:id)
       @sensor_values = @sensor_values.where("platform_resource_id IN (?)", @ids)
@@ -82,7 +82,9 @@ class SensorValuesController < ApplicationController
     end
   end
 
-  # http://localhost:3000/resources/data
+  # Return all resources with all their capabilities. Finally, each capability
+  # has all the historical values associated with it.
+  # @note http://localhost:3000/resources/data
   def resources_data
     begin
       generate_response
@@ -136,9 +138,10 @@ class SensorValuesController < ApplicationController
     end
 
     def sensor_value_params
-      params.require(:sensor_value)
-            .permit(:limit, :start, :start_range, :end_range, :uuid, :range,
-                    :capability, uuids: [], capabilities: [])
+      params.permit(sensor_value: [:limit, :start, :start_range, :end_range,
+                                            :uuid, :range, :capability,
+                                            uuids: [], capabilities: []])
+      params[:sensor_value] || {}
     end
 
     def generate_response
