@@ -202,7 +202,7 @@ RSpec.describe SensorValuesController, type: :controller do
   describe 'POST resources/:uuid/data' do
     it 'returns http success' do
       post 'resource_data', params: { uuid: sensor_value_default.platform_resource.uuid }
-      expect(response).to have_http_status(:success)
+      expect(response.status).to eq(200)
     end
 
     it 'returns a 200 status code when accessing normally' do
