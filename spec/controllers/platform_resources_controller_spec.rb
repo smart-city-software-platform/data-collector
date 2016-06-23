@@ -110,17 +110,16 @@ RSpec.describe PlatformResourcesController, type: :controller do
       second_cap = ["a", "b", "x", "y"]
 
       first_params = FactoryGirl.attributes_for(:with_capability,
-                                                capabilities: first_cap)
+                                                capabilities: first_cap,
+                                                uuid: SecureRandom.uuid)
       second_params = FactoryGirl.attributes_for(:with_capability,
-                                                 capabilities: second_cap)
-
+                                                 capabilities: second_cap,
+                                                 uuid: SecureRandom.uuid)
       post :create, params: {data: first_params}
-      is_expected.to have_http_status(201)
+      expect(response).to have_http_status(201)
       post :create, params: {data: second_params}
-      is_expected.to have_http_status(201)
-      num_new_capabilities = PlatformResource.where(uuid: second_params[:uuid])
-                                            .first.capabilities.count
-      expect(num_new_capabilities).to eq(second_cap.uniq.size)
+      expect(response).to have_http_status(201)
+
       expect(Capability.count).to eq((first_cap + second_cap).uniq.size)
     end
 
@@ -135,17 +134,23 @@ RSpec.describe PlatformResourcesController, type: :controller do
 
       post :create, params: {data: first_params}
       is_expected.to have_http_status(201)
-      num_capabilities_before = PlatformResource.where(uuid: first_params[:uuid])
-                                              .first.capabilities.count
       post :create, params: {data: second_params}
       is_expected.to have_http_status(201)
-      num_capabilities_after = PlatformResource.where(uuid: first_params[:uuid])
-                                              .first.capabilities.count
 
-      expect(num_capabilities_after).to eq(num_capabilities_before)
       # Must match with size of both arrays
       expect(Capability.count).to eq(first_cap.size)
       expect(Capability.count).to eq(second_cap.size)
+    end
+
+    it 'Rejects POST data with duplicated uuid' do
+      first_params = FactoryGirl.attributes_for(:with_capability)
+      second_params = FactoryGirl.attributes_for(:with_capability)
+
+      post :create, params: {data: first_params}
+      expect(response).to have_http_status(201)
+      post :create, params: {data: second_params}
+      expect(response).to have_http_status(400)
+
     end
 
     it 'Verify relation between capability and platform resource' do

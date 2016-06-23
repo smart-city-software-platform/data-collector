@@ -13,10 +13,7 @@ class PlatformResourcesController < ApplicationController
         render json: { error: 'Internal Server Error' }, status: 500
       end
     rescue ActiveRecord::RecordNotUnique
-      # TODO: what should happen if the uuid already exists?
-      params[:uuid] = platform_resource_params[:uuid]
-      find_platform_resource
-      update
+      render json: { error: 'Duplicated uuid' }, status: 400
     end
   end
 
