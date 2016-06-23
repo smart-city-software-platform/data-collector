@@ -46,7 +46,11 @@ RSpec.describe SensorValuesController, type: :controller do
     end
 
     it "filters by capabilities values range" do
-      do_value_filter('resources_data', false)
+      do_range_value_filter('resources_data', false)
+    end
+
+    it "filters by capabilities equal value" do
+      do_equal_value_filter('resources_data', false, sensor_value_default.value)
     end
 
   end
@@ -89,7 +93,11 @@ RSpec.describe SensorValuesController, type: :controller do
     end
 
     it "filters by capabilities values range" do
-      do_value_filter('resource_data', true)
+      do_range_value_filter('resource_data', true)
+    end
+
+    it "filters by capabilities equal value" do
+      do_equal_value_filter('resource_data', true, sensor_value_default.value)
     end
 
   end
@@ -123,7 +131,11 @@ RSpec.describe SensorValuesController, type: :controller do
     end
 
     it "filters by capabilities values range" do
-      do_value_filter('resources_data_last', false)
+      do_range_value_filter('resources_data_last', false)
+    end
+
+    it "filters by capabilities equal value" do
+      do_equal_value_filter('resources_data_last', false, sensor_value_default.value)
     end
 
   end
@@ -166,7 +178,11 @@ RSpec.describe SensorValuesController, type: :controller do
     end
 
     it "filters by capabilities values range" do
-      do_value_filter('resource_data_last', true)
+      do_range_value_filter('resource_data_last', true)
+    end
+
+    it "filters by capabilities equal value" do
+      do_equal_value_filter('resource_data_last', true, sensor_value_default.value)
     end
 
   end
@@ -183,9 +199,19 @@ RSpec.describe SensorValuesController, type: :controller do
     end
   end
 
-  def do_value_filter(route, use_uuid)
+  def do_range_value_filter(route, use_uuid)
   	params = { uuid: sensor_value_default.platform_resource.uuid, 
       	range: {"temperature": {"min": 20, "max": 70}} }
+    post route, params: params
+	expect(response.status).to eq(200)
+	expect(response.body).to_not be_nil
+	expect(response.body.empty?).to be_falsy
+	expect(response.content_type).to eq("application/json")
+  end
+
+  def do_equal_value_filter(route, use_uuid, value)
+  	params = { uuid: sensor_value_default.platform_resource.uuid, 
+      	range: {"temperature": {"equal": value} } }
     post route, params: params
 	expect(response.status).to eq(200)
 	expect(response.body).to_not be_nil
