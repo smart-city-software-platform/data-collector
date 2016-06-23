@@ -4,12 +4,19 @@ class PlatformResourcesController < ApplicationController
 
   def create
     platform_resource = PlatformResource.new(platform_resource_params)
-    if platform_resource.save
-      capabilities = get_capabilities
-      assotiate_capability_with_resource(capabilities, platform_resource)
-      render json: {data: platform_resource}, status: 201
-    else
-      render json: { error: 'Internal Server Error' }, status: 500
+    begin
+      if platform_resource.save
+        capabilities = get_capabilities
+        assotiate_capability_with_resource(capabilities, platform_resource)
+        render json: {data: platform_resource}, status: 201
+      else
+        render json: { error: 'Internal Server Error' }, status: 500
+      end
+    rescue ActiveRecord::RecordNotUnique
+      # TODO: what should happen if the uuid already exists?
+      params[:uuid] = platform_resource_params[:uuid]
+      find_platform_resource
+      update
     end
   end
 
