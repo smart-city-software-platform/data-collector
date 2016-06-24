@@ -9,12 +9,30 @@ class SensorValuesController < ApplicationController
 
   def set_sensor_values
     @sensor_values = SensorValue.all.includes(:capability)
+    paginate
   end
 
   def set_sensor_values_last
     @sensor_values = SensorValue.select('DISTINCT ON(capability_id) sensor_values.*')
                                 .where('capability_id IS NOT NULL')
                                 .order('capability_id, date DESC')
+    paginate
+  end
+
+  def paginate
+    # Validate 'limit' and 'start' parameters (they must be positive integers)
+    limit = session[:limit] || '1000'
+    start = session[:start] || '0'
+    [limit, start].each do |arg|
+      if !arg.nil? && !arg.is_positive_int?
+        render :json => { :error => "Bad Request: pagination args not valid" }, :status => 400
+        break # Prevents DoubleRenderError
+      end
+    end
+
+    @sensor_values = @sensor_values.limit(limit) unless limit.nil?
+    @sensor_values = @sensor_values.offset(start) unless start.nil?
+    session[:start] = (start.to_i + limit.to_i).to_s
   end
 
   def filter_by_uuids
