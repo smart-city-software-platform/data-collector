@@ -40,7 +40,7 @@ RSpec.describe SensorValuesController, type: :controller do
         total_cap = Faker::Number.between(1,3)
         # Create capabilities
         total_cap.times do |index|
-          capability = Capability.create(name: list_of_capabilities[index])
+          capability = Capability.find_or_create_by(name: list_of_capabilities[index])
           resource.capabilities << capability
 
           2.times do |j|
