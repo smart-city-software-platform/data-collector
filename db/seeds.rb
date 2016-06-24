@@ -21,10 +21,10 @@ puts 'Creating Platform resource without capability'
 puts '.' * 50
 
 def create_resource(uuid, uri, status, interval)
-  PlatformResource.create!(uuid: uuid,
-                            uri: uri,
-                            status: status,
-                            collect_interval: interval)
+	PlatformResource.create_with(uri: uri,
+															status: status,
+															collect_interval: interval)
+						.find_or_create_by(uuid: uuid)
 end
 
 # First, without capability
@@ -46,17 +46,18 @@ puts '.' * 50
                   Faker::Number.between(60, 1000))
 
 
-  total_capability = Faker::Number.between(1, 20)
+  total_capability = Faker::Number.between(1, 5)
   total_capability.times do |index|
     capability_name = Faker::Hipster.word
-    cap = Capability.create(name: capability_name)
-    resource.capabilities << cap
+    cap = Capability.find_or_create_by(name: capability_name)
+    resource.capabilities << cap unless 
+				resource.capabilities.where(name: capability_name).exists?
 
-    2.times do |j|
+    Faker::Number.between(1, 5).times do |j|
       SensorValue.create!(capability: cap,
-                          platform_resource: resource,
-                          date: Faker::Time.between(DateTime.now - 1, DateTime.now),
-                          value: Faker::Number.decimal(2, 3))
+										platform_resource: resource,
+										date: Faker::Time.between(DateTime.now - 1, DateTime.now),
+										value: Faker::Number.decimal(2, 3))
     end
   end
 end

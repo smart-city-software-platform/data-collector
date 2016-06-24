@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe SensorValuesController, type: :controller do
 
-  let(:sensor_value_default) { create(:sensor_value) }
+  let(:sensor_value_default) { create(:default_sensor_value) }
 
   before :each do
     request.env["HTTP_ACCEPT"] = 'application/json'
@@ -40,7 +40,7 @@ RSpec.describe SensorValuesController, type: :controller do
         total_cap = Faker::Number.between(1,3)
         # Create capabilities
         total_cap.times do |index|
-          capability = Capability.create(name: list_of_capabilities[index])
+          capability = Capability.find_or_create_by(name: list_of_capabilities[index])
           resource.capabilities << capability
 
           2.times do |j|
@@ -202,7 +202,7 @@ RSpec.describe SensorValuesController, type: :controller do
   describe 'POST resources/:uuid/data' do
     it 'returns http success' do
       post 'resource_data', params: { uuid: sensor_value_default.platform_resource.uuid }
-      expect(response).to have_http_status(:success)
+      expect(response.status).to eq(200)
     end
 
     it 'returns a 200 status code when accessing normally' do
