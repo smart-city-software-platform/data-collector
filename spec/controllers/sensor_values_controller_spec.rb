@@ -26,26 +26,17 @@ RSpec.describe SensorValuesController, type: :controller do
       status_opt = ['on', 'off', 'unknown', 'wtf']
       list_of_capabilities = ['no', 'temperature', 'humidity', 'pressure']
       @uuids = []
-      @uris = []
-      @collect_intervals = []
-      @status_list = []
-
-      # Template values to using
-      total.times do |index|
-        uri = "/basic_resources/#{Faker::Number.between(1,10)}/components/" +
-              "#{Faker::Number.between(1,10)}/collect"
-        @uuids.push(SecureRandom.uuid)
-        @uris.push(uri)
-        @collect_intervals.push(Faker::Number.between(60, 1000))
-        @status_list.push(status_opt[rand(status_opt.size)])
-      end
 
       # Creating data on database
       total.times do |index|
+        @uuids.push(SecureRandom.uuid)
+        uri = "/basic_resources/#{Faker::Number.between(1,10)}/components/" +
+              "#{Faker::Number.between(1,10)}/collect"
+
         resource = PlatformResource.create!(uuid: @uuids[index],
-                              uri: @uris[index],
-                              status: @status_list[index],
-                              collect_interval: @collect_intervals[index])
+                            uri: uri,
+                            status: status_opt[rand(status_opt.size)],
+                            collect_interval: Faker::Number.between(60, 1000))
         total_cap = Faker::Number.between(1,3)
         # Create capabilities
         total_cap.times do |index|
@@ -101,38 +92,119 @@ RSpec.describe SensorValuesController, type: :controller do
       do_wrong_date_filter('resources_data', false)
     end
 
-    it 'Verify correct return with one uuid' do
-      post 'resources_data', params: {sensor_value: {uuids: [@uuids[0]]}}
-      expect(response.status).to eq(200)
-      expect(response.body).to_not be_nil
-      expect(response.body.empty?).to be_falsy
-      returned_json = JSON.parse(response.body)
+    context 'Verify request with uuid : ' do
 
-      retrieved_resource = returned_json['resources']
-      expect(retrieved_resource.size).to eq(1)
-      uuid = retrieved_resource.first['uuid']
-      expect(uuid).to eq(@uuids[0])
-
-      json_capabilities = retrieved_resource.first['capabilities']
-
-      platform = PlatformResource.find_by_uuid(@uuids[0])
-      real_capabilities = platform.capabilities.pluck(:name)
-      retrieved_capabilities = json_capabilities.keys
-			expect(real_capabilities).to match_array(retrieved_capabilities)
-
-      platform.capabilities.each do |cap|
-        sensor_values = SensorValue.where(capability_id: cap.id,
-                              platform_resource_id: platform.id).pluck(:value)
-        retrieved_values = []
-        json_capabilities[cap.name].each do |capability|
-          retrieved_values << capability['value']
-        end
-      expect(sensor_values).to match_array(retrieved_values)
+      it 'Correct response, using only one uuid inside Array' do
+        post 'resources_data', params: {sensor_value: {uuids: [@uuids[0]]}}
+        expect(response.status).to eq(200)
+        expect(response.body).to_not be_nil
+        expect(response.body.empty?).to be_falsy
       end
+
+      it 'Correct response, using more than one uuid inside Array' do
+        post 'resources_data', params: {sensor_value: {uuids: @uuids}}
+        expect(response.status).to eq(200)
+        expect(response.body).to_not be_nil
+        expect(response.body.empty?).to be_falsy
+      end
+
+      it 'Correct return of single uuid' do
+        post 'resources_data', params: {sensor_value: {uuids: [@uuids[0]]}}
+        returned_json = JSON.parse(response.body)
+
+        retrieved_resource = returned_json['resources']
+        expect(retrieved_resource.size).to eq(1)
+        uuid = retrieved_resource.first['uuid']
+        expect(uuid).to eq(@uuids[0])
+      end
+
+      it 'Correct return of multiple uuids' do
+        post 'resources_data', params: {sensor_value: {uuids: @uuids}}
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+
+        expect(retrieved_resource.size).to eq(@uuids.size)
+
+        uuids = retrieved_resource.map(&Proc.new {|element| element['uuid']} )
+        expect(uuids).to match_array(@uuids)
+      end
+
+      it 'Correct list of capabilities for one uuid' do
+        post 'resources_data', params: {sensor_value: {uuids: [@uuids[0]]}}
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        json_capabilities = retrieved_resource.first['capabilities']
+
+        platform = PlatformResource.find_by_uuid(@uuids[0])
+        real_capabilities = platform.capabilities.pluck(:name)
+        retrieved_capabilities = json_capabilities.keys
+
+        expect(real_capabilities).to match_array(retrieved_capabilities)
+      end
+
+      it 'Correct list of capabilities for multiple uuids' do
+        post 'resources_data', params: {sensor_value: {uuids: @uuids}}
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+
+        @uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+          real_capabilities = platform.capabilities.pluck(:name)
+          find_capabilities = Proc.new do |element|
+          end
+
+          retrieved_capabilities = retrieved_resource.select do |element|
+            element['uuid'] == uuid
+          end.first['capabilities'].keys
+
+          expect(real_capabilities).to match_array(retrieved_capabilities)
+        end
+      end
+
+      it 'Correct returned sensors values with one uuid' do
+        post 'resources_data', params: {sensor_value: {uuids: [@uuids[0]]}}
+        returned_json = JSON.parse(response.body)
+
+        retrieved_resource = returned_json['resources']
+        json_capabilities = retrieved_resource.first['capabilities']
+
+        platform = PlatformResource.find_by_uuid(@uuids[0])
+        platform.capabilities.each do |cap|
+          sensor_values = SensorValue.where(capability_id: cap.id,
+                              platform_resource_id: platform.id).pluck(:value)
+          retrieved_values = []
+          json_capabilities[cap.name].each do |capability|
+            retrieved_values << capability['value']
+          end
+          expect(sensor_values).to match_array(retrieved_values)
+        end
+      end
+
+      it 'Correct returned sensors values with multiple uuids' do
+        post 'resources_data', params: {sensor_value: {uuids: @uuids[0]}}
+        returned_json = JSON.parse(response.body)
+
+        retrieved_resource = returned_json['resources']
+
+        @uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+
+          json_capabilities = retrieved_resource.select{|element|
+                              element['uuid'] == uuid}.first['capabilities']
+
+          platform.capabilities.each do |cap|
+            sensor_values = SensorValue.where(capability_id: cap.id,
+                                platform_resource_id: platform.id).pluck(:value)
+            retrieved_values = []
+            json_capabilities[cap.name].each do |capability|
+              retrieved_values << capability['value']
+            end
+            expect(sensor_values).to match_array(retrieved_values)
+          end
+        end
+      end
+
     end
-
-    it 'Verify correct return with a list of uuids'
-
   end
 
   describe "POST resources/:uuid/data" do
