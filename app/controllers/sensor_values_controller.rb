@@ -143,7 +143,7 @@ class SensorValuesController < ApplicationController
 
     def sensor_value_params
       params.permit(sensor_value: [:limit, :start, :start_range, :end_range,
-                                            :uuid, :range, :capability,
+                                            :uuid, :capability, range: {},
                                             uuids: [], capabilities: []])
       params[:sensor_value] || {}
     end
