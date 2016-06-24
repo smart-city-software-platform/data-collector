@@ -36,6 +36,7 @@ class ResourceWorker
 
       # Wait until next GET
       sleep @timestep
+    end
   end
 
   def cancelled?
