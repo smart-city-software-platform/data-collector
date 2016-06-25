@@ -22,35 +22,7 @@ RSpec.describe SensorValuesController, type: :controller do
   context 'POST resources/data' do
 
     before :each do
-      total = 4
-      status_opt = ['on', 'off', 'unknown', 'wtf']
-      list_of_capabilities = ['no', 'temperature', 'humidity', 'pressure']
-      @uuids = []
-
-      # Creating data on database
-      total.times do |index|
-        @uuids.push(SecureRandom.uuid)
-        uri = "/basic_resources/#{Faker::Number.between(1,10)}/components/" +
-              "#{Faker::Number.between(1,10)}/collect"
-
-        resource = PlatformResource.create!(uuid: @uuids[index],
-                            uri: uri,
-                            status: status_opt[rand(status_opt.size)],
-                            collect_interval: Faker::Number.between(60, 1000))
-        total_cap = Faker::Number.between(1,3)
-        # Create capabilities
-        total_cap.times do |index|
-          capability = Capability.find_or_create_by(name: list_of_capabilities[index])
-          resource.capabilities << capability
-
-          2.times do |j|
-            SensorValue.create!(capability: capability,
-                          platform_resource: resource,
-                          date: Faker::Time.between(DateTime.now - 1, DateTime.now),
-                          value: Faker::Number.decimal(2, 3))
-          end
-        end
-      end
+      generate_data(4)
     end
 
     message = 'Simple request to resource_data, expect success'
@@ -85,7 +57,12 @@ RSpec.describe SensorValuesController, type: :controller do
     end
 
     it "fails when sending invalid pagination arguments" do
-      do_wrong_paging_filter('resources_data', false)
+      do_wrong_pagination_filter('resources_data', false)
+    end
+
+    it "returns no more than the 'limit' resources" do
+      generate_data(1000)
+      do_exceed_limit_pagination_filter('resources_data', false)
     end
 
     context 'Verify request with uuid : ' do
@@ -249,7 +226,11 @@ RSpec.describe SensorValuesController, type: :controller do
     end
 
     it "fails when sending invalid pagination arguments" do
-      do_wrong_paging_filter('resource_data', true)
+      do_wrong_pagination_filter('resource_data', true)
+    end
+
+    it "returns no more than the 'limit' resources" do
+      do_exceed_limit_pagination_filter('resource_data', true)
     end
 
   end
@@ -291,7 +272,12 @@ RSpec.describe SensorValuesController, type: :controller do
     end
 
     it "fails when sending invalid pagination arguments" do
-      do_wrong_paging_filter('resources_data_last', false)
+      do_wrong_pagination_filter('resources_data_last', false)
+    end
+
+    it "returns no more than the 'limit' resources" do
+      generate_data(1000)
+      do_exceed_limit_pagination_filter('resources_data_last', false)
     end
 
   end
@@ -343,8 +329,14 @@ RSpec.describe SensorValuesController, type: :controller do
     end
 
     it "fails when sending invalid pagination arguments" do
-      do_wrong_paging_filter('resource_data_last', true)
+      do_wrong_pagination_filter('resource_data_last', true)
     end
+
+    it "returns no more than the 'limit' resources" do
+      generate_data(1000)
+      do_exceed_limit_pagination_filter('resource_data_last', true)
+    end
+
   end
 
   def do_wrong_date_filter(route, use_uuid)
@@ -380,7 +372,7 @@ RSpec.describe SensorValuesController, type: :controller do
     expect(response.content_type).to eq('application/json')
   end
 
-  def do_wrong_paging_filter(route, use_uuid)
+  def do_wrong_pagination_filter(route, use_uuid)
     foo_limits = [-1, 1.23, "foobar"]
     foo_starts = [-4, 9.87, "barfoo"]
 
@@ -402,6 +394,55 @@ RSpec.describe SensorValuesController, type: :controller do
         post route, params: params
         expect(response.status).to eq(400)
       end
+    end    
+  end
+
+  def do_exceed_limit_pagination_filter(route, use_uuid)
+    # the number of resources must not exceeds the limit
+    limit = 1000
+    params = {uuid: sensor_value_default.platform_resource.uuid, limit: limit + 1}
+    params.except!(:uuid) unless use_uuid
+
+    post route, params: params
+    expect(response.status).to eq(200)
+    expect(response.body).to_not be_nil
+    expect(response.body.empty?).to be_falsy
+
+    returned_json = JSON.parse(response.body)
+    retrieved_resource = returned_json['resources']
+
+    expect(retrieved_resource.size).to be <= (limit)
+  end
+
+  def generate_data(total)
+    status_opt = ['on', 'off', 'unknown', 'wtf']
+    list_of_capabilities = ['no', 'temperature', 'humidity', 'pressure']
+    @uuids = []
+
+    # Creating data on database
+    total.times do |index|
+      @uuids.push(SecureRandom.uuid)
+      uri = "/basic_resources/#{Faker::Number.between(1,10)}/components/" +
+            "#{Faker::Number.between(1,10)}/collect"
+
+      resource = PlatformResource.create!(uuid: @uuids[index],
+                          uri: uri,
+                          status: status_opt[rand(status_opt.size)],
+                          collect_interval: Faker::Number.between(60, 1000))
+      total_cap = Faker::Number.between(1,3)
+      # Create capabilities
+      total_cap.times do |index|
+        capability = Capability.find_or_create_by(name: list_of_capabilities[index])
+        resource.capabilities << capability
+
+        2.times do |j|
+          SensorValue.create!(capability: capability,
+                        platform_resource: resource,
+                        date: Faker::Time.between(DateTime.now - 1, DateTime.now),
+                        value: Faker::Number.decimal(2, 3))
+        end
+      end
     end
   end
+
 end
