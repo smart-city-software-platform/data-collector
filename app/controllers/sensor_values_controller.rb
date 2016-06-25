@@ -13,19 +13,23 @@ class SensorValuesController < ApplicationController
   end
 
   def set_sensor_values_last
-    @sensor_values = SensorValue.select('DISTINCT ON(capability_id) sensor_values.*')
+    @sensor_values = SensorValue.select('DISTINCT ON(capability_id, platform_resource_id) sensor_values.*')
                                 .where('capability_id IS NOT NULL')
-                                .order('capability_id, date DESC')
+                                .order('capability_id, platform_resource_id, date DESC')
     paginate
   end
 
   def paginate
     # Validate 'limit' and 'start' parameters (they must be positive integers)
+    # and asserts that limit is less than or equal to 1000
     limit = params[:limit] || '1000'
     start = params[:start] || '0'
+    limit = '1000' unless limit.to_i <= 1000
+
     [limit, start].each do |arg|
       if !arg.nil? && !arg.is_positive_int?
-        render :json => { :error => "Bad Request: pagination args not valid" }, :status => 400
+        render :json => {error: "Bad Request: pagination args not valid"},
+                status: 400
         break # Prevents DoubleRenderError
       end
     end
@@ -81,7 +85,7 @@ class SensorValuesController < ApplicationController
     capability_hash.each do |capability_name, range_hash|
       capability = Capability.find_by_name(capability_name)
       if capability
-        @sensor_values = @sensor_values.where('capability_id = ?', capability.id)
+        @sensor_values = @sensor_values.where('capability_id = ?',capability.id)
         min = range_hash['min']
         max = range_hash['max']
         equal = range_hash['equal']
@@ -137,8 +141,9 @@ class SensorValuesController < ApplicationController
 
   def resource_data_last
     begin
-      @sensor_values.where('platform_resource_id = ?', @retrieved_resource.id)
-                    .order('capability_id, date DESC')
+      @sensor_values = @sensor_values.where('platform_resource_id = ?',
+                                            @retrieved_resource.id)
+                                      .order('capability_id, date DESC')
 
       generate_response
     rescue Exception
@@ -160,8 +165,8 @@ class SensorValuesController < ApplicationController
 
     def sensor_value_params
       params.permit(sensor_value: [:limit, :start, :start_range, :end_range,
-                                            :uuid, :capability, range: {},
-                                            uuids: [], capabilities: []])
+                                  :uuid, range: {}, uuids: [],
+                                  capabilities: []])
       params[:sensor_value] || {}
     end
 

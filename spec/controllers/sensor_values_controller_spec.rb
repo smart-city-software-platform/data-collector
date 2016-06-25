@@ -60,11 +60,6 @@ RSpec.describe SensorValuesController, type: :controller do
       do_wrong_pagination_filter('resources_data', false)
     end
 
-    it "returns no more than the 'limit' resources" do
-      generate_data(1000)
-      do_exceed_limit_pagination_filter('resources_data', false)
-    end
-
     context 'Verify request with uuid : ' do
 
       it 'Correct response, using only one uuid inside Array' do
@@ -229,10 +224,6 @@ RSpec.describe SensorValuesController, type: :controller do
       do_wrong_pagination_filter('resource_data', true)
     end
 
-    it "returns no more than the 'limit' resources" do
-      do_exceed_limit_pagination_filter('resource_data', true)
-    end
-
   end
 
   describe 'POST resources/data/last' do
@@ -252,7 +243,7 @@ RSpec.describe SensorValuesController, type: :controller do
     end
 
     it 'renders the correct json and completes the url route' do
-      post 'resources_data_last', :format => :json
+      post 'resources_data_last'
       expect(response.status).to eq(200)
       expect(response.body).to_not be_nil
       expect(response.body.empty?).to be_falsy
@@ -275,11 +266,6 @@ RSpec.describe SensorValuesController, type: :controller do
       do_wrong_pagination_filter('resources_data_last', false)
     end
 
-    it "returns no more than the 'limit' resources" do
-      generate_data(1000)
-      do_exceed_limit_pagination_filter('resources_data_last', false)
-    end
-
   end
 
   describe 'POST resources/:uuid/data/last' do
@@ -300,7 +286,7 @@ RSpec.describe SensorValuesController, type: :controller do
 
     it 'renders the correct json and completes the url route' do
       post 'resource_data_last', params: { uuid: sensor_value_default.platform_resource.uuid },
-                                :format => :json
+                                  format: :json
       expect(response.status).to eq(200)
       expect(response.body).to_not be_nil
       expect(response.body.empty?).to be_falsy
@@ -332,11 +318,17 @@ RSpec.describe SensorValuesController, type: :controller do
       do_wrong_pagination_filter('resource_data_last', true)
     end
 
+  end
+
+  describe 'Stressing the pagination limits' do
     it "returns no more than the 'limit' resources" do
-      generate_data(1000)
+      generate_data(1005)
+      # pass through all routes
+      do_exceed_limit_pagination_filter('resources_data', false)
+      do_exceed_limit_pagination_filter('resource_data', true)
+      do_exceed_limit_pagination_filter('resources_data_last', false)
       do_exceed_limit_pagination_filter('resource_data_last', true)
     end
-
   end
 
   def do_wrong_date_filter(route, use_uuid)

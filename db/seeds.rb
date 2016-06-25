@@ -37,6 +37,13 @@ end
 puts '.' * 50
 puts 'Creating Platform resource with capability'
 puts '.' * 50
+
+list_capabilities = []
+10.times do |index|
+  capability_name = Faker::Hipster.word
+  list_capabilities << Capability.create!(name: capability_name)
+end
+
 20.times do |index|
   uri = "/basic_resources/#{Faker::Number.between(50,300)}/components/" +
              "#{Faker::Number.between(50,300)}/collect"
@@ -46,12 +53,11 @@ puts '.' * 50
                   Faker::Number.between(60, 1000))
 
 
-  total_capability = Faker::Number.between(1, 5)
+  total_capability = Faker::Number.between(1, 10)
   total_capability.times do |index|
-    capability_name = Faker::Hipster.word
-    cap = Capability.find_or_create_by(name: capability_name)
-    resource.capabilities << cap unless 
-				resource.capabilities.where(name: capability_name).exists?
+    cap = list_capabilities[index]
+    resource.capabilities << cap
+		resource.capabilities.where(name: cap.name).exists?
 
     Faker::Number.between(1, 5).times do |j|
       SensorValue.create!(capability: cap,
