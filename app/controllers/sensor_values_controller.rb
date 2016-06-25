@@ -53,9 +53,8 @@ class SensorValuesController < ApplicationController
   end
 
   def filter_by_date
-    @start_date = params[:start_range]
-    @end_date = params[:end_range]
-
+    @start_date = sensor_value_params[:start_range]
+    @end_date = sensor_value_params[:end_range]
     # Validate 'start_date' and 'end_date' as DateTimes
     [@start_date, @end_date].each do |arg|
       if !arg.nil?
@@ -88,34 +87,45 @@ class SensorValuesController < ApplicationController
     return unless sensor_value_params[:range]
 
     capability_hash = sensor_value_params[:range]
+    ids = []
     capability_hash.each do |capability_name, range_hash|
+      remove = []
       capability = Capability.find_by_name(capability_name)
 
       if capability
         @sensor_values = @sensor_values.where('capability_id = ?',
                                               capability.id)
+
+        cap_values = @sensor_values.where('capability_id = ?', capability.id)
         min = range_hash['min']
         max = range_hash['max']
         equal = range_hash['equal']
-        if equal
-          @sensor_values = @sensor_values.where(value: equal)
+        if !equal.blank?
+          cap_values = cap_values.where(value: equal)
         else
           if max && max.is_float?
-            @sensor_values.reject do |value|
-              true if value.to_f.nil? || value.to_f > max.to_f
+            cap_values.each do |value|
+              if value.to_f.nil? || value.to_f > max.to_f
+                remove << value.id
+              end
             end
           end
           if min && min.is_float?
-            @sensor_values.reject do |value|
-              true if value.to_f.nil? || value.to_f < min.to_f
+            cap_values.each do |value|
+              if value.to_f.nil? || value.to_f < min.to_f
+                remove << value.id
+              end
             end
           end
+
+          ids = ids + cap_values.where.not(' sensor_values.id IN (?) ', remove).pluck(:id)
         end
       else
         @sensor_values = @sensor_values.limit(0)
-        return
       end
     end
+
+    @sensor_values = @sensor_values.where(' id IN (?)', ids)
   end
 
   # Return all resources with all their capabilities. Finally, each capability
