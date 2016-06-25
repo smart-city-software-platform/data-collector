@@ -22,35 +22,7 @@ RSpec.describe SensorValuesController, type: :controller do
   context 'POST resources/data' do
 
     before :each do
-      total = 4
-      status_opt = ['on', 'off', 'unknown', 'wtf']
-      list_of_capabilities = ['no', 'temperature', 'humidity', 'pressure']
-      @uuids = []
-
-      # Creating data on database
-      total.times do |index|
-        @uuids.push(SecureRandom.uuid)
-        uri = "/basic_resources/#{Faker::Number.between(1,10)}/components/" +
-              "#{Faker::Number.between(1,10)}/collect"
-
-        resource = PlatformResource.create!(uuid: @uuids[index],
-                            uri: uri,
-                            status: status_opt[rand(status_opt.size)],
-                            collect_interval: Faker::Number.between(60, 1000))
-        total_cap = Faker::Number.between(1,3)
-        # Create capabilities
-        total_cap.times do |index|
-          capability = Capability.find_or_create_by(name: list_of_capabilities[index])
-          resource.capabilities << capability
-
-          2.times do |j|
-            SensorValue.create!(capability: capability,
-                          platform_resource: resource,
-                          date: Faker::Time.between(DateTime.now - 1, DateTime.now),
-                          value: Faker::Number.decimal(2, 3))
-          end
-        end
-      end
+      generate_data(4)
     end
 
     message = 'Simple request to resource_data, expect success'
@@ -82,6 +54,10 @@ RSpec.describe SensorValuesController, type: :controller do
 
     it 'Returns a 400 status code when sending invalid data ranges argunments' do
       do_wrong_date_filter('resources_data', false)
+    end
+
+    it "fails when sending invalid pagination arguments" do
+      do_wrong_pagination_filter('resources_data', false)
     end
 
     context 'Verify request with uuid : ' do
@@ -244,6 +220,10 @@ RSpec.describe SensorValuesController, type: :controller do
       do_equal_value_filter('resource_data', true, sensor_value_default.value)
     end
 
+    it "fails when sending invalid pagination arguments" do
+      do_wrong_pagination_filter('resource_data', true)
+    end
+
   end
 
   describe 'POST resources/data/last' do
@@ -263,7 +243,7 @@ RSpec.describe SensorValuesController, type: :controller do
     end
 
     it 'renders the correct json and completes the url route' do
-      post 'resources_data_last', :format => :json
+      post 'resources_data_last'
       expect(response.status).to eq(200)
       expect(response.body).to_not be_nil
       expect(response.body.empty?).to be_falsy
@@ -280,6 +260,10 @@ RSpec.describe SensorValuesController, type: :controller do
 
     it 'filters by capabilities equal value' do
       do_equal_value_filter('resources_data_last', false, sensor_value_default.value)
+    end
+
+    it "fails when sending invalid pagination arguments" do
+      do_wrong_pagination_filter('resources_data_last', false)
     end
 
   end
@@ -301,7 +285,8 @@ RSpec.describe SensorValuesController, type: :controller do
     end
 
     it 'renders the correct json and completes the url route' do
-      post 'resource_data_last', params: { uuid: sensor_value_default.platform_resource.uuid }, :format => :json
+      post 'resource_data_last', params: { uuid: sensor_value_default.platform_resource.uuid },
+                                  format: :json
       expect(response.status).to eq(200)
       expect(response.body).to_not be_nil
       expect(response.body.empty?).to be_falsy
@@ -329,13 +314,29 @@ RSpec.describe SensorValuesController, type: :controller do
       do_equal_value_filter('resource_data_last', true, sensor_value_default.value)
     end
 
+    it "fails when sending invalid pagination arguments" do
+      do_wrong_pagination_filter('resource_data_last', true)
+    end
+
+  end
+
+  describe 'Stressing the pagination limits' do
+    it "returns no more than the 'limit' resources" do
+      generate_data(1005)
+      # pass through all routes
+      do_exceed_limit_pagination_filter('resources_data', false)
+      do_exceed_limit_pagination_filter('resource_data', true)
+      do_exceed_limit_pagination_filter('resources_data_last', false)
+      do_exceed_limit_pagination_filter('resource_data_last', true)
+    end
   end
 
   def do_wrong_date_filter(route, use_uuid)
     err_data = ['foobar', 9.68]
 
     err_data.each do |data|
-      params = { uuid: sensor_value_default.platform_resource.uuid, start_range: data, end_range: data}
+      params = {uuid: sensor_value_default.platform_resource.uuid,
+                start_range: data, end_range: data}
       params.except!(:uuid) unless use_uuid
 
       post route, params: params
@@ -344,7 +345,7 @@ RSpec.describe SensorValuesController, type: :controller do
   end
 
   def do_range_value_filter(route, use_uuid)
-    params = { uuid: sensor_value_default.platform_resource.uuid,
+    params = {uuid: sensor_value_default.platform_resource.uuid,
               range: {'temperature': {'min': 20, 'max': 70}} }
     post route, params: params
     expect(response.status).to eq(200)
@@ -354,13 +355,86 @@ RSpec.describe SensorValuesController, type: :controller do
   end
 
   def do_equal_value_filter(route, use_uuid, value)
-    params = { uuid: sensor_value_default.platform_resource.uuid,
+    params = {uuid: sensor_value_default.platform_resource.uuid,
               range: {'temperature': {'equal': value} } }
     post route, params: params
     expect(response.status).to eq(200)
     expect(response.body).to_not be_nil
     expect(response.body.empty?).to be_falsy
     expect(response.content_type).to eq('application/json')
+  end
+
+  def do_wrong_pagination_filter(route, use_uuid)
+    foo_limits = [-1, 1.23, "foobar"]
+    foo_starts = [-4, 9.87, "barfoo"]
+
+    # Expect errors with all combinations of invalid arguments
+    foo_limits.each do |limit|
+      params = {uuid: sensor_value_default.platform_resource.uuid, limit: limit}
+      params.except!(:uuid) unless use_uuid
+
+      post route, params: params
+      expect(response.status).to eq(400)
+      params.except!(:limit)
+
+      foo_starts.each do |start|
+        params[:start] = start
+        post route, params: params
+        expect(response.status).to eq(400)
+
+        params[:limit] = limit
+        post route, params: params
+        expect(response.status).to eq(400)
+      end
+    end    
+  end
+
+  def do_exceed_limit_pagination_filter(route, use_uuid)
+    # the number of resources must not exceeds the limit
+    limit = 1000
+    params = {uuid: sensor_value_default.platform_resource.uuid, limit: limit + 1}
+    params.except!(:uuid) unless use_uuid
+
+    post route, params: params
+    expect(response.status).to eq(200)
+    expect(response.body).to_not be_nil
+    expect(response.body.empty?).to be_falsy
+
+    returned_json = JSON.parse(response.body)
+    retrieved_resource = returned_json['resources']
+
+    expect(retrieved_resource.size).to be <= (limit)
+  end
+
+  def generate_data(total)
+    status_opt = ['on', 'off', 'unknown', 'wtf']
+    list_of_capabilities = ['no', 'temperature', 'humidity', 'pressure']
+    @uuids = []
+
+    # Creating data on database
+    total.times do |index|
+      @uuids.push(SecureRandom.uuid)
+      uri = "/basic_resources/#{Faker::Number.between(1,10)}/components/" +
+            "#{Faker::Number.between(1,10)}/collect"
+
+      resource = PlatformResource.create!(uuid: @uuids[index],
+                          uri: uri,
+                          status: status_opt[rand(status_opt.size)],
+                          collect_interval: Faker::Number.between(60, 1000))
+      total_cap = Faker::Number.between(1,3)
+      # Create capabilities
+      total_cap.times do |index|
+        capability = Capability.find_or_create_by(name: list_of_capabilities[index])
+        resource.capabilities << capability
+
+        2.times do |j|
+          SensorValue.create!(capability: capability,
+                        platform_resource: resource,
+                        date: Faker::Time.between(DateTime.now - 1, DateTime.now),
+                        value: Faker::Number.decimal(2, 3))
+        end
+      end
+    end
   end
 
 end
