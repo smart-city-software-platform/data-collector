@@ -105,7 +105,7 @@ RSpec.describe PlatformResourcesController, type: :controller do
             .to eq(with_capability_params[:capabilities].size)
     end
 
-    it 'Accepts POST data with a mix of already created capabilities and new one' do
+    it 'POST data with a mix of already created capabilities and new one' do
       first_cap = ['a', 'b', 'c']
       second_cap = ['a', 'b', 'x', 'y']
 
@@ -166,7 +166,8 @@ RSpec.describe PlatformResourcesController, type: :controller do
 
         # Use the model that relates Capability and Platform Resource to find
         # out the corresponding platform resource id
-        resourceCapability = PlatformResourceCapability.find_by_capability_id(cap_id)
+        resourceCapability =
+                      PlatformResourceCapability.find_by_capability_id(cap_id)
         resource_id = resourceCapability.platform_resource_id
 
         # Check if the uuid in the Platform Resource model is correct by
@@ -254,10 +255,11 @@ RSpec.describe PlatformResourcesController, type: :controller do
 
   context 'Verify update method by PUT using data with no capabilities' do
 
-    RSpec.shared_examples 'change data and verify' do |hash_capability, description|
-      it ": #{description}" do
+    RSpec.shared_examples 'change data and verify' do |hash_capability, desc|
+      it ": #{desc}" do
         new_capability = hash_capability
-        put :update, params: {uuid: new_capability[:uuid], data: new_capability}
+        put :update,
+                  params: {uuid: new_capability[:uuid], data: new_capability}
         expect(response.status).to eq(201)
         platform = PlatformResource.last
         capability_array = []
