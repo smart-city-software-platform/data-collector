@@ -201,8 +201,8 @@ class SensorValuesController < ApplicationController
 
     # Notify the client whose are feeding for new resource sensors data
     def broadcast(channel, msg)
-      message = {:channel => channel, :data => msg}
+      message = {channel: channel, data: msg}
       uri = URI.parse("http://#{ request.host }:9292/collector")
-      Net::HTTP.post_form(uri, :message => message.to_json)
+      Net::HTTP.post_form(uri, message: message.to_json)
     end
 end

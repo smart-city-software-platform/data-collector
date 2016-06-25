@@ -4,6 +4,6 @@ class CreateIndex < ActiveRecord::Migration[5.0]
     add_index :platform_resources, :uuid, unique: true
 		add_index :platform_resource_capabilities,
 				[:platform_resource_id, :capability_id], unique: true,
-				:name => 'index_platform_resource_capabilities'
+				name: 'index_platform_resource_capabilities'
   end
 end

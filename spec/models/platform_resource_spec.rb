@@ -15,9 +15,9 @@ RSpec.describe PlatformResource, type: :model do
     expect(platform_resource.uri).not_to eq('')
 
     expect(FactoryGirl.build(:empty_capability ,
-		                         :uri => '')).not_to be_valid
+		                         uri: '')).not_to be_valid
     expect(FactoryGirl.build(:empty_capability ,
-		                         :uri => nil)).not_to be_valid
+		                         uri: nil)).not_to be_valid
 	end
 
 	it 'has a valid uuid' do
@@ -25,9 +25,9 @@ RSpec.describe PlatformResource, type: :model do
     expect(platform_resource.uuid).not_to eq('')
 
 		expect(FactoryGirl.build(:empty_capability ,
-		                         :uuid => '')).not_to be_valid
+		                         uuid: '')).not_to be_valid
     expect(FactoryGirl.build(:empty_capability ,
-		                         :uuid => nil)).not_to be_valid
+		                         uuid: nil)).not_to be_valid
 
     uuid_pattern = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
     expect(uuid_pattern.match(platform_resource.uuid)).not_to be_nil
@@ -38,9 +38,9 @@ RSpec.describe PlatformResource, type: :model do
     expect(platform_resource.status).not_to eq('')
 
     expect(FactoryGirl.build(:empty_capability ,
-		                         :status => '')).not_to be_valid
+		                         status: '')).not_to be_valid
     expect(FactoryGirl.build(:empty_capability ,
-		                         :status => nil)).not_to be_valid
+		                         status: nil)).not_to be_valid
 	end
 
 	it 'has a collect interval' do
@@ -48,8 +48,8 @@ RSpec.describe PlatformResource, type: :model do
     expect(platform_resource.collect_interval).not_to eq('')
 
     expect(FactoryGirl.build(:empty_capability ,
-		                         :collect_interval => '')).not_to be_valid
+		                         collect_interval: '')).not_to be_valid
     expect(FactoryGirl.build(:empty_capability ,
-		                         :collect_interval => nil)).not_to be_valid
+		                         collect_interval: nil)).not_to be_valid
 	end
 end
