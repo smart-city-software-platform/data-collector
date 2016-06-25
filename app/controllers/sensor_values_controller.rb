@@ -70,7 +70,7 @@ class SensorValuesController < ApplicationController
   end
 
   def filter_by_capabilities
-    capabilities_name = params[:capabilities]
+    capabilities_name = sensor_value_params[:capabilities]
     if capabilities_name
       ids = Capability.where("name in (?)", capabilities_name).pluck(:id)
       @sensor_values = @sensor_values.where("capability_id in (?)", ids)
@@ -78,12 +78,12 @@ class SensorValuesController < ApplicationController
   end
 
   def filter_by_value
-    return unless params[:range]
+    return unless sensor_value_params[:range]
 
-    capability_hash = params[:range]
-
+    capability_hash = sensor_value_params[:range]
     capability_hash.each do |capability_name, range_hash|
       capability = Capability.find_by_name(capability_name)
+
       if capability
         @sensor_values = @sensor_values.where('capability_id = ?',capability.id)
         min = range_hash['min']
@@ -155,6 +155,7 @@ class SensorValuesController < ApplicationController
 
     def find_platform_resource
       begin
+        ## params[:uuid] gets the from from the uri, while sensor_value_params gets it from the json sent
         @retrieved_resource = PlatformResource.find_by_uuid(params[:uuid])
         raise ActiveRecord::RecordNotFound unless @retrieved_resource
 
