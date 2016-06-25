@@ -13,9 +13,10 @@ class SensorValuesController < ApplicationController
   end
 
   def set_sensor_values_last
-    @sensor_values = SensorValue.select('DISTINCT ON(capability_id, platform_resource_id) sensor_values.*')
-                                .where('capability_id IS NOT NULL')
-                                .order('capability_id, platform_resource_id, date DESC')
+    @sensor_values = SensorValue.where(id: SensorValue
+      .select('DISTINCT ON(capability_id, platform_resource_id) sensor_values.id')
+      .where('capability_id IS NOT NULL')
+      .order('capability_id, platform_resource_id, date DESC'))
     paginate
   end
 
@@ -78,44 +79,52 @@ class SensorValuesController < ApplicationController
 
   def filter_by_value
     return unless sensor_value_params[:range]
-
     capability_hash = sensor_value_params[:range]
-    ids = []
+    sensor_trim = nil
     capability_hash.each do |capability_name, range_hash|
-      remove = []
       capability = Capability.find_by_name(capability_name)
 
       if capability
         cap_values = @sensor_values.where('capability_id = ?', capability.id)
-        min = range_hash['min']
-        max = range_hash['max']
         equal = range_hash['equal']
         if !equal.blank?
           cap_values = cap_values.where(value: equal)
+          sensor_trim = concat_value(sensor_trim, cap_values)
         else
+          min = range_hash['min']
+          max = range_hash['max']
+          remove = []
           if max && max.is_float?
-            cap_values.each do |value|
-              if value.to_f.nil? || value.to_f > max.to_f
-                remove << value.id
+            cap_values.each do |sensor_value|
+              if sensor_value.value.to_f.nil? || sensor_value.value.to_f > max.to_f
+                remove << sensor_value.id
               end
             end
           end
           if min && min.is_float?
-            cap_values.each do |value|
-              if value.to_f.nil? || value.to_f < min.to_f
-                remove << value.id
+            cap_values.each do |sensor_value|
+              if sensor_value.value.to_f.nil? || sensor_value.value.to_f < min.to_f
+                remove << sensor_value.id
               end
             end
           end
-
-          ids = ids + cap_values.where.not(' sensor_values.id IN (?) ', remove).pluck(:id)
+          sensor_trim = concat_value(sensor_trim,
+                cap_values.where.not(' sensor_values.id IN (?) ', remove))
         end
-      else
-        @sensor_values = @sensor_values.limit(0)
       end
     end
+    puts "@@" *30, sensor_trim.class
+    puts "--" *30, @sensor_values.class
+    @sensor_values = sensor_trim
+  end
 
-    @sensor_values = @sensor_values.where(' sensor_values.id IN (?)', ids)
+  def concat_value(sensor_trim, cap_values)
+    puts "LL" *30, sensor_trim
+    if sensor_trim.nil?
+      sensor_trim = cap_values
+    else
+      sensor_trim = sensor_trim | cap_values
+    end
   end
 
   # Return all resources with all their capabilities. Finally, each capability
@@ -130,14 +139,14 @@ class SensorValuesController < ApplicationController
   end
 
   def resource_data
-    begin
+    # begin
       @sensor_values = @sensor_values.where('platform_resource_id = ?',
                                             @retrieved_resource.id)
 
       generate_response
-    rescue Exception
-      render json: { error: 'Internal server error' }, status: 500
-    end
+    # rescue Exception
+      # render json: { error: 'Internal server error' }, status: 500
+    # end
 
   end
 
