@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe SensorValuesController, type: :controller do
 
-  let(:sensor_value_default) { create(:sensor_value) }
+  let(:sensor_value_default) { create(:default_sensor_value) }
 
   before :each do
     request.env["HTTP_ACCEPT"] = 'application/json'
@@ -26,30 +26,21 @@ RSpec.describe SensorValuesController, type: :controller do
       status_opt = ['on', 'off', 'unknown', 'wtf']
       list_of_capabilities = ['no', 'temperature', 'humidity', 'pressure']
       @uuids = []
-      @uris = []
-      @collect_intervals = []
-      @status_list = []
-
-      # Template values to using
-      total.times do |index|
-        uri = "/basic_resources/#{Faker::Number.between(1,10)}/components/" +
-              "#{Faker::Number.between(1,10)}/collect"
-        @uuids.push(SecureRandom.uuid)
-        @uris.push(uri)
-        @collect_intervals.push(Faker::Number.between(60, 1000))
-        @status_list.push(status_opt[rand(status_opt.size)])
-      end
 
       # Creating data on database
       total.times do |index|
+        @uuids.push(SecureRandom.uuid)
+        uri = "/basic_resources/#{Faker::Number.between(1,10)}/components/" +
+              "#{Faker::Number.between(1,10)}/collect"
+
         resource = PlatformResource.create!(uuid: @uuids[index],
-                              uri: @uris[index],
-                              status: @status_list[index],
-                              collect_interval: @collect_intervals[index])
+                            uri: uri,
+                            status: status_opt[rand(status_opt.size)],
+                            collect_interval: Faker::Number.between(60, 1000))
         total_cap = Faker::Number.between(1,3)
         # Create capabilities
         total_cap.times do |index|
-          capability = Capability.create(name: list_of_capabilities[index])
+          capability = Capability.find_or_create_by(name: list_of_capabilities[index])
           resource.capabilities << capability
 
           2.times do |j|
@@ -81,15 +72,11 @@ RSpec.describe SensorValuesController, type: :controller do
       expect(response.content_type).to eq('application/json')
     end
 
-    it "returns a 400 status code when sending invalid data ranges argunments" do
-      do_wrong_date_filter('resources_data', false)
-    end
-
-    it "filters by capabilities values range" do
+    it 'filters by capabilities values range' do
       do_range_value_filter('resources_data', false)
     end
 
-    it "filters by capabilities equal value" do
+    it 'filters by capabilities equal value' do
       do_equal_value_filter('resources_data', false, sensor_value_default.value)
     end
 
@@ -97,61 +84,138 @@ RSpec.describe SensorValuesController, type: :controller do
       do_wrong_date_filter('resources_data', false)
     end
 
-    it 'Returns a 400 status code when sending invalid data ranges argunments' do
-      do_wrong_date_filter('resources_data', false)
-    end
+    context 'Verify request with uuid : ' do
 
-    it 'Verify correct return with one uuid' do
-      post 'resources_data', params: {sensor_value: {uuids: [@uuids[0]]}}
-      expect(response.status).to eq(200)
-      expect(response.body).to_not be_nil
-      expect(response.body.empty?).to be_falsy
-      returned_json = JSON.parse(response.body)
-
-      retrieved_resource = returned_json['resources']
-      expect(retrieved_resource.size).to eq(1)
-      uuid = retrieved_resource.first['uuid']
-      expect(uuid).to eq(@uuids[0])
-
-      json_capabilities = retrieved_resource.first['capabilities']
-
-      platform = PlatformResource.find_by_uuid(@uuids[0])
-      real_capabilities = platform.capabilities.pluck(:name)
-      retrieved_capabilities = json_capabilities.keys
-			expect(real_capabilities).to match_array(retrieved_capabilities)
-
-      platform.capabilities.each do |cap|
-        sensor_values = SensorValue.where(capability_id: cap.id,
-                              platform_resource_id: platform.id).pluck(:value)
-        retrieved_values = []
-        json_capabilities[cap.name].each do |capability|
-          retrieved_values << capability['value']
-        end
-      expect(sensor_values).to match_array(retrieved_values)
+      it 'Correct response, using only one uuid inside Array' do
+        post 'resources_data', params: {sensor_value: {uuids: [@uuids[0]]}}
+        expect(response.status).to eq(200)
+        expect(response.body).to_not be_nil
+        expect(response.body.empty?).to be_falsy
       end
+
+      it 'Correct response, using more than one uuid inside Array' do
+        post 'resources_data', params: {sensor_value: {uuids: @uuids}}
+        expect(response.status).to eq(200)
+        expect(response.body).to_not be_nil
+        expect(response.body.empty?).to be_falsy
+      end
+
+      it 'Correct return of single uuid' do
+        post 'resources_data', params: {sensor_value: {uuids: [@uuids[0]]}}
+        returned_json = JSON.parse(response.body)
+
+        retrieved_resource = returned_json['resources']
+        expect(retrieved_resource.size).to eq(1)
+        uuid = retrieved_resource.first['uuid']
+        expect(uuid).to eq(@uuids[0])
+      end
+
+      it 'Correct return of multiple uuids' do
+        post 'resources_data', params: {sensor_value: {uuids: @uuids}}
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+
+        expect(retrieved_resource.size).to eq(@uuids.size)
+
+        uuids = retrieved_resource.map(&Proc.new {|element| element['uuid']} )
+        expect(uuids).to match_array(@uuids)
+      end
+
+      it 'Correct list of capabilities for one uuid' do
+        post 'resources_data', params: {sensor_value: {uuids: [@uuids[0]]}}
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        json_capabilities = retrieved_resource.first['capabilities']
+
+        platform = PlatformResource.find_by_uuid(@uuids[0])
+        real_capabilities = platform.capabilities.pluck(:name)
+        retrieved_capabilities = json_capabilities.keys
+
+        expect(real_capabilities).to match_array(retrieved_capabilities)
+      end
+
+      it 'Correct list of capabilities for multiple uuids' do
+        post 'resources_data', params: {sensor_value: {uuids: @uuids}}
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+
+        @uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+          real_capabilities = platform.capabilities.pluck(:name)
+          find_capabilities = Proc.new do |element|
+          end
+
+          retrieved_capabilities = retrieved_resource.select do |element|
+            element['uuid'] == uuid
+          end.first['capabilities'].keys
+
+          expect(real_capabilities).to match_array(retrieved_capabilities)
+        end
+      end
+
+      it 'Correct returned sensors values with one uuid' do
+        post 'resources_data', params: {sensor_value: {uuids: [@uuids[0]]}}
+        returned_json = JSON.parse(response.body)
+
+        retrieved_resource = returned_json['resources']
+        json_capabilities = retrieved_resource.first['capabilities']
+
+        platform = PlatformResource.find_by_uuid(@uuids[0])
+        platform.capabilities.each do |cap|
+          sensor_values = SensorValue.where(capability_id: cap.id,
+                              platform_resource_id: platform.id).pluck(:value)
+          retrieved_values = []
+          json_capabilities[cap.name].each do |capability|
+            retrieved_values << capability['value']
+          end
+          expect(sensor_values).to match_array(retrieved_values)
+        end
+      end
+
+      it 'Correct returned sensors values with multiple uuids' do
+        post 'resources_data', params: {sensor_value: {uuids: @uuids[0]}}
+        returned_json = JSON.parse(response.body)
+
+        retrieved_resource = returned_json['resources']
+
+        @uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+
+          json_capabilities = retrieved_resource.select{|element|
+                              element['uuid'] == uuid}.first['capabilities']
+
+          platform.capabilities.each do |cap|
+            sensor_values = SensorValue.where(capability_id: cap.id,
+                                platform_resource_id: platform.id).pluck(:value)
+            retrieved_values = []
+            json_capabilities[cap.name].each do |capability|
+              retrieved_values << capability['value']
+            end
+            expect(sensor_values).to match_array(retrieved_values)
+          end
+        end
+      end
+
     end
-
-    it 'Verify correct return with a list of uuids'
-
   end
 
-  describe "POST resources/:uuid/data" do
-    it "returns http success" do
-      post 'resource_data', params: { uuid: sensor_value_default.platform_resource.uuid }
-      expect(response).to have_http_status(:success)
-    end
-
-    it "returns a 200 status code when accessing normally" do
+  describe 'POST resources/:uuid/data' do
+    it 'returns http success' do
       post 'resource_data', params: { uuid: sensor_value_default.platform_resource.uuid }
       expect(response.status).to eq(200)
     end
 
-    it "returns a json object array" do
+    it 'returns a 200 status code when accessing normally' do
       post 'resource_data', params: { uuid: sensor_value_default.platform_resource.uuid }
-      expect(response.content_type).to eq("application/json")
+      expect(response.status).to eq(200)
     end
 
-    it "renders the correct json and completes the url route" do
+    it 'returns a json object array' do
+      post 'resource_data', params: { uuid: sensor_value_default.platform_resource.uuid }
+      expect(response.content_type).to eq('application/json')
+    end
+
+    it 'renders the correct json and completes the url route' do
       post 'resource_data', params: { uuid: sensor_value_default.platform_resource.uuid }, :format => :json
       expect(response.status).to eq(200)
       expect(response.body).to_not be_nil
@@ -159,8 +223,8 @@ RSpec.describe SensorValuesController, type: :controller do
       expect(response.content_type).to eq("application/json")
     end
 
-    it "returns a 404 status code when sending an invalid 'resource uuid'" do
-      invalid_uuids = [-5, 2.3, "foobar"]
+    it 'returns a 404 status code when sending an invalid resource uuid' do
+      invalid_uuids = [-5, 2.3, 'foobar']
 
       invalid_uuids.each do |uuid|
         post 'resource_data', params: { uuid: uuid }
@@ -168,22 +232,22 @@ RSpec.describe SensorValuesController, type: :controller do
       end
     end
 
-    it "returns a 400 status code when sending invalid data ranges argunments" do
+    it 'returns a 400 status code when sending invalid data ranges argunments' do
       do_wrong_date_filter('resource_data', true)
     end
 
-    it "filters by capabilities values range" do
+    it 'filters by capabilities values range' do
       do_range_value_filter('resource_data', true)
     end
 
-    it "filters by capabilities equal value" do
+    it 'filters by capabilities equal value' do
       do_equal_value_filter('resource_data', true, sensor_value_default.value)
     end
 
   end
 
-  describe "POST resources/data/last" do
-    it "returns http success" do
+  describe 'POST resources/data/last' do
+    it 'returns http success' do
       post 'resources_data_last'
       expect(response).to have_http_status(:success)
     end
@@ -198,7 +262,7 @@ RSpec.describe SensorValuesController, type: :controller do
       expect(response.content_type).to eq("application/json")
     end
 
-    it "renders the correct json and completes the url route" do
+    it 'renders the correct json and completes the url route' do
       post 'resources_data_last', :format => :json
       expect(response.status).to eq(200)
       expect(response.body).to_not be_nil
@@ -206,46 +270,46 @@ RSpec.describe SensorValuesController, type: :controller do
       expect(response.content_type).to eq("application/json")
     end
 
-    it "returns a 400 status code when sending invalid data ranges argunments" do
+    it 'returns a 400 status code when sending invalid data ranges argunments' do
       do_wrong_date_filter('resources_data_last', false)
     end
 
-    it "filters by capabilities values range" do
+    it 'filters by capabilities values range' do
       do_range_value_filter('resources_data_last', false)
     end
 
-    it "filters by capabilities equal value" do
+    it 'filters by capabilities equal value' do
       do_equal_value_filter('resources_data_last', false, sensor_value_default.value)
     end
 
   end
 
-  describe "POST resources/:uuid/data/last" do
-    it "returns http success" do
+  describe 'POST resources/:uuid/data/last' do
+    it 'returns http success' do
       post 'resource_data_last', params: { uuid: sensor_value_default.platform_resource.uuid }
       expect(response).to have_http_status(:success)
     end
 
-    it "returns a 200 status code when accessing normally" do
+    it 'returns a 200 status code when accessing normally' do
       post 'resource_data_last', params: { uuid: sensor_value_default.platform_resource.uuid }
       expect(response.status).to eq(200)
     end
 
-    it "returns a json object array" do
+    it 'returns a json object array' do
       post 'resource_data_last', params: { uuid: sensor_value_default.platform_resource.uuid }
       expect(response.content_type).to eq("application/json")
     end
 
-    it "renders the correct json and completes the url route" do
+    it 'renders the correct json and completes the url route' do
       post 'resource_data_last', params: { uuid: sensor_value_default.platform_resource.uuid }, :format => :json
       expect(response.status).to eq(200)
       expect(response.body).to_not be_nil
       expect(response.body.empty?).to be_falsy
-      expect(response.content_type).to eq("application/json")
+      expect(response.content_type).to eq('application/json')
     end
 
-    it "returns a 404 status code when sending an invalid 'resource uuid'" do
-      invalid_uuids = [-5, 2.3, "foobar"]
+    it 'returns a 404 status code when sending an invalid resource uuid' do
+      invalid_uuids = [-5, 2.3, 'foobar']
 
       invalid_uuids.each do |uuid|
         post 'resource_data_last', params: { uuid: uuid }
@@ -257,11 +321,11 @@ RSpec.describe SensorValuesController, type: :controller do
       do_wrong_date_filter('resource_data_last', true)
     end
 
-    it "filters by capabilities values range" do
+    it 'filters by capabilities values range' do
       do_range_value_filter('resource_data_last', true)
     end
 
-    it "filters by capabilities equal value" do
+    it 'filters by capabilities equal value' do
       do_equal_value_filter('resource_data_last', true, sensor_value_default.value)
     end
 
@@ -280,23 +344,23 @@ RSpec.describe SensorValuesController, type: :controller do
   end
 
   def do_range_value_filter(route, use_uuid)
-  	params = { uuid: sensor_value_default.platform_resource.uuid, 
-      	range: {"temperature": {"min": 20, "max": 70}} }
+    params = { uuid: sensor_value_default.platform_resource.uuid,
+              range: {'temperature': {'min': 20, 'max': 70}} }
     post route, params: params
-	expect(response.status).to eq(200)
-	expect(response.body).to_not be_nil
-	expect(response.body.empty?).to be_falsy
-	expect(response.content_type).to eq("application/json")
+    expect(response.status).to eq(200)
+    expect(response.body).to_not be_nil
+    expect(response.body.empty?).to be_falsy
+    expect(response.content_type).to eq('application/json')
   end
 
   def do_equal_value_filter(route, use_uuid, value)
-  	params = { uuid: sensor_value_default.platform_resource.uuid, 
-      	range: {"temperature": {"equal": value} } }
+    params = { uuid: sensor_value_default.platform_resource.uuid,
+              range: {'temperature': {'equal': value} } }
     post route, params: params
-	expect(response.status).to eq(200)
-	expect(response.body).to_not be_nil
-	expect(response.body.empty?).to be_falsy
-	expect(response.content_type).to eq("application/json")
+    expect(response.status).to eq(200)
+    expect(response.body).to_not be_nil
+    expect(response.body.empty?).to be_falsy
+    expect(response.content_type).to eq('application/json')
   end
 
 end
