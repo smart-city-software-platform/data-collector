@@ -2,24 +2,7 @@ require 'rails_helper'
 
 RSpec.describe SensorValuesController, type: :controller do
 
-  let(:sensor_value_default) { create(:default_sensor_value) }
-
-  before :each do
-    request.env["HTTP_ACCEPT"] = 'application/json'
-  end
-
-  it 'Has a valid factory' do
-    expect(sensor_value_default).to be_valid
-  end
-
-  RSpec.shared_examples 'check http status' do |description, target, status|
-    it ": #{description}" do
-      post target
-      expect(response).to have_http_status(status)
-    end
-  end
-
-  context 'POST resources/data' do
+  context 'Verify request with filters' do
 
     before :each do
       total = 4
@@ -53,49 +36,59 @@ RSpec.describe SensorValuesController, type: :controller do
       end
     end
 
-    context 'Verify request with range values' do
+    context 'Request resources_data with range values' do
 
       it 'Correct response' do
-        post 'resources_data', params: {sensor_value: {range: {temperature: {min: 0, max: 22}}}}
+        post 'resources_data', params: {sensor_value: 
+                                   {range: {pressure: {min: 0, max: 22}}}}
         expect(response.status).to eq(200)
         expect(response.body).to_not be_nil
         expect(response.body.empty?).to be_falsy
       end
 
+      it 'Correct list of capabilities for range with existing capability' do
+        post 'resources_data', params: {sensor_value: 
+                                   {range: {pressure: {min: 0, max: 22}}}}
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        
+        retrieved_uuids = retrieved_resource.map(&Proc.new {|element|
+                                                          element['uuid']} )
+
+        retrieved_uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+          real_capabilities = platform.capabilities.pluck(:name)
+          retrieved_capabilities = retrieved_resource.select do |element|
+            element['uuid'] == uuid
+          end.first['capabilities'].keys
+
+          expect(real_capabilities).to include(*retrieved_capabilities)
+          expect(['pressure']).to include(*retrieved_capabilities)
+        end
+      end
+
+      it 'Correct return for range with inexistent capability' do
+        post 'resources_data', params: {sensor_value: 
+                                   {range: {wontfindnocap: {min: 0, max: 22}}}}
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        
+        retrieved_uuids = retrieved_resource.map(&Proc.new {|element|
+                                                          element['uuid']} )
+
+        expect(retrieved_uuids.size).to eq(0)
+      end
+
     end
 
   end
-
-  def do_wrong_date_filter(route, use_uuid)
-    err_data = ['foobar', 9.68]
-
-    err_data.each do |data|
-      params = { uuid: sensor_value_default.platform_resource.uuid, start_range: data, end_range: data}
-      params.except!(:uuid) unless use_uuid
-
-      post route, params: params
-      expect(response.status).to eq(400)
-    end
-  end
-
-  def do_range_value_filter(route, use_uuid)
-    params = { uuid: sensor_value_default.platform_resource.uuid,
-              range: {'temperature': {'min': 20, 'max': 70}} }
-    post route, params: params
-    expect(response.status).to eq(200)
-    expect(response.body).to_not be_nil
-    expect(response.body.empty?).to be_falsy
-    expect(response.content_type).to eq('application/json')
-  end
-
-  def do_equal_value_filter(route, use_uuid, value)
-    params = { uuid: sensor_value_default.platform_resource.uuid,
-              range: {'temperature': {'equal': value} } }
-    post route, params: params
-    expect(response.status).to eq(200)
-    expect(response.body).to_not be_nil
-    expect(response.body.empty?).to be_falsy
-    expect(response.content_type).to eq('application/json')
-  end
+#     params = { uuid: sensor_value_default.platform_resource.uuid,
+#               range: {'temperature': {'equal': value} } }
+#     post route, params: params
+#     expect(response.status).to eq(200)
+#     expect(response.body).to_not be_nil
+#     expect(response.body.empty?).to be_falsy
+#     expect(response.content_type).to eq('application/json')
+#   end
 
 end

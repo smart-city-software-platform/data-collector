@@ -142,8 +142,6 @@ RSpec.describe SensorValuesController, type: :controller do
         @uuids.each do |uuid|
           platform = PlatformResource.find_by_uuid(uuid)
           real_capabilities = platform.capabilities.pluck(:name)
-          find_capabilities = Proc.new do |element|
-          end
 
           retrieved_capabilities = retrieved_resource.select do |element|
             element['uuid'] == uuid
