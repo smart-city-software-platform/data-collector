@@ -84,6 +84,10 @@ RSpec.describe SensorValuesController, type: :controller do
       do_wrong_date_filter('resources_data', false)
     end
 
+    it "fails when sending invalid pagination arguments" do
+      do_wrong_paging_filter('resources_data', false)
+    end
+
     context 'Verify request with uuid : ' do
 
       it 'Correct response, using only one uuid inside Array' do
@@ -244,6 +248,10 @@ RSpec.describe SensorValuesController, type: :controller do
       do_equal_value_filter('resource_data', true, sensor_value_default.value)
     end
 
+    it "fails when sending invalid pagination arguments" do
+      do_wrong_paging_filter('resource_data', true)
+    end
+
   end
 
   describe 'POST resources/data/last' do
@@ -282,6 +290,10 @@ RSpec.describe SensorValuesController, type: :controller do
       do_equal_value_filter('resources_data_last', false, sensor_value_default.value)
     end
 
+    it "fails when sending invalid pagination arguments" do
+      do_wrong_paging_filter('resources_data_last', false)
+    end
+
   end
 
   describe 'POST resources/:uuid/data/last' do
@@ -301,7 +313,8 @@ RSpec.describe SensorValuesController, type: :controller do
     end
 
     it 'renders the correct json and completes the url route' do
-      post 'resource_data_last', params: { uuid: sensor_value_default.platform_resource.uuid }, :format => :json
+      post 'resource_data_last', params: { uuid: sensor_value_default.platform_resource.uuid },
+                                :format => :json
       expect(response.status).to eq(200)
       expect(response.body).to_not be_nil
       expect(response.body.empty?).to be_falsy
@@ -329,13 +342,17 @@ RSpec.describe SensorValuesController, type: :controller do
       do_equal_value_filter('resource_data_last', true, sensor_value_default.value)
     end
 
+    it "fails when sending invalid pagination arguments" do
+      do_wrong_paging_filter('resource_data_last', true)
+    end
   end
 
   def do_wrong_date_filter(route, use_uuid)
     err_data = ['foobar', 9.68]
 
     err_data.each do |data|
-      params = { uuid: sensor_value_default.platform_resource.uuid, start_range: data, end_range: data}
+      params = {uuid: sensor_value_default.platform_resource.uuid,
+                start_range: data, end_range: data}
       params.except!(:uuid) unless use_uuid
 
       post route, params: params
@@ -344,7 +361,7 @@ RSpec.describe SensorValuesController, type: :controller do
   end
 
   def do_range_value_filter(route, use_uuid)
-    params = { uuid: sensor_value_default.platform_resource.uuid,
+    params = {uuid: sensor_value_default.platform_resource.uuid,
               range: {'temperature': {'min': 20, 'max': 70}} }
     post route, params: params
     expect(response.status).to eq(200)
@@ -354,7 +371,7 @@ RSpec.describe SensorValuesController, type: :controller do
   end
 
   def do_equal_value_filter(route, use_uuid, value)
-    params = { uuid: sensor_value_default.platform_resource.uuid,
+    params = {uuid: sensor_value_default.platform_resource.uuid,
               range: {'temperature': {'equal': value} } }
     post route, params: params
     expect(response.status).to eq(200)
@@ -363,4 +380,28 @@ RSpec.describe SensorValuesController, type: :controller do
     expect(response.content_type).to eq('application/json')
   end
 
+  def do_wrong_paging_filter(route, use_uuid)
+    foo_limits = [-1, 1.23, "foobar"]
+    foo_starts = [-4, 9.87, "barfoo"]
+
+    # Expect errors with all combinations of invalid arguments
+    foo_limits.each do |limit|
+      params = {uuid: sensor_value_default.platform_resource.uuid, limit: limit}
+      params.except!(:uuid) unless use_uuid
+
+      post route, params: params
+      expect(response.status).to eq(400)
+      params.except!(:limit)
+
+      foo_starts.each do |start|
+        params[:start] = start
+        post route, params: params
+        expect(response.status).to eq(400)
+
+        params[:limit] = limit
+        post route, params: params
+        expect(response.status).to eq(400)
+      end
+    end
+  end
 end

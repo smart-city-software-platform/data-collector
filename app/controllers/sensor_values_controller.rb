@@ -21,8 +21,8 @@ class SensorValuesController < ApplicationController
 
   def paginate
     # Validate 'limit' and 'start' parameters (they must be positive integers)
-    limit = session[:limit] || '1000'
-    start = session[:start] || '0'
+    limit = params[:limit] || '1000'
+    start = params[:start] || '0'
     [limit, start].each do |arg|
       if !arg.nil? && !arg.is_positive_int?
         render :json => { :error => "Bad Request: pagination args not valid" }, :status => 400
@@ -32,7 +32,6 @@ class SensorValuesController < ApplicationController
 
     @sensor_values = @sensor_values.limit(limit) unless limit.nil?
     @sensor_values = @sensor_values.offset(start) unless start.nil?
-    session[:start] = (start.to_i + limit.to_i).to_s
   end
 
   def filter_by_uuids
