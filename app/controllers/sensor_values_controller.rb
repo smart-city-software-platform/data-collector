@@ -115,7 +115,7 @@ class SensorValuesController < ApplicationController
       end
     end
 
-    @sensor_values = @sensor_values.where(' id IN (?)', ids)
+    @sensor_values = @sensor_values.where(' sensor_values.id IN (?)', ids)
   end
 
   # Return all resources with all their capabilities. Finally, each capability
