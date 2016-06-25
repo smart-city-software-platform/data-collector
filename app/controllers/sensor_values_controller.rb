@@ -111,6 +111,9 @@ class SensorValuesController < ApplicationController
             end
           end
         end
+      else
+        @sensor_values = @sensor_values.limit(0)
+        return
       end
     end
   end
