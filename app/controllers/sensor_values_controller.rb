@@ -84,7 +84,7 @@ class SensorValuesController < ApplicationController
     unless @start_date.nil?
       @sensor_values = @sensor_values.where("date >= ?", @start_date)
     end
-    unless @start_date.nil?
+    unless @end_date.nil?
       @sensor_values = @sensor_values.where("date <= ?", @end_date)
     end
   end
@@ -98,37 +98,53 @@ class SensorValuesController < ApplicationController
   end
 
   def filter_by_value
-    # this filter MUST be the last one applied because 
     return unless sensor_value_params[:range]
 
     capability_hash = sensor_value_params[:range]
+    sensor_trim = nil
     capability_hash.each do |capability_name, range_hash|
       capability = Capability.find_by_name(capability_name)
 
       if capability
-        @sensor_values = @sensor_values.where('capability_id = ?',
-                                              capability.id)
-        min = range_hash['min']
-        max = range_hash['max']
+        cap_values = @sensor_values.where('capability_id = ?', capability.id)
         equal = range_hash['equal']
-        if equal
-          @sensor_values = @sensor_values.where(value: equal)
+        if !equal.blank?
+          cap_values = cap_values.where(value: equal)
+          sensor_trim = concat_value(sensor_trim, cap_values)
         else
+          min = range_hash['min']
+          max = range_hash['max']
+          remove = []
           if max && max.is_float?
-            @sensor_values.reject do |value|
-              true if value.to_f.nil? || value.to_f > max.to_f
+            cap_values.each do |sensor_value|
+              if sensor_value.value.to_f.nil? ||
+                    sensor_value.value.to_f > max.to_f
+                remove << sensor_value.id
+              end
             end
           end
           if min && min.is_float?
-            @sensor_values.reject do |value|
-              true if value.to_f.nil? || value.to_f < min.to_f
+            cap_values.each do |sensor_value|
+              if sensor_value.value.to_f.nil? ||
+                    sensor_value.value.to_f < min.to_f
+                remove << sensor_value.id
+              end
             end
           end
+          sensor_trim = concat_value(sensor_trim,
+                cap_values.where.not(' sensor_values.id IN (?) ', remove))
         end
-      else
-        @sensor_values = @sensor_values.limit(0)
-        return
       end
+    end
+
+    @sensor_values = sensor_trim
+  end
+
+  def concat_value(sensor_trim, cap_values)
+    if sensor_trim.nil?
+      sensor_trim = cap_values
+    else
+      sensor_trim = sensor_trim | cap_values
     end
   end
 
