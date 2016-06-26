@@ -21,16 +21,16 @@ puts 'Creating Platform resource without capability'
 puts '.' * 50
 
 def create_resource(uuid, uri, status, interval)
-	PlatformResource.create_with(uri: uri,
-															status: status,
-															collect_interval: interval)
-						.find_or_create_by(uuid: uuid)
+  PlatformResource.create_with(uri: uri,
+                               status: status,
+                               collect_interval: interval)
+                  .find_or_create_by(uuid: uuid)
 end
 
 # First, without capability
-10.times do |index|
-  uri = "/basic_resources/#{Faker::Number.between(1,50)}/components/" +
-             "#{Faker::Number.between(1,50)}/collect"
+10.times do
+  uri = "/basic_resources/#{Faker::Number.between(1, 50)}/components/" \
+             "#{Faker::Number.between(1, 50)}/collect"
   create_resource(SecureRandom.uuid, uri, 'on', Faker::Number.between(60, 1000))
 end
 
@@ -39,31 +39,31 @@ puts 'Creating Platform resource with capability'
 puts '.' * 50
 
 list_capabilities = []
-10.times do |index|
+10.times do
   capability_name = Faker::Hipster.word
   list_capabilities << Capability.create!(name: capability_name)
 end
 
-20.times do |index|
-  uri = "/basic_resources/#{Faker::Number.between(50,300)}/components/" +
-             "#{Faker::Number.between(50,300)}/collect"
+20.times do
+  uri = "/basic_resources/#{Faker::Number.between(50, 300)}/components/" \
+             "#{Faker::Number.between(50, 300)}/collect"
   resource = create_resource(SecureRandom.uuid,
-                  uri,
-                  'on',
-                  Faker::Number.between(60, 1000))
-
+                             uri,
+                             'on',
+                             Faker::Number.between(60, 1000))
 
   total_capability = Faker::Number.between(1, 10)
   total_capability.times do |index|
     cap = list_capabilities[index]
     resource.capabilities << cap
-		resource.capabilities.where(name: cap.name).exists?
+    resource.capabilities.where(name: cap.name).exists?
 
-    Faker::Number.between(1, 5).times do |j|
+    Faker::Number.between(1, 5).times do
       SensorValue.create!(capability: cap,
-										platform_resource: resource,
-										date: Faker::Time.between(DateTime.now - 1, DateTime.now),
-										value: Faker::Number.decimal(2, 3))
+                          platform_resource: resource,
+                          date: Faker::Time.between(DateTime.now - 1,
+                                                    DateTime.now),
+                          value: Faker::Number.decimal(2, 3))
     end
   end
 end

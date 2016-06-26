@@ -8,7 +8,7 @@ class String
   # Check that given string is an Integer and
   # verify if it is positive ahead.
   def is_positive_int?
-  	int = Integer(self) rescue false
-  	true if int >= 0 rescue false
+    int = Integer(self) rescue false
+    true if int >= 0 rescue false
   end
 end

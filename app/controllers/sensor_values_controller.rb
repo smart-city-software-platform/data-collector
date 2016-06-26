@@ -1,9 +1,12 @@
 class SensorValuesController < ApplicationController
 
   skip_before_action :verify_authenticity_token
-  before_action :find_platform_resource, only: [:resource_data, :resource_data_last]
-  before_action :set_sensor_values, only: [:resources_data, :resource_data]
-  before_action :set_sensor_values_last, only: [:resources_data_last, :resource_data_last]
+  before_action :find_platform_resource,
+                            only: [:resource_data, :resource_data_last]
+  before_action :set_sensor_values,
+                            only: [:resources_data, :resource_data]
+  before_action :set_sensor_values_last,
+                            only: [:resources_data_last, :resource_data_last]
   before_action :filter_by_uuids, only: [:resources_data, :resources_data_last]
   before_action :filter_by_date, :filter_by_capabilities, :filter_by_value
 
@@ -13,9 +16,11 @@ class SensorValuesController < ApplicationController
   end
 
   def set_sensor_values_last
-    @sensor_values = SensorValue.select('DISTINCT ON(capability_id, platform_resource_id) sensor_values.*')
-                                .where('capability_id IS NOT NULL')
-                                .order('capability_id, platform_resource_id, date DESC')
+    values = 'DISTINCT ON(capability_id, platform_resource_id) sensor_values.*'
+    with_capability = 'capability_id IS NOT NULL'
+    date_desc = 'capability_id, platform_resource_id, date DESC'
+    @sensor_values = SensorValue.select(values).where(with_capability)
+                                                .order(date_desc)
     paginate
   end
 
@@ -28,7 +33,7 @@ class SensorValuesController < ApplicationController
 
     [limit, start].each do |arg|
       if !arg.nil? && !arg.is_positive_int?
-        render :json => {error: "Bad Request: pagination args not valid"},
+        render :json => { error: 'Bad Request: pagination args not valid' },
                 status: 400
         break # Prevents DoubleRenderError
       end
@@ -42,7 +47,8 @@ class SensorValuesController < ApplicationController
     uuids = sensor_value_params[:uuids]
     if !uuids.nil? && uuids.is_a?(Array)
       @ids = PlatformResource.where("uuid IN (?)", uuids).pluck(:id)
-      @sensor_values = @sensor_values.where("platform_resource_id IN (?)", @ids)
+      @sensor_values = @sensor_values.where("platform_resource_id IN (?)",
+                                            @ids)
     end
   end
 
@@ -56,7 +62,8 @@ class SensorValuesController < ApplicationController
         begin
           DateTime.parse(arg)
         rescue
-          render json: { error: 'Bad Request: resource not found' }, status: 400
+          render json: { error: 'Bad Request: resource not found' },
+                          status: 400
           break # Prevents DoubleRenderError ('render' occurring two times)
         end
       end
@@ -85,7 +92,8 @@ class SensorValuesController < ApplicationController
     capability_hash.each do |capability_name, range_hash|
       capability = Capability.find_by_name(capability_name)
       if capability
-        @sensor_values = @sensor_values.where('capability_id = ?',capability.id)
+        @sensor_values = @sensor_values.where('capability_id = ?',
+                                              capability.id)
         min = range_hash['min']
         max = range_hash['max']
         equal = range_hash['equal']
@@ -188,13 +196,13 @@ class SensorValuesController < ApplicationController
         resources[value.platform_resource.uuid] = resource
       end
 
-      render json: {resources: resources.values}
+      render json: { resources: resources.values }
     end
 
     # Notify the client whose are feeding for new resource sensors data
     def broadcast(channel, msg)
-      message = {:channel => channel, :data => msg}
+      message = { channel: channel, data: msg }
       uri = URI.parse("http://#{ request.host }:9292/collector")
-      Net::HTTP.post_form(uri, :message => message.to_json)
+      Net::HTTP.post_form(uri, message: message.to_json)
     end
 end
