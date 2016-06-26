@@ -37,7 +37,7 @@ RSpec.describe SensorValue, type: :model do
   end
 
   it 'has a valid resource id' do
-  	uuid = sensor_value_default.platform_resource.uuid
+    uuid = sensor_value_default.platform_resource.uuid
     expect(uuid).not_to eq('')
 
     uuid_pattern = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/

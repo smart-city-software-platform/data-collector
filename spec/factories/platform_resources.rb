@@ -1,9 +1,7 @@
 # Defines factories for creating PlatformResource objects
 FactoryGirl.define do
-
   # Abstract factory for PlatformResource
   factory :platform_resource do
-
     # Factory with not all necessary attributes
     factory :missing_args do
       uri 'http://localhost:3000/basic_resources/1/components/1/collect'
@@ -30,27 +28,23 @@ FactoryGirl.define do
 
         # Factory with 'capabilities' as a valid array
         factory :with_capability do
-          capabilities ['temperature', 'weight', 'luminosity']
+          capabilities %w('temperature weight luminosity')
         end
 
         factory :with_similar_capability do
-          capabilities ['temperature', 'luminosity']
+          capabilities %w('temperature luminosity')
         end
 
         factory :with_more_capability do
-          capabilities ['temperature', 'luminosity', 'movement',
-                        'radioactivity', 'speed']
+          capabilities %w('temperature luminosity movement
+                          radioactivity speed')
         end
 
         # Factory with 'capabilities' as a valid array
         factory :with_capability_second do
-          capabilities ['humidity', 'pressure']
+          capabilities %w('humidity pressure')
         end
-
       end
-
     end
-
-	end
-
+  end
 end
