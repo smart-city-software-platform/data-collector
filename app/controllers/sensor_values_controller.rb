@@ -33,7 +33,7 @@ class SensorValuesController < ApplicationController
 
     [limit, start].each do |arg|
       if !arg.nil? && !arg.is_positive_int?
-        render :json => {error: "Bad Request: pagination args not valid"},
+        render :json => { error: 'Bad Request: pagination args not valid' },
                 status: 400
         break # Prevents DoubleRenderError
       end
@@ -196,12 +196,12 @@ class SensorValuesController < ApplicationController
         resources[value.platform_resource.uuid] = resource
       end
 
-      render json: {resources: resources.values}
+      render json: { resources: resources.values }
     end
 
     # Notify the client whose are feeding for new resource sensors data
     def broadcast(channel, msg)
-      message = {channel: channel, data: msg}
+      message = { channel: channel, data: msg }
       uri = URI.parse("http://#{ request.host }:9292/collector")
       Net::HTTP.post_form(uri, message: message.to_json)
     end

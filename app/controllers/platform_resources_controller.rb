@@ -8,7 +8,7 @@ class PlatformResourcesController < ApplicationController
       if platform_resource.save
         capabilities = get_capabilities
         assotiate_capability_with_resource(capabilities, platform_resource)
-        render json: {data: platform_resource}, status: 201
+        render json: { data: platform_resource }, status: 201
       else
         render json: { error: 'Internal Server Error' }, status: 500
       end
@@ -27,7 +27,7 @@ class PlatformResourcesController < ApplicationController
 
       assotiate_capability_with_resource(capabilities, @retrieved_resource)
 
-      render json: {data: @retrieved_resource}, status: 201
+      render json: { data: @retrieved_resource }, status: 201
 
       # TODO: Restart data collect thread
     rescue ActiveRecord::RecordNotFound
