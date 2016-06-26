@@ -5,8 +5,8 @@ class SensorValuesController < ApplicationController
                             only: [:resource_data, :resource_data_last]
   before_action :set_sensor_values,
                             only: [:resources_data, :resource_data]
-  before_action :set_sensor_values_last,
-                            only: [:resources_data_last, :resource_data_last]
+  before_action :set_sensor_values_last, only: [:resources_data_last]
+  before_action :set_resource_sensor_values_last, only: [:resource_data_last]
   before_action :filter_by_uuids, only: [:resources_data, :resources_data_last]
   before_action :filter_by_date, :filter_by_capabilities, :filter_by_value
 
@@ -15,12 +15,26 @@ class SensorValuesController < ApplicationController
     paginate
   end
 
-  def set_sensor_values_last
-    values = 'DISTINCT ON(capability_id, platform_resource_id) sensor_values.*'
+  def retrieve_last_sensor_values
+    ids = 'DISTINCT ON(capability_id, platform_resource_id) sensor_values.id'
     with_capability = 'capability_id IS NOT NULL'
     date_desc = 'capability_id, platform_resource_id, date DESC'
-    @sensor_values = SensorValue.select(values).where(with_capability)
-                                                .order(date_desc)
+
+    last_sensor_values_ids = SensorValue.select(ids)
+                                        .where(with_capability)
+                                        .order(date_desc)
+    @sensor_values = SensorValue.where(id: last_sensor_values_ids)
+  end
+
+  def set_sensor_values_last
+    retrieve_last_sensor_values
+    paginate
+  end
+
+  def set_resource_sensor_values_last
+    retrieve_last_sensor_values
+    @sensor_values = @sensor_values.where('platform_resource_id = ?',
+                                            @retrieved_resource.id)
     paginate
   end
 
@@ -46,15 +60,15 @@ class SensorValuesController < ApplicationController
   def filter_by_uuids
     uuids = sensor_value_params[:uuids]
     if !uuids.nil? && uuids.is_a?(Array)
-      @ids = PlatformResource.where("uuid IN (?)", uuids).pluck(:id)
-      @sensor_values = @sensor_values.where("platform_resource_id IN (?)",
-                                            @ids)
+      ids = PlatformResource.where("uuid IN (?)", uuids).pluck(:id)
+      @sensor_values = @sensor_values.where("platform_resource_id IN (?)", ids)
     end
   end
 
   def filter_by_date
-    @start_date = sensor_value_params[:start_range]
-    @end_date = sensor_value_params[:end_range]
+    @start_date = params[:start_range]
+    @end_date = params[:end_range]
+
     # Validate 'start_date' and 'end_date' as DateTimes
     [@start_date, @end_date].each do |arg|
       if !arg.nil?
@@ -84,48 +98,38 @@ class SensorValuesController < ApplicationController
   end
 
   def filter_by_value
+    # this filter MUST be the last one applied because 
     return unless sensor_value_params[:range]
 
     capability_hash = sensor_value_params[:range]
-    ids = []
     capability_hash.each do |capability_name, range_hash|
-      remove = []
       capability = Capability.find_by_name(capability_name)
 
       if capability
         @sensor_values = @sensor_values.where('capability_id = ?',
                                               capability.id)
-
-        cap_values = @sensor_values.where('capability_id = ?', capability.id)
         min = range_hash['min']
         max = range_hash['max']
         equal = range_hash['equal']
-        if !equal.blank?
-          cap_values = cap_values.where(value: equal)
+        if equal
+          @sensor_values = @sensor_values.where(value: equal)
         else
           if max && max.is_float?
-            cap_values.each do |value|
-              if value.to_f.nil? || value.to_f > max.to_f
-                remove << value.id
-              end
+            @sensor_values.reject do |value|
+              true if value.to_f.nil? || value.to_f > max.to_f
             end
           end
           if min && min.is_float?
-            cap_values.each do |value|
-              if value.to_f.nil? || value.to_f < min.to_f
-                remove << value.id
-              end
+            @sensor_values.reject do |value|
+              true if value.to_f.nil? || value.to_f < min.to_f
             end
           end
-
-          ids = ids + cap_values.where.not(' sensor_values.id IN (?) ', remove).pluck(:id)
         end
       else
         @sensor_values = @sensor_values.limit(0)
+        return
       end
     end
-
-    @sensor_values = @sensor_values.where(' id IN (?)', ids)
   end
 
   # Return all resources with all their capabilities. Finally, each capability
@@ -162,10 +166,6 @@ class SensorValuesController < ApplicationController
 
   def resource_data_last
     begin
-      @sensor_values = @sensor_values.where('platform_resource_id = ?',
-                                            @retrieved_resource.id)
-                                      .order('capability_id, date DESC')
-
       generate_response
     rescue Exception
       render json: { error: 'Internal server error' }, status: 500
@@ -176,7 +176,8 @@ class SensorValuesController < ApplicationController
 
     def find_platform_resource
       begin
-        ## params[:uuid] gets the from from the uri, while sensor_value_params gets it from the json sent
+        # params[:uuid] gets from the uri, while sensor_value_params gets
+        # it from the json sent
         @retrieved_resource = PlatformResource.find_by_uuid(params[:uuid])
         raise ActiveRecord::RecordNotFound unless @retrieved_resource
 
