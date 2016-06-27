@@ -36,5 +36,4 @@ class WorkerSupervisor
   def start_collect(uri, resource_id, collect_interval)
     CollectData.perform_async(uri, resource_id, collect_interval)
   end
-
 end
