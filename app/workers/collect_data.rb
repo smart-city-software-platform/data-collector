@@ -1,6 +1,4 @@
 require 'rest-client'
-require 'net/http'
-require 'json'
 
 require_relative '../../lib/worker-manager/worker_supervisor.rb'
 
@@ -23,12 +21,11 @@ class CollectData
 
     collected_json = request_json_from_resource_adaptor(uri) || return
     collected_json['data'].each do |capability_name, value|
-      current_capability = Capability.find_by_name(capability_name)
-      next if current_capability.nil?
-      new_sensor_value(value, collected_json, current_capability, resource_id)
+      capability_id = get_capability_id(capability_name)
+      next if capability_id.nil?
+      new_sensor_value(value, collected_json, capability_id, resource_id)
     end
-    CollectData.perform_in(collect_interval.seconds,
-                           uri, resource_id,
+    CollectData.perform_in(collect_interval.seconds, uri, resource_id,
                            collect_interval)
   end
 
@@ -55,13 +52,23 @@ class CollectData
     return uri, collect_interval
   end
 
-  def new_sensor_value(value, collected_json, current_capability, resource_id)
+  def new_sensor_value(value, collected_json, capability_id, resource_id)
     build = SensorValue.new
     build.value = value
     build.date = collected_json['updated_at']
-    build.capability_id = current_capability.id
+    build.capability_id = capability_id
     build.platform_resource_id = resource_id
     # TODO: Use log class
     puts 'error' unless build.save
+  end
+
+  def get_capability_id(capability_name)
+    capability_id = $redis.get(capability_name)
+    unless capability_id
+      current_capability = Capability.find_by_name(capability_name)
+      return nil unless current_capability.nil?
+      $redis.set(capability_name, current_capability.id)
+    end
+    capability_id
   end
 end
