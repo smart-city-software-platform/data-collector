@@ -5,13 +5,18 @@ class SensorValuesController < ApplicationController
                             only: [:resource_data, :resource_data_last]
   before_action :set_sensor_values,
                             only: [:resources_data, :resource_data]
-  before_action :set_sensor_values_last, only: [:resources_data_last]
-  before_action :set_resource_sensor_values_last, only: [:resource_data_last]
+  before_action :set_sensor_values_last,
+                            only: [:resources_data_last, :resource_data_last]
   before_action :filter_by_uuids, only: [:resources_data, :resources_data_last]
   before_action :filter_by_date, :filter_by_capabilities, :filter_by_value
 
   def set_sensor_values
     @sensor_values = SensorValue.all.includes(:capability)
+    if @retrieved_resource
+      @sensor_values = @sensor_values.where('platform_resource_id = ?',
+                                              @retrieved_resource.id)
+    end
+
     paginate
   end
 
@@ -28,13 +33,11 @@ class SensorValuesController < ApplicationController
 
   def set_sensor_values_last
     retrieve_last_sensor_values
-    paginate
-  end
+    if @retrieved_resource
+      @sensor_values = @sensor_values.where('platform_resource_id = ?',
+                                              @retrieved_resource.id)
+    end
 
-  def set_resource_sensor_values_last
-    retrieve_last_sensor_values
-    @sensor_values = @sensor_values.where('platform_resource_id = ?',
-                                            @retrieved_resource.id)
     paginate
   end
 
@@ -98,6 +101,8 @@ class SensorValuesController < ApplicationController
   end
 
   def filter_by_value
+    # this filter MUST be the last one applied because from here, 
+    # @sensor_values will turn out an array and any other filter can be done.
     return unless sensor_value_params[:range]
 
     capability_hash = sensor_value_params[:range]
@@ -114,30 +119,18 @@ class SensorValuesController < ApplicationController
         else
           min = range_hash['min']
           max = range_hash['max']
-          remove = []
-          if max && max.is_float?
-            cap_values.each do |sensor_value|
-              if sensor_value.value.to_f.nil? ||
-                    sensor_value.value.to_f > max.to_f
-                remove << sensor_value.id
-              end
-            end
+          if !max.blank? && max.is_float?
+            cap_values = cap_values.where(' f_value <= ?', max)
           end
-          if min && min.is_float?
-            cap_values.each do |sensor_value|
-              if sensor_value.value.to_f.nil? ||
-                    sensor_value.value.to_f < min.to_f
-                remove << sensor_value.id
-              end
-            end
+          if !min.blank? && min.is_float?
+            cap_values = cap_values.where(' f_value >= ?', min)
           end
-          sensor_trim = concat_value(sensor_trim,
-                cap_values.where.not(' sensor_values.id IN (?) ', remove))
+          sensor_trim = concat_value(sensor_trim, cap_values)
         end
       end
     end
 
-    @sensor_values = sensor_trim
+    @sensor_values = sensor_trim || []
   end
 
   def concat_value(sensor_trim, cap_values)
@@ -161,9 +154,6 @@ class SensorValuesController < ApplicationController
 
   def resource_data
     begin
-      @sensor_values = @sensor_values.where('platform_resource_id = ?',
-                                            @retrieved_resource.id)
-
       generate_response
     rescue Exception
       render json: { error: 'Internal server error' }, status: 500

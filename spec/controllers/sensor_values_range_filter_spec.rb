@@ -164,7 +164,7 @@ RSpec.describe SensorValuesController, type: :controller do
         retrieved_uuids = retrieved_resource.map(&Proc.new {|element|
                                                           element['uuid']} )
 
-        expect(retrieved_uuids.size).to eq(0)
+        expect(retrieved_uuids.size).to eq(3)
       end
 
       it 'Correct list of capabilities for range multiple capabilities' do
