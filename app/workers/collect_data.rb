@@ -1,3 +1,4 @@
+require 'rest-client'
 require 'net/http'
 require 'json'
 
@@ -41,19 +42,7 @@ class CollectData
   private
 
   def request_json_from_resource_adaptor(uri)
-    begin
-      parsed_uri = URI.parse(uri + URI_COLLECT)
-    rescue URI::Error => ex
-      # TODO: Use log class
-      puts 'Resource URI error: ' + ex
-      return nil
-    end
-
-    request = Net::HTTP::Get.new(parsed_uri.to_s)
-    response = Net::HTTP.start(parsed_uri.host, parsed_uri.port) do |http|
-      http.request(request)
-    end
-
+    response = RestClient.get uri + URI_COLLECT
     validate_json(JSON.parse(response.body))
   end
 
