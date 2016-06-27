@@ -38,9 +38,9 @@ puts '.' * 50
 puts 'Creating Platform resource with capability'
 puts '.' * 50
 
+fake_capabilities = Faker::Hipster.words(10)
 list_capabilities = []
-10.times do
-  capability_name = Faker::Hipster.word
+fake_capabilities.each do |capability_name|
   list_capabilities << Capability.create!(name: capability_name)
 end
 

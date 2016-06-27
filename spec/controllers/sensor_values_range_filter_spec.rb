@@ -1,8 +1,9 @@
-# frozen_string_literal: true
 require 'rails_helper'
 
 RSpec.describe SensorValuesController, type: :controller do
+
   context 'Verify request with filters' do
+
     before :each do
       status_opt = 'on'
       uuids_hash = {
@@ -37,7 +38,7 @@ RSpec.describe SensorValuesController, type: :controller do
               'date': '2016-03-01 10:01:00' },
             { 'value': '22',
               'date': '2016-03-02 08:01:00' },
-            { 'value': '40',
+            { 'value': 'weak',
               'date': '2016-03-03 07:01:00' }
           ],
           'quality': [
@@ -79,9 +80,9 @@ RSpec.describe SensorValuesController, type: :controller do
               'date': '2016-03-01 09:30:00' },
             { 'value': '0',
               'date': '2016-03-01 10:30:00' },
-            { 'value': '22',
+            { 'value': 'old',
               'date': '2016-03-02 08:30:00' },
-            { 'value': '40',
+            { 'value': 'strong',
               'date': '2016-03-03 07:30:00' }
           ]
         }
@@ -112,6 +113,7 @@ RSpec.describe SensorValuesController, type: :controller do
     end
 
     context 'Request resources_data with range values' do
+
       it 'Correct response' do
         post 'resources_data', params: { sensor_value:
                                   { range: { pressure: { min: 0, max: 22 } } } }
@@ -123,10 +125,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'Correct list of capabilities for range with existing capability' do
         post 'resources_data', params: { sensor_value:
                               { range: { temperature: { min: 0, max: 100 } } } }
-        returned_json = JSON.parse(response.body)
-        retrieved_resource = returned_json['resources']
-        retrieved_uuids = retrieved_resource
-                          .map(&proc { |element| element['uuid'] })
+        retrieved_uuids, retrieved_resource = parse_response
 
         expect(retrieved_uuids.empty?).to be_falsy
         retrieved_uuids.each do |uuid|
@@ -144,15 +143,13 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'Correct return for range with inexistent capability' do
         post 'resources_data', params: { sensor_value:
                             { range: { wontfindnocap: { min: 0, max: 22 } } } }
-        returned_json = JSON.parse(response.body)
-        retrieved_resource = returned_json['resources']
-        retrieved_uuids = retrieved_resource
-                          .map(&proc { |element| element['uuid'] })
+        retrieved_uuids, retrieved_resource = parse_response
 
         expect(retrieved_uuids.size).to eq(0)
       end
 
-      it 'Empty list for conflicting multiple capabilities' do
+
+      it 'Correct return for multiple capabilities' do
         post 'resources_data',
              params: {
                sensor_value: {
@@ -162,12 +159,54 @@ RSpec.describe SensorValuesController, type: :controller do
                  }
                }
              }
-        returned_json = JSON.parse(response.body)
-        retrieved_resource = returned_json['resources']
-        retrieved_uuids = retrieved_resource
-                          .map(&proc { |element| element['uuid'] })
 
+        retrieved_uuids, retrieved_resource = parse_response
         expect(retrieved_uuids.size).to eq(3)
+      end
+
+      it 'Empty list for invalid min/max params' do
+        post 'resources_data',
+                params: {
+                  sensor_value: {
+                    range: {
+                        temperature: { min: 'Foo', max: 'Zeni' },
+                        quality: { max: 'Fakebook' }
+                    }
+                  }
+                }
+
+        retrieved_uuids, retrieved_resource = parse_response
+        expect(retrieved_uuids.size).to eq(0)
+      end
+
+      it 'Correct return only for the valid min/max params' do
+        post 'resources_data',
+                params: {
+                  sensor_value: {
+                    range: {
+                        temperature: { min: 0, max: 100 },
+                        quality: { max: 'Foo' }
+                    }
+                  }
+                }
+
+        retrieved_uuids, retrieved_resource = parse_response
+        expect(retrieved_uuids.size).to eq(2)
+      end
+
+      it 'Correct return when used min/max and equal params simultaneously' do
+        post 'resources_data',
+                params: {
+                  sensor_value: {
+                    range: {
+                        pressure: { min: 1000 },
+                        people: { equal: 'weak' } 
+                    }
+                  }
+                }
+
+        retrieved_uuids, retrieved_resource = parse_response
+        expect(retrieved_uuids.size).to eq(2)
       end
 
       it 'Correct list of capabilities for range multiple capabilities' do
@@ -180,13 +219,8 @@ RSpec.describe SensorValuesController, type: :controller do
                  }
                }
              }
-        returned_json = JSON.parse(response.body)
-        retrieved_resource = returned_json['resources']
-        retrieved_uuids = retrieved_resource
-                          .map(&proc { |element| element['uuid'] })
+        retrieved_uuids, retrieved_resource = parse_response
 
-        # TODO: is retrieving empty because concatenation of ranges
-        # instead, the filter should use keyword "IN"
         expect(retrieved_uuids.empty?).to be_falsy
         retrieved_uuids.each do |uuid|
           platform = PlatformResource.find_by_uuid(uuid)
@@ -196,10 +230,19 @@ RSpec.describe SensorValuesController, type: :controller do
           end.first['capabilities'].keys
 
           expect(real_capabilities).to include(*retrieved_capabilities)
-          expect(%w(temperature humidity))
-            .to match_array(retrieved_capabilities)
+          expect(['temperature', 'humidity']).to match_array(retrieved_capabilities)
         end
       end
+
+      def parse_response
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        retrieved_uuids = retrieved_resource
+                              .map(&proc { |element| element['uuid'] })
+
+        return retrieved_uuids, retrieved_resource
+      end
+
     end
 
     context 'Request resources_data with no values' do
@@ -287,5 +330,6 @@ RSpec.describe SensorValuesController, type: :controller do
         end
       end
     end
+
   end
 end

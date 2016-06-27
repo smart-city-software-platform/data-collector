@@ -12,15 +12,11 @@ class SensorValuesController < ApplicationController
 
   def set_sensor_values
     @sensor_values = SensorValue.all.includes(:capability)
-    if @retrieved_resource
-      @sensor_values = @sensor_values.where('platform_resource_id = ?',
-                                              @retrieved_resource.id)
-    end
 
     paginate
   end
 
-  def retrieve_last_sensor_values
+  def set_sensor_values_last
     ids = 'DISTINCT ON(capability_id, platform_resource_id) sensor_values.id'
     with_capability = 'capability_id IS NOT NULL'
     date_desc = 'capability_id, platform_resource_id, date DESC'
@@ -29,14 +25,6 @@ class SensorValuesController < ApplicationController
                                         .where(with_capability)
                                         .order(date_desc)
     @sensor_values = SensorValue.where(id: last_sensor_values_ids)
-  end
-
-  def set_sensor_values_last
-    retrieve_last_sensor_values
-    if @retrieved_resource
-      @sensor_values = @sensor_values.where('platform_resource_id = ?',
-                                              @retrieved_resource.id)
-    end
 
     paginate
   end
@@ -101,8 +89,6 @@ class SensorValuesController < ApplicationController
   end
 
   def filter_by_value
-    # this filter MUST be the last one applied because from here, 
-    # @sensor_values will turn out an array and any other filter can be done.
     return unless sensor_value_params[:range]
 
     capability_hash = sensor_value_params[:range]
@@ -121,16 +107,21 @@ class SensorValuesController < ApplicationController
           max = range_hash['max']
           if !max.blank? && max.is_float?
             cap_values = cap_values.where(' f_value <= ?', max)
+            sensor_trim = concat_value(sensor_trim, cap_values)
           end
           if !min.blank? && min.is_float?
             cap_values = cap_values.where(' f_value >= ?', min)
+            sensor_trim = concat_value(sensor_trim, cap_values)
           end
-          sensor_trim = concat_value(sensor_trim, cap_values)
         end
       end
     end
 
-    @sensor_values = sensor_trim || []
+    if !sensor_trim.blank?
+      @sensor_values = SensorValue.where(id: sensor_trim.pluck(:id))
+    else
+      @sensor_values = SensorValue.limit(0)
+    end
   end
 
   def concat_value(sensor_trim, cap_values)
@@ -154,6 +145,9 @@ class SensorValuesController < ApplicationController
 
   def resource_data
     begin
+      @sensor_values = @sensor_values.where('platform_resource_id = ?',
+                                              @retrieved_resource.id)
+
       generate_response
     rescue Exception
       render json: { error: 'Internal server error' }, status: 500
@@ -172,6 +166,9 @@ class SensorValuesController < ApplicationController
 
   def resource_data_last
     begin
+      @sensor_values = @sensor_values.where('platform_resource_id = ?',
+                                              @retrieved_resource.id)
+
       generate_response
     rescue Exception
       render json: { error: 'Internal server error' }, status: 500
