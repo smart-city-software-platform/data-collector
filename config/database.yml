@@ -17,7 +17,7 @@
 default: &default
   adapter: postgresql
   encoding: utf8
-  pool: 20
+  pool: 30
   username: postgres
   password: admin
 

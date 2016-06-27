@@ -15,9 +15,9 @@ class CollectData
   # Our target: /basic_resources/:id/components/:id/
   def perform(uri, resource_id, collect_interval)
     supervisor = WorkerSupervisor.instance
-    return if supervisor.resource_inactive? (resource_id)
+    return if supervisor.resource_inactive?(resource_id)
 
-    if supervisor.resource_updated? (resource_id)
+    if supervisor.resource_updated?(resource_id)
       uri, collect_interval = update_resource(resource_id)
     end
 
@@ -25,14 +25,7 @@ class CollectData
     collected_json['data'].each do |capability_name, value|
       current_capability = Capability.find_by_name(capability_name)
       next if current_capability.nil?
-
-      build = SensorValue.new
-      build.value = value
-      build.date = collected_json['updated_at']
-      build.capability_id = current_capability.id
-      build.platform_resource_id = resource_id
-      # TODO: Use log class
-      puts 'error' unless build.save
+      new_sensor_value(value, collected_json, current_capability, resource_id)
     end
     CollectData.perform_in(collect_interval.seconds,
                            uri, resource_id,
@@ -60,5 +53,15 @@ class CollectData
     uri = resource.uri
     collect_interval = resource.collect_interval
     return uri, collect_interval
+  end
+
+  def new_sensor_value(value, collected_json, current_capability, resource_id)
+    build = SensorValue.new
+    build.value = value
+    build.date = collected_json['updated_at']
+    build.capability_id = current_capability.id
+    build.platform_resource_id = resource_id
+    # TODO: Use log class
+    puts 'error' unless build.save
   end
 end

@@ -6,8 +6,6 @@ class PlatformResourcesController < ApplicationController
   skip_before_action :verify_authenticity_token
   before_action :find_platform_resource, only: [:update]
 
-  @supervisor
-
   def initialize
     @supervisor = WorkerSupervisor.instance
   end
@@ -18,10 +16,7 @@ class PlatformResourcesController < ApplicationController
       if platform_resource.save
         capabilities = param_capabilities
         assotiate_capability_with_resource(capabilities, platform_resource)
-        # Started worker collect(platform_resource)
-        @supervisor.set_resource_as_active(platform_resource.id)
-        @supervisor.start_collect(platform_resource.uri, platform_resource.id,
-                                 platform_resource.collect_interval)
+        sidekiq_collect_data(platform_resource)
         render json: { data: platform_resource }, status: 201
       else
         render json: { error: 'Internal Server Error' }, status: 500
@@ -84,5 +79,11 @@ class PlatformResourcesController < ApplicationController
       rm = resource.capabilities.where('name not in (?)', capabilities)
       resource.capabilities.delete(rm)
     end
+  end
+
+  def sidekiq_collect_data(platform_resource)
+    @supervisor.set_resource_as_active(platform_resource.id)
+    @supervisor.start_collect(platform_resource.uri, platform_resource.id,
+                              platform_resource.collect_interval)
   end
 end
