@@ -190,10 +190,85 @@ RSpec.describe SensorValuesController, type: :controller do
           expect(real_capabilities).to include(*retrieved_capabilities)
           expect(['temperature', 'humidity']).to match_array(retrieved_capabilities)
         end
-      end
-
+      end	
     end
 
-  end
+    context 'Request resources_data with no values' do
+      it 'Correct response' do
+        post 'resources_data', params: {sensor_value: {capabilities:['temperature','humidity']}}
 
+        expect(response.status).to eq(200)
+        expect(response.body).to_not be_nil
+        expect(response.body.empty?).to be_falsy
+      end  
+      
+      it 'Correct list of capabilities for multiple capabilities' do 
+      	post 'resources_data', params: {sensor_value:{capabilities:['temperature','people']}}
+
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        retrieved_uuids = retrieved_resource.map(&Proc.new {|element|
+                                                          element['uuid']} )
+
+        expect(retrieved_uuids.empty?).to be_falsy
+        retrieved_uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+          real_capabilities = platform.capabilities.pluck(:name)
+          retrieved_capabilities = retrieved_resource.select do |element|
+            element['uuid'] == uuid
+          end.first['capabilities'].keys
+
+          expect(real_capabilities).to include(*retrieved_capabilities)
+          expect(['temperature','people']).to include(*retrieved_capabilities)
+        end
+      end  
+    end
+
+    context 'Request resources_data with date values' do
+      it 'Correct response' do
+      	post 'resources_data', params: {start_range:"2016-01-01 09:21:29",end_range:"2016-03-03 07:00:00"}
+
+      	expect(response.status).to eq(200)
+      	expect(response.body).to_not be_nil
+      	expect(response.body.empty?).to be_falsy
+      end
+
+      it 'Request resources_data return empty' do
+      	post 'resources_data', params: {start_range:"2016-01-01 09:21:29",end_range:"2016-01-03 07:00:00"}
+
+      	returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+
+        expect(retrieved_resource.empty?).to be_truthy
+      end
+
+      it 'Correct return for range of date' do
+      	post 'resources_data', params:{start_range:'2016-02-01 01:03:43', end_range:'2016-06-25 16:03:43'}
+
+      	returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        retrieved_uuids = retrieved_resource.map(&Proc.new {|element|
+                                                          element['uuid']} )
+
+        retrieved_uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+
+          json_capabilities = retrieved_resource.select{|element|
+                              element['uuid'] == uuid}.first['capabilities']
+                            
+          platform.capabilities.each do |cap|
+            sensor_values_date = SensorValue.where(capability_id: cap.id,
+                                platform_resource_id: platform.id).pluck(:date)
+            retrieved_values = []
+            json_capabilities[cap.name].each do |capability|
+              retrieved_values << capability['date']
+            end
+        	
+        	expect(sensor_values_date).to include(*retrieved_values)
+          end	
+        end	
+      end
+	end
+
+  end
 end
