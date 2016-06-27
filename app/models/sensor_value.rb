@@ -5,7 +5,11 @@ class SensorValue < ApplicationRecord
 
   validates :value, :date, :capability, :platform_resource, presence: true
 
-  def to_f
-    self.value.to_f if self.value.is_float? rescue nil
-  end
+  before_save :parse_to_float
+
+  private
+    def parse_to_float
+      self.f_value = self.value.to_f if self.value.is_float? rescue nil
+    end
+
 end

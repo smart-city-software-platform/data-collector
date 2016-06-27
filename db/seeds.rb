@@ -65,6 +65,16 @@ end
                                                     DateTime.now),
                           value: Faker::Number.decimal(2, 3))
     end
+
+    # string sensor values
+    Faker::Number.between(1, 3).times do
+      SensorValue.create!(capability: cap,
+                          platform_resource: resource,
+                          date: Faker::Time.between(DateTime.now - 1,
+                                                    DateTime.now),
+                          value: Faker::Company.name)
+    end
+
   end
 end
 
