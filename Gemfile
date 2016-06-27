@@ -19,6 +19,7 @@ gem 'thin'
 gem 'sidekiq'
 gem 'redis'
 gem 'redis-namespace'
+gem 'rest-client'
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.5.0.beta4'
