@@ -44,10 +44,14 @@ GEM
     builder (3.2.2)
     byebug (9.0.5)
     concurrent-ruby (1.0.2)
+    config (1.2.1)
+      activesupport (>= 3.0)
+      deep_merge (~> 1.0, >= 1.0.1)
     connection_pool (2.2.0)
     cookiejar (0.3.3)
     daemons (1.2.3)
     debug_inspector (0.0.2)
+    deep_merge (1.0.1)
     diff-lcs (1.2.5)
     docile (1.1.5)
     domain_name (0.5.20160615)
@@ -241,6 +245,7 @@ PLATFORMS
 
 DEPENDENCIES
   byebug
+  config
   factory_girl_rails (~> 4.0)
   faker
   faye
