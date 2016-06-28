@@ -79,3 +79,38 @@ end
 end
 
 puts "Created #{SensorValue.count} 'sensor_values'"
+
+puts '.' * 50
+puts 'Creating Resources for Sports tests'
+puts '.' * 50
+
+list_capabilities = []
+sport_capabilities = %W(pollution uv humidity temperature info_green_percentage)
+sport_capabilities.each do |cap_name|
+  Capability.find_or_create_by(name: cap_name)
+  list_capabilities << Capability.find_or_create_by(name: cap_name)
+end
+
+20.times do
+  uri = "/basic_resources/#{Faker::Number.between(50, 300)}/components/" \
+             "#{Faker::Number.between(50, 300)}/collect"
+  resource = create_resource(SecureRandom.uuid,
+                             uri,
+                             'on',
+                             Faker::Number.between(60, 100))
+
+  total_capability = Faker::Number.between(1, 5)
+  total_capability.times do |index|
+    cap = list_capabilities[index]
+    resource.capabilities << cap
+
+    Faker::Number.between(1, 10).times do
+      SensorValue.create!(capability: cap,
+                          platform_resource: resource,
+                          date: Faker::Time.between(DateTime.now - 1,
+                                                    DateTime.now),
+                          value: Faker::Number.decimal(2, 3))
+    end
+
+  end
+end
