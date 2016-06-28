@@ -63,9 +63,11 @@ class PlatformResourcesController < ApplicationController
   def assotiate_capability_with_resource(capabilities, resource)
     if capabilities.kind_of? Array
       capabilities.each do |capability_name|
+        # Thread safe
         begin
           capability = Capability.find_or_create_by(name: capability_name)
-        rescue ActiveRecord::RecordNotUnique
+        rescue ActiveRecord::RecordNotUnique => err
+          LOGGER.info("Attempt to create duplicated capability. #{err}")
           capability = Capability.find_by_name(capability_name)
         end
         unless resource.capabilities.include?(capability)
