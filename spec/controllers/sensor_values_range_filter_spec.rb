@@ -233,16 +233,109 @@ RSpec.describe SensorValuesController, type: :controller do
           expect(['temperature', 'humidity']).to match_array(retrieved_capabilities)
         end
       end
-
       def parse_response
         returned_json = JSON.parse(response.body)
         retrieved_resource = returned_json['resources']
         retrieved_uuids = retrieved_resource
                               .map(&proc { |element| element['uuid'] })
-
         return retrieved_uuids, retrieved_resource
       end
+      it 'Correct empty list for invalid range' do
+        post 'resources_data',
+             params: {
+               sensor_value: {
+                range: {
+                  temperature: { min: 150, max: 160 },
+                  humidity: { min: 130, max: 200 }
+                }
+              }
+            }
 
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        puts retrieved_resource
+        expect(retrieved_resource.empty?).to be_truthy
+      end
+
+      it 'Return correct list uuis between range values' do
+        post 'resources_data',
+             params: {
+              sensor_value: {
+                range: {
+                  temperature: { min: 0, max: 170 },
+                  humidity: { min: 2, max: 102 }
+                }
+              }
+             }
+
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        retrieved_uuids = retrieved_resource
+                          .map(&proc { |element| element['uuid'] })
+
+        retrieved_uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+
+          json_capabilities = retrieved_resource
+                              .select { |element| element['uuid'] == uuid }
+                              .first['capabilities']
+
+          platform.capabilities.each do |cap|
+            next unless json_capabilities.has_key? cap.name
+
+            sensor_values =
+              SensorValue.where(
+                capability_id: cap.id, platform_resource_id: platform.id
+              )
+                         .pluck(:value)
+
+            retrieved_values = []
+            json_capabilities[cap.name].each do |capability|
+              retrieved_values << capability['value']
+            end
+            expect(sensor_values).to include(*retrieved_values)
+          end
+        end
+      end
+
+      it 'Correct return resources_data to equal value' do
+        post 'resources_data',
+             params: {
+              sensor_value: {
+                range: {
+                  temperature: { equal: 29.5}
+                }
+              }
+             }
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        retrieved_uuids = retrieved_resource
+                          .map(&proc { |element| element['uuid'] })
+
+        retrieved_uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+
+          json_capabilities = retrieved_resource
+                              .select { |element| element['uuid'] == uuid }
+                              .first['capabilities']
+
+          platform.capabilities.each do |cap|
+            next unless json_capabilities.has_key? cap.name
+
+            sensor_values =
+              SensorValue.where(
+                capability_id: cap.id, platform_resource_id: platform.id
+              )
+                         .pluck(:value)
+
+            retrieved_values = []
+            json_capabilities[cap.name].each do |capability|
+              retrieved_values << capability['value']
+            end
+            expect(sensor_values).to include(*retrieved_values)
+          end
+        end
+      end
     end
 
     context 'Request resources_data with no values' do
