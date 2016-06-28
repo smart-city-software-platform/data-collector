@@ -105,14 +105,16 @@ class SensorValuesController < ApplicationController
         else
           min = range_hash['min']
           max = range_hash['max']
+          filtered = false
           if !max.blank? && max.is_float?
             cap_values = cap_values.where(' f_value <= ?', max)
-            sensor_trim = concat_value(sensor_trim, cap_values)
+            filtered = true
           end
           if !min.blank? && min.is_float?
+            filtered = true
             cap_values = cap_values.where(' f_value >= ?', min)
-            sensor_trim = concat_value(sensor_trim, cap_values)
           end
+          sensor_trim = concat_value(sensor_trim, cap_values) if filtered
         end
       end
     end
