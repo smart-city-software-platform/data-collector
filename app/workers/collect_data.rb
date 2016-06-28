@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'rest-client'
 
 require_relative '../../lib/worker-manager/worker_supervisor.rb'
@@ -7,7 +8,7 @@ require_relative '../../lib/worker-manager/worker_supervisor.rb'
 class CollectData
   include Sidekiq::Worker
 
-  URI_COLLECT = '/collect'.freeze
+  URI_COLLECT = '/collect'
 
   # Make collect of data from resource.
   # Our target: /basic_resources/:id/components/:id/
@@ -21,7 +22,7 @@ class CollectData
 
     collected_json = request_json_from_resource_adaptor(uri)
     unless collected_json
-      LOGGER.info("Invalid json: #{collected_json.to_s}")
+      LOGGER.info("Invalid json: #{collected_json}")
       return
     end
     collected_json['data'].each do |capability_name, value|
@@ -71,7 +72,7 @@ class CollectData
     unless capability_id
       current_capability = Capability.find_by_name(capability_name)
       unless current_capability
-        LOGGER.info("Problem when tried to retrieve/create:" \
+        LOGGER.info('Problem when tried to retrieve/create:' \
                     " #{capability_name}")
         return nil
       end
