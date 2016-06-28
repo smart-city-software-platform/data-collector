@@ -15,7 +15,14 @@ gem 'jbuilder', '~> 2.0'
 gem 'faye'
 gem 'thin'
 
+# Sidekiq and redis
 gem 'sidekiq'
+gem 'redis'
+gem 'redis-namespace'
+gem 'rest-client'
+
+# Configure application
+gem 'config'
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.5.0.beta4'

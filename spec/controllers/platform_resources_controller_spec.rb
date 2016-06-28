@@ -39,6 +39,10 @@ RSpec.describe PlatformResourcesController, type: :controller do
     expect(empty_capability).to be_valid
   end
 
+  before :each do
+    allow(controller).to receive(:sidekiq_collect_data).and_return(true)
+  end
+
   context 'Verify create method by POST using data with no capabilities' do
 
     it 'Verify request made successfully' do
