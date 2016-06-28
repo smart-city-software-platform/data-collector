@@ -66,8 +66,9 @@ class CollectData
     capability_id = $redis.get(capability_name)
     unless capability_id
       current_capability = Capability.find_by_name(capability_name)
-      return nil unless current_capability.nil?
+      return nil unless current_capability
       $redis.set(capability_name, current_capability.id)
+      return current_capability.id
     end
     capability_id
   end
