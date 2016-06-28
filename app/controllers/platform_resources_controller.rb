@@ -19,9 +19,12 @@ class PlatformResourcesController < ApplicationController
         sidekiq_collect_data(platform_resource)
         render json: { data: platform_resource }, status: 201
       else
+        LOGGER.error("Problem when tried to store resource: " \
+                       "#{platform_resource.inspect}")
         render json: { error: 'Internal Server Error' }, status: 500
       end
-    rescue ActiveRecord::RecordNotUnique
+    rescue ActiveRecord::RecordNotUnique => err
+      LOGGER.info("Error when tried to create resource. #{err}")
       render json: { error: 'Duplicated uuid' }, status: 400
     end
   end
@@ -38,7 +41,8 @@ class PlatformResourcesController < ApplicationController
     render json: { data: @retrieved_resource }, status: 201
 
     # TODO: Restart data collect thread
-  rescue ActiveRecord::RecordNotFound
+  rescue ActiveRecord::RecordNotFound => err
+    LOGGER.info("Error when tried to update resource. #{err}")
     render json: { error: 'Not found' }, status: 404
   end
 
