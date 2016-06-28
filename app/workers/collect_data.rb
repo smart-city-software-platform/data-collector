@@ -19,7 +19,11 @@ class CollectData
       uri, collect_interval = update_resource(resource_id)
     end
 
-    collected_json = request_json_from_resource_adaptor(uri) || return
+    collected_json = request_json_from_resource_adaptor(uri)
+    unless collected_json
+      LOGGER.info("Invalid json: #{collected_json.to_s}")
+      return
+    end
     collected_json['data'].each do |capability_name, value|
       capability_id = get_capability_id(capability_name)
       next if capability_id.nil?
@@ -32,7 +36,7 @@ class CollectData
   private
 
   def request_json_from_resource_adaptor(uri)
-    response = RestClient.get uri + URI_COLLECT
+    response = RestClient.get(uri + URI_COLLECT)
     validate_json(JSON.parse(response.body))
   end
 
@@ -42,6 +46,7 @@ class CollectData
     return nil unless raw_json['data'].is_a? Hash
     raw_json
   rescue
+    LOGGER.info("Invalid json: #{raw_json}", raw_json)
     return nil
   end
 
@@ -58,15 +63,18 @@ class CollectData
     build.date = collected_json['updated_at']
     build.capability_id = capability_id
     build.platform_resource_id = resource_id
-    # TODO: Use log class
-    puts 'error' unless build.save
+    LOGGER.error("Cannot save: #{build.inspect}") unless build.save
   end
 
   def get_capability_id(capability_name)
     capability_id = $redis.get(capability_name)
     unless capability_id
       current_capability = Capability.find_by_name(capability_name)
-      return nil unless current_capability
+      unless current_capability
+        LOGGER.info("Problem when tried to retrieve/create:" \
+                    " #{capability_name}")
+        return nil
+      end
       $redis.set(capability_name, current_capability.id)
       return current_capability.id
     end
