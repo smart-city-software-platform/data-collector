@@ -244,12 +244,12 @@ RSpec.describe SensorValuesController, type: :controller do
         post 'resources_data',
              params: {
                sensor_value: {
-                range: {
-                  temperature: { min: 150, max: 160 },
-                  humidity: { min: 130, max: 200 }
-                }
-              }
-            }
+                 range: {
+                   temperature: { min: 150, max: 160 },
+                   humidity: { min: 130, max: 200 }
+                 }
+               }
+             }
 
         returned_json = JSON.parse(response.body)
         retrieved_resource = returned_json['resources']
@@ -260,12 +260,12 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'Return correct list uuis between range values' do
         post 'resources_data',
              params: {
-              sensor_value: {
-                range: {
-                  temperature: { min: 0, max: 170 },
-                  humidity: { min: 2, max: 102 }
-                }
-              }
+               sensor_value: {
+                 range: {
+                   temperature: { min: 0, max: 170 },
+                   humidity: { min: 2, max: 102 }
+                 }
+               }
              }
 
         returned_json = JSON.parse(response.body)
@@ -281,7 +281,7 @@ RSpec.describe SensorValuesController, type: :controller do
                               .first['capabilities']
 
           platform.capabilities.each do |cap|
-            next unless json_capabilities.has_key? cap.name
+            next unless json_capabilities.key? cap.name
 
             sensor_values =
               SensorValue.where(
@@ -301,11 +301,11 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'Correct return resources_data to equal value' do
         post 'resources_data',
              params: {
-              sensor_value: {
-                range: {
-                  temperature: { equal: 29.5}
-                }
-              }
+               sensor_value: {
+                 range: {
+                   temperature: { equal: 29.5 }
+                 }
+               }
              }
         returned_json = JSON.parse(response.body)
         retrieved_resource = returned_json['resources']
@@ -320,7 +320,7 @@ RSpec.describe SensorValuesController, type: :controller do
                               .first['capabilities']
 
           platform.capabilities.each do |cap|
-            next unless json_capabilities.has_key? cap.name
+            next unless json_capabilities.key? cap.name
 
             sensor_values =
               SensorValue.where(
