@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require_relative '../../lib/worker-manager/worker_supervisor.rb'
 
 # Create and update platform resources. After store data, create a new worker
@@ -12,21 +13,16 @@ class PlatformResourcesController < ApplicationController
 
   def create
     platform_resource = PlatformResource.new(platform_resource_params)
-    begin
-      if platform_resource.save
-        capabilities = param_capabilities
-        assotiate_capability_with_resource(capabilities, platform_resource)
-        sidekiq_collect_data(platform_resource)
-        render json: { data: platform_resource }, status: 201
-      else
-        LOGGER.error("Problem when tried to store resource: " \
-                       "#{platform_resource.inspect}")
-        render json: { error: 'Internal Server Error' }, status: 500
-      end
-    rescue ActiveRecord::RecordNotUnique => err
-      LOGGER.info("Error when tried to create resource. #{err}")
-      render json: { error: 'Duplicated uuid' }, status: 400
-    end
+    platform_resource.save!
+    assotiate_capability_with_resource(param_capabilities, platform_resource)
+    sidekiq_collect_data(platform_resource)
+    render json: { data: platform_resource }, status: 201
+  rescue ActiveRecord::RecordNotUnique => err
+    LOGGER.error("Error when tried to create resource. #{err}")
+    render json: { error: 'Duplicated uuid' }, status: 400
+  rescue
+    LOGGER.error("Attempt to store resource: #{platform_resource.inspect}")
+    render json: { error: 'Internal Server Error' }, status: 500
   end
 
   def update
