@@ -231,6 +231,7 @@ RSpec.describe SensorValuesController, type: :controller do
             .to match_array(retrieved_capabilities)
         end
       end
+
       def parse_response
         returned_json = JSON.parse(response.body)
         retrieved_resource = returned_json['resources']
@@ -238,6 +239,7 @@ RSpec.describe SensorValuesController, type: :controller do
                           .map(&proc { |element| element['uuid'] })
         return retrieved_uuids, retrieved_resource
       end
+
       it 'Correct empty list for invalid range' do
         post 'resources_data',
              params: {
@@ -251,7 +253,7 @@ RSpec.describe SensorValuesController, type: :controller do
 
         returned_json = JSON.parse(response.body)
         retrieved_resource = returned_json['resources']
-        puts retrieved_resource
+
         expect(retrieved_resource.empty?).to be_truthy
       end
 
