@@ -141,7 +141,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'Correct return for range with inexistent capability' do
         post 'resources_data', params: { sensor_value:
                             { range: { wontfindnocap: { min: 0, max: 22 } } } }
-        retrieved_uuids, retrieved_resource = parse_response
+        retrieved_uuids, = parse_response
 
         expect(retrieved_uuids.size).to eq(0)
       end
@@ -157,7 +157,7 @@ RSpec.describe SensorValuesController, type: :controller do
                }
              }
 
-        retrieved_uuids, retrieved_resource = parse_response
+        retrieved_uuids, = parse_response
         expect(retrieved_uuids.size).to eq(3)
       end
 
@@ -172,7 +172,7 @@ RSpec.describe SensorValuesController, type: :controller do
                }
              }
 
-        retrieved_uuids, retrieved_resource = parse_response
+        retrieved_uuids, = parse_response
         expect(retrieved_uuids.size).to eq(0)
       end
 
@@ -187,7 +187,7 @@ RSpec.describe SensorValuesController, type: :controller do
                }
              }
 
-        retrieved_uuids, retrieved_resource = parse_response
+        retrieved_uuids, = parse_response
         expect(retrieved_uuids.size).to eq(2)
       end
 
@@ -202,7 +202,7 @@ RSpec.describe SensorValuesController, type: :controller do
                }
              }
 
-        retrieved_uuids, retrieved_resource = parse_response
+        retrieved_uuids, = parse_response
         expect(retrieved_uuids.size).to eq(2)
       end
 
@@ -421,6 +421,179 @@ RSpec.describe SensorValuesController, type: :controller do
             expect(sensor_values_date).to include(*retrieved_values)
           end
         end
+      end
+    end
+    context 'Verify POST resource data last' do
+      it 'returns the last value for all uuids' do
+        post 'resources_data_last'
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        retrieved_uuids = retrieved_resource
+                          .map(&proc { |element| element['uuid'] })
+
+        retrieved_uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+
+          json_capabilities = retrieved_resource
+                              .select { |element| element['uuid'] == uuid }
+                              .first['capabilities']
+
+          platform.capabilities.each do |cap|
+            last_values =
+              LastSensorValue.where(
+                capability_id: cap.id, platform_resource_id: platform.id
+              )
+                             .pluck(:value)
+
+            retrieved_values = []
+            json_capabilities[cap.name].each do |capability|
+              retrieved_values << capability['value']
+            end
+            expect(last_values.size).to eq(1)
+            expect(retrieved_values.size).to eq(1)
+            expect(retrieved_values.first).to eq(last_values.first)
+          end
+        end
+      end
+
+      it 'returns the last value for one uuid' do
+        post 'resource_data_last', params:
+        { uuid: '2de545ae-841a-4e4a-b961-a43bb324a2b9' }
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        retrieved_uuids = retrieved_resource
+                          .map(&proc { |element| element['uuid'] })
+        expect(retrieved_uuids.size).to eq(1)
+        retrieved_uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+          json_capabilities = retrieved_resource
+                              .select { |element| element['uuid'] == uuid }
+                              .first['capabilities']
+          platform.capabilities.each do |cap|
+            last_values =
+              LastSensorValue.where(
+                capability_id: cap.id, platform_resource_id: platform.id
+              )
+                             .pluck(:value)
+
+            retrieved_values = []
+            json_capabilities[cap.name].each do |capability|
+              retrieved_values << capability['value']
+            end
+            expect(last_values.size).to eq(1)
+            expect(retrieved_values.size).to eq(1)
+            expect(retrieved_values.first).to eq(last_values.first)
+          end
+        end
+      end
+
+      it 'returns the last value for multiple uuids' do
+        post 'resources_data_last', params: {
+          sensor_value: {
+            uuids: [
+              '2de545ae-841a-4e4a-b961-a43bb324a2b9',
+              '989e93f2-35e1-4a2b-b80a-4bf91030085c'
+            ]
+          }
+        }
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        retrieved_uuids = retrieved_resource
+                          .map(&proc { |element| element['uuid'] })
+        expect(retrieved_uuids.size).to eq(2)
+        retrieved_uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+          json_capabilities = retrieved_resource
+                              .select { |element| element['uuid'] == uuid }
+                              .first['capabilities']
+          platform.capabilities.each do |cap|
+            last_values =
+              LastSensorValue.where(
+                capability_id: cap.id, platform_resource_id: platform.id
+              )
+                             .pluck(:value)
+
+            retrieved_values = []
+            json_capabilities[cap.name].each do |capability|
+              retrieved_values << capability['value']
+            end
+            expect(last_values.size).to eq(1)
+            expect(retrieved_values.size).to eq(1)
+            expect(retrieved_values.first).to eq(last_values.first)
+          end
+        end
+      end
+    end
+    context 'validate pagination' do
+      it 'returns the correct limit of first pagination' do
+        post 'resources_data', params:
+        { start: '0', limit: '3' }
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        retrieved_uuids = retrieved_resource
+                          .map(&proc { |element| element['uuid'] })
+
+        expect(retrieved_uuids.size).to eq(1)
+        retrieved_uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+
+          json_capabilities = retrieved_resource
+                              .select { |element| element['uuid'] == uuid }
+                              .first['capabilities']
+
+          platform.capabilities.each do |cap|
+            next unless json_capabilities.key? cap.name
+            sensor_values =
+              SensorValue.where(
+                capability_id: cap.id, platform_resource_id: platform.id
+              )
+                         .pluck(:value)
+
+            retrieved_values = []
+            json_capabilities[cap.name].each do |capability|
+              retrieved_values << capability['value']
+            end
+
+            expect(retrieved_values.size).to eq(3)
+            expect(sensor_values).to include(*retrieved_values)
+          end
+        end
+      end
+
+      it 'returns the correct limit of second pagination' do
+        post 'resources_data', params:
+        { start: '3', limit: '3' }
+        returned_json = JSON.parse(response.body)
+        retrieved_resource = returned_json['resources']
+        retrieved_uuids = retrieved_resource
+                          .map(&proc { |element| element['uuid'] })
+
+        total_values = 0
+        retrieved_uuids.each do |uuid|
+          platform = PlatformResource.find_by_uuid(uuid)
+
+          json_capabilities = retrieved_resource
+                              .select { |element| element['uuid'] == uuid }
+                              .first['capabilities']
+
+          platform.capabilities.each do |cap|
+            next unless json_capabilities.key? cap.name
+            sensor_values =
+              SensorValue.where(
+                capability_id: cap.id, platform_resource_id: platform.id
+              )
+                         .pluck(:value)
+
+            retrieved_values = []
+            json_capabilities[cap.name].each do |capability|
+              retrieved_values << capability['value']
+            end
+
+            total_values += retrieved_values.size
+            expect(sensor_values).to include(*retrieved_values)
+          end
+        end
+        expect(total_values).to eq(3)
       end
     end
   end

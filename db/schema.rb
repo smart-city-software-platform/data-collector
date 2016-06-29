@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160626171625) do
+ActiveRecord::Schema.define(version: 20160629145403) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -20,6 +20,18 @@ ActiveRecord::Schema.define(version: 20160626171625) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_capabilities_on_name", unique: true, using: :btree
+  end
+
+  create_table "last_sensor_values", force: :cascade do |t|
+    t.string   "value"
+    t.float    "f_value"
+    t.datetime "date"
+    t.integer  "capability_id"
+    t.integer  "platform_resource_id"
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+    t.index ["capability_id"], name: "index_last_sensor_values_on_capability_id", using: :btree
+    t.index ["platform_resource_id"], name: "index_last_sensor_values_on_platform_resource_id", using: :btree
   end
 
   create_table "platform_resource_capabilities", force: :cascade do |t|

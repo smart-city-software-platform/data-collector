@@ -17,14 +17,7 @@ class SensorValuesController < ApplicationController
   end
 
   def set_sensor_values_last
-    ids = 'DISTINCT ON(capability_id, platform_resource_id) sensor_values.id'
-    with_capability = 'capability_id IS NOT NULL'
-    date_desc = 'capability_id, platform_resource_id, date DESC'
-
-    last_sensor_values_ids = SensorValue.select(ids)
-                                        .where(with_capability)
-                                        .order(date_desc)
-    @sensor_values = SensorValue.where(id: last_sensor_values_ids)
+    @sensor_values = LastSensorValue.all.includes(:capability)
 
     paginate
   end
