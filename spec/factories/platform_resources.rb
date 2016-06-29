@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # Defines factories for creating PlatformResource objects
 FactoryGirl.define do
   # Abstract factory for PlatformResource
