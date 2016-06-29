@@ -1,5 +1,5 @@
 <p align="center"><img src="documentation/collect250.png" alt="logo data collector" width="250" height="250"/> </p>
-<p align="center"><h1 align="center"> Smart City Plat - Data Collector</h1></p>
+<p align="center"><h1 align="center"> Smart City Platform - Data Collector</h1></p>
 
 ![Build Status](https://gitlab.com/smart-city-platform/data_collector/badges/master/build.svg)
 [![Mezuro](https://img.shields.io/badge/mezuro-green-green.svg)](http://mezuro.org/en/repositories/73)
@@ -24,7 +24,7 @@ all temperature sensors on USP.
 # How to use
 
 > We developed a [step-by-step](https://gitlab.com/smart-city-platform/data_collector/wikis/basic-setup) to configure the application.
-After configuring the application, it should be possible to request data and filter it from a some parameters.
+After configure the application, it should be possible to request data and filter it from a some parameters.
 
 > We developed a [manual](https://social.stoa.usp.br/poo2016/projeto/group-3-data-collector) to understand our API.In this manual can be found a data structure used to return the data and some usage examples.
 
