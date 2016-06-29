@@ -24,7 +24,7 @@ all temperature sensors on USP.
 # How to use
 
 > We developed a [step-by-step](https://gitlab.com/smart-city-platform/data_collector/wikis/basic-setup) to configure the application.
-After configure the application, it should be possible to request data and filter it from a some parameters.
+After configure the application, it should be possible to request data and filter it by some parameters.
 
 > We developed a [manual](https://social.stoa.usp.br/poo2016/projeto/group-3-data-collector) to understand our API.In this manual can be found a data structure used to return the data and some usage examples.
 
