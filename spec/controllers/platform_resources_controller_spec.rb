@@ -166,9 +166,9 @@ RSpec.describe PlatformResourcesController, type: :controller do
 
         # Use the model that relates Capability and Platform Resource to find
         # out the corresponding platform resource id
-        resource_Capability = PlatformResourceCapability
+        resource_capability = PlatformResourceCapability
                               .find_by_capability_id(cap_id)
-        resource_id = resource_Capability.platform_resource_id
+        resource_id = resource_capability.platform_resource_id
 
         # Check if the uuid in the Platform Resource model is correct by
         # comparing it to the sent data's uuid
@@ -176,7 +176,7 @@ RSpec.describe PlatformResourcesController, type: :controller do
         expect(resource.uuid).to eq(with_capability_params[:uuid])
       end
     end
-  # End of post context
+    # End of post context
   end
 
   context 'Verify update method by PUT using data with no capabilities' do

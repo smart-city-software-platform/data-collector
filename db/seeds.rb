@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # This file should contain all the record creation needed to seed the database
 # with its default values.
 # The data can then be loaded with the rails db:seed command (or created
@@ -74,7 +75,6 @@ end
                                                     DateTime.now),
                           value: Faker::Company.name)
     end
-
   end
 end
 
@@ -85,7 +85,7 @@ puts 'Creating Resources for Sports tests'
 puts '.' * 50
 
 list_capabilities = []
-sport_capabilities = %W(pollution uv humidity temperature info_green_percentage)
+sport_capabilities = %w(pollution uv humidity temperature info_green_percentage)
 sport_capabilities.each do |cap_name|
   Capability.find_or_create_by(name: cap_name)
   list_capabilities << Capability.find_or_create_by(name: cap_name)
@@ -111,6 +111,5 @@ end
                                                     DateTime.now),
                           value: Faker::Number.decimal(2, 3))
     end
-
   end
 end
