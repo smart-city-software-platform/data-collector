@@ -14,5 +14,4 @@ class Publisher
     uri = URI.parse(url)
     Net::HTTP.post_form(uri, message: message.to_json)
   end
-
 end
