@@ -64,7 +64,13 @@ class CollectData
     build.date = collected_json['updated_at']
     build.capability_id = capability_id
     build.platform_resource_id = resource_id
-    LOGGER.error("Cannot save: #{build.inspect}") unless build.save
+    if !build.save
+      LOGGER.error("Cannot save: #{build.inspect}")
+    else
+      uri = 'http://localhost:9292/collector'
+      channel = '/resources_data'
+      Publisher.instance.broadcast(uri, channel, build)
+    end
   end
 
   def get_capability_id(capability_name)
@@ -81,4 +87,5 @@ class CollectData
     end
     capability_id
   end
+
 end
