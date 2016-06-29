@@ -51,4 +51,24 @@ RSpec.describe SensorValue, type: :model do
     expect(FactoryGirl.build(:sensor_value, value: '')).not_to be_valid
     expect(FactoryGirl.build(:sensor_value, value: nil)).not_to be_valid
   end
+
+  it 'creates a new last sensor value' do
+    expect{sensor_value_default}.to change{LastSensorValue.count}.by(1)
+  end
+
+  it 'updates an existing last sensor value' do
+    sensor_value = FactoryGirl.create(:default_sensor_value, value: '10')
+    last_value_before = LastSensorValue.find_by(
+      capability_id: sensor_value.capability_id,
+      platform_resource_id: sensor_value.platform_resource_id
+    )
+    expect(last_value_before.value).to eq('10')
+    expect{FactoryGirl.create(:default_sensor_value, value: '15')}.not_to change{LastSensorValue.count}
+    last_value_after = LastSensorValue.find_by(
+      capability_id: sensor_value.capability_id,
+      platform_resource_id: sensor_value.platform_resource_id
+    )
+    expect(last_value_after.value).to eq('15')
+    
+  end
 end
