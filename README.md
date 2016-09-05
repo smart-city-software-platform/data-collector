@@ -39,3 +39,15 @@ After configure the application, it should be possible to request data and filte
 > * [Our API](https://social.stoa.usp.br/poo2016/projeto/group-3-data-collector)
 > * [Base architecture overview](http://s32.postimg.org/a16hueg79/Arquitetura_geral_da_plataforma_de_cidades_intel.jpg)
 > * Data Collector's [Class Diagram](documentation/ClassDiagram.png)
+
+# Docker setup
+
+* Install Docker and docker-compose (versão 1.6+): (google it)
+* Run on terminal:
+  * `$ docker-compose build`
+  * `$ docker-compose run website bundle exec rake db:create`
+  * `$ docker-compose run website bundle exec rake db:migrate`
+  * **(OPTIONAL):** `$ docker-compose run website bundle exec rake db:seed`
+  * `$ `docker-compose up`
+
+Now you can access the application on http://localhost:4000

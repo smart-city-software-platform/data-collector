@@ -1,0 +1,34 @@
+version: '2'
+
+services:
+  db:
+    image: 'postgres:9.5'
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'admin'
+
+  redis:
+    image: 'redis'
+
+  website:
+    depends_on:
+      - 'db'
+      - 'redis'
+    build: .
+    ports:
+      - 4000:3000
+    volumes:
+      - '.:/data-collector'
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'admin'
+
+  sidekiq:
+    links:
+      - 'db'
+      - 'redis'
+    build: .
+    command: bundle exec sidekiq
+    volumes:
+      - '.:/data-collector'
+
