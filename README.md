@@ -1,7 +1,7 @@
 <p align="center"><img src="documentation/collect250.png" alt="logo data collector" width="250" height="250"/> </p>
 <p align="center"><h1 align="center"> Smart City Platform - Data Collector</h1></p>
 
-![Build Status](https://gitlab.com/smart-city-platform/data_collector/badges/master/build.svg)
+![Build Status](https://gitlab.com/smart-city-software-platform/data-collector/badges/master/build.svg)
 [![Mezuro](https://img.shields.io/badge/mezuro-green-green.svg)](http://mezuro.org/en/repositories/73)
 [![Mezuro](https://img.shields.io/badge/freenode-%40data__collector-blue.svg)]()
 
@@ -23,20 +23,20 @@ all temperature sensors on USP.
 
 # How to use
 
-> We developed a [step-by-step](https://gitlab.com/smart-city-platform/data_collector/wikis/basic-setup) to configure the application.
+> We developed a [step-by-step](https://gitlab.com/smart-city-software-platform/data-collector/wikis/basic-setup) to configure the application.
 After configure the application, it should be possible to request data and filter it by some parameters.
 
-> We developed a [manual](https://social.stoa.usp.br/poo2016/projeto/group-3-data-collector) to understand our API.In this manual can be found a data structure used to return the data and some usage examples.
+> We developed a [manual](https://gitlab.com/smart-city-software-platform/data-collector/wikis/home) to understand our API.In this manual can be found a data structure used to return the data and some usage examples.
 
-> We developed a [pub/sub](https://gitlab.com/smart-city-platform/data_collector/wikis/pub-sub) system,to be possible receive a notification every time that a new data is collected.
+> We developed a [pub/sub](https://gitlab.com/smart-city-software-platform/data-collector/wikis/pub-sub) system,to be possible receive a notification every time that a new data is collected.
 
 # Setup and references
 
 > If you need help, look at:
 
-> * [Basic setup](https://gitlab.com/smart-city-platform/data_collector/wikis/basic-setup)
-> * [Publish/Subscribe](https://gitlab.com/smart-city-platform/data_collector/wikis/pub-sub)
-> * [Our API](https://social.stoa.usp.br/poo2016/projeto/group-3-data-collector)
+> * [Basic setup](https://gitlab.com/smart-city-software-platform/data-collector/wikis/basic-setup)
+> * [Publish/Subscribe](https://gitlab.com/smart-city-software-platform/data-collector/wikis/pub-sub)
+> * [Our API](https://gitlab.com/smart-city-software-platform/data-collector/wikis/home)
 > * [Base architecture overview](http://s32.postimg.org/a16hueg79/Arquitetura_geral_da_plataforma_de_cidades_intel.jpg)
 > * Data Collector's [Class Diagram](documentation/ClassDiagram.png)
 
