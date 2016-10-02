@@ -44,10 +44,10 @@ After configure the application, it should be possible to request data and filte
 
 * Install Docker and docker-compose (versão 1.6+): (google it)
 * Run on terminal:
-  * `$ docker-compose build`
-  * `$ docker-compose run website bundle exec rake db:create`
-  * `$ docker-compose run website bundle exec rake db:migrate`
-  * **(OPTIONAL):** `$ docker-compose run website bundle exec rake db:seed`
-  * `$ `docker-compose up`
+  * `$ scripts/setup`
+  * `$ scripts/development start` # start the container
+  * `$ scripts/development stop`  # stop the container
+  * `$ scripts/development exec data-collector <command>` # run a command into data-collector container
+  * **(OPTIONAL):** `$ scripts/development exec data-collector rake db:seed`
 
 Now you can access the application on http://localhost:4000

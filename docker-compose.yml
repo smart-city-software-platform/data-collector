@@ -1,7 +1,8 @@
 version: '2'
 
 services:
-  db:
+  postgres:
+    container_name: data-collector-pg
     image: 'postgres:9.5'
     environment:
       POSTGRES_USER: 'postgres'
@@ -9,10 +10,12 @@ services:
 
   redis:
     image: 'redis'
+    container_name: data-collector-redis
 
-  website:
+  data-collector:
+    container_name: data-collector 
     depends_on:
-      - 'db'
+      - 'postgres'
       - 'redis'
     build: .
     ports:
@@ -24,11 +27,16 @@ services:
       POSTGRES_PASSWORD: 'admin'
 
   sidekiq:
+    container_name: data-collector-sidekiq
     links:
-      - 'db'
+      - 'postgres'
       - 'redis'
     build: .
     command: bundle exec sidekiq
     volumes:
       - '.:/data-collector'
 
+networks:
+  default:
+    external:
+      name: platform 

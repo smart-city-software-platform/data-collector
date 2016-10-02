@@ -20,7 +20,7 @@ default: &default
   pool: 30
   username: <%= ENV['POSTGRES_USER'] %>
   password: <%= ENV['POSTGRES_PASSWORD'] %>
-  host: db
+  host: data-collector-pg
   port: 5432
 
 development:
