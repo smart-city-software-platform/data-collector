@@ -27,10 +27,9 @@ if [ "$1" = "start" ]; then
   # this always update a database.yml 
   cp $BASE_DIR/config/database.yml.docker $BASE_DIR/config/database.yml
 
-  if [ ! -f "$BASE_DIR/config/database.yml" ]; then
-    sudo docker-compose exec $PROJECT_NAME rake db:create
-    verify "Cannot create database."
-  fi
+  # this should verify weather the database exists
+  sudo docker-compose exec $PROJECT_NAME rake db:create
+  verify "Cannot create database."
 
   sudo docker-compose exec $PROJECT_NAME rake db:migrate
   verify "Cannot migrate database."
