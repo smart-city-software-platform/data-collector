@@ -35,6 +35,9 @@ services:
     command: bundle exec sidekiq
     volumes:
       - '.:/data-collector'
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'admin'
 
 networks:
   default:

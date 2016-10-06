@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 require 'rest-client'
 
-require_relative '../../lib/worker-manager/worker_supervisor.rb'
-
 # The main goal of this class it is to make a request to resource and then
 # parse the response. Afterwards store the new data on the database.
 class CollectData
@@ -66,10 +64,6 @@ class CollectData
     build.platform_resource_id = resource_id
     if !build.save
       LOGGER.error("Cannot save: #{build.inspect}")
-    else
-      uri = 'http://localhost:9292/collector'
-      channel = '/resources_data'
-      Publisher.instance.broadcast(uri, channel, build)
     end
   end
 

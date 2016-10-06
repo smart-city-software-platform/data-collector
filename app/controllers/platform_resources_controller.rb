@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-require_relative '../../lib/worker-manager/worker_supervisor.rb'
 
 # Create and update platform resources. After store data, create a new worker
 # to collect data from resource-adaptor.
