@@ -15,6 +15,8 @@ gem 'jbuilder', '~> 2.0'
 gem 'faye'
 gem 'thin'
 
+gem 'rack-cors', :require => 'rack/cors'
+
 # Sidekiq and redis
 gem 'sidekiq'
 gem 'redis'
