@@ -4,7 +4,6 @@ require 'singleton'
 # lot of workers collecting data from thousands of resources because of this
 # we have to control basic things related to it.
 class WorkerSupervisor
-
   include Singleton
 
   @@resource_id_status = $redis
