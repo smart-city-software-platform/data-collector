@@ -23,6 +23,9 @@ gem 'redis'
 gem 'redis-namespace'
 gem 'rest-client'
 
+# RabbitMQ
+gem 'bunny', '~> 2.5.1'
+
 # Configure application
 gem 'config'
 
