@@ -9,7 +9,7 @@ describe PlatformResourcesController, type: :controller do
   # Create objects from factories
   let(:empty_capability) { FactoryGirl.build(:empty_capability) }
 
-  let(:missing_args_params) { FactoryGirl.attributes_for(:missing_args) }
+  let(:missing_args_params) { FactoryGirl.attributes_for(:missing_args).slice(:uuid) }
 
   let(:typo_params) { FactoryGirl.attributes_for(:typo) }
 
@@ -48,11 +48,6 @@ describe PlatformResourcesController, type: :controller do
     it 'Verify if request was stored successfully' do
       expect { post :create, params: { data: essential_args_params } }
         .to change(PlatformResource, :count).by(1)
-    end
-
-    it 'Typo in parameter to post results in a server error' do
-      post :create, params: { data: typo_params }
-      expect(response.status).to eq(500)
     end
 
     it 'Wrong number of arguments results in a server error' do
