@@ -1,4 +1,4 @@
 # Be sure to restart your server when you modify this file
 
 services:
-  rabbitmq: "rabbitmq"
+  rabbitmq: <%= ENV['RABBITMQ_HOST'] %>
