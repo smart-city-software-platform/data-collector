@@ -56,5 +56,3 @@ test:
 production:
   <<: *default
   database: data_collector_production
-  username: data_collector
-  password: <%= ENV['DATA_COLLECTOR_DATABASE_PASSWORD'] %>
