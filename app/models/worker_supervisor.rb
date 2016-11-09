@@ -1,10 +1,6 @@
 require 'singleton'
 
-# This class is a singleton supervisor to manage workers. Usually, we have a
-# lot of workers collecting data from thousands of resources because of this
-# we have to control basic things related to it.
 class WorkerSupervisor
-
   include Singleton
 
   @@resource_id_status = $redis
@@ -13,27 +9,21 @@ class WorkerSupervisor
   ACTIVE ||= 1
   UPDATED ||= 2
 
-  def set_resource_collector_status(resource_id, status)
-    @@resource_id_status[resource_id] = status
+  def start_data_collection(workers = 1)
+    workers.times do
+      CollectData.perform_async
+    end
   end
 
-  def resource_status(resource_id)
-    @@resource_id_status[resource_id] || INACTIVE
+  def start_resource_creation(workers = 1)
+    workers.times do
+      CreateResources.perform_async
+    end
   end
 
-  def resource_updated?(resource_id)
-    resource_status(resource_id) == UPDATED
-  end
-
-  def resource_inactive?(resource_id)
-    resource_status(resource_id) == INACTIVE
-  end
-
-  def set_resource_as_active(resource_id)
-    @@resource_id_status[resource_id] = ACTIVE
-  end
-
-  def start_collect(uri, resource_id, collect_interval)
-    CollectData.perform_async(uri, resource_id, collect_interval)
+  def start_resource_update(workers = 1)
+    workers.times do
+      UpdateResources.perform_async
+    end
   end
 end

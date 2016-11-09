@@ -25,6 +25,9 @@ services:
     environment:
       POSTGRES_USER: 'postgres'
       POSTGRES_PASSWORD: 'admin'
+      POSTGRES_HOST: 'data-collector-pg'
+      POSTGRES_PORT: 5432
+      RABBITMQ_HOST: 'rabbitmq'
 
   sidekiq:
     container_name: data-collector-sidekiq
@@ -38,6 +41,9 @@ services:
     environment:
       POSTGRES_USER: 'postgres'
       POSTGRES_PASSWORD: 'admin'
+      POSTGRES_HOST: 'data-collector-pg'
+      POSTGRES_PORT: 5432
+      RABBITMQ_HOST: 'rabbitmq'
 
 networks:
   default:

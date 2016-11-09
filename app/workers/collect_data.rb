@@ -1,85 +1,63 @@
-# frozen_string_literal: true
-require 'rest-client'
+require 'bunny'
+require 'rubygems'
+require 'json'
 
-# The main goal of this class it is to make a request to resource and then
-# parse the response. Afterwards store the new data on the database.
 class CollectData
   include Sidekiq::Worker
 
-  URI_COLLECT = '/collect'
+  TOPIC = 'data_stream'
+  QUEUE = 'data_collection'
 
-  # Make collect of data from resource.
-  # Our target: /basic_resources/:id/components/:id/
-  def perform(uri, resource_id, collect_interval)
-    supervisor = WorkerSupervisor.instance
-    return if supervisor.resource_inactive?(resource_id)
+  def initialize
+    @conn = Bunny.new(hostname: SERVICES_CONFIG['services']['rabbitmq'])
+    @conn.start
+    @channel = @conn.create_channel
+    @topic = @channel.topic(TOPIC)
+    @queue = @channel.queue(QUEUE)
+  end
 
-    if supervisor.resource_updated?(resource_id)
-      uri, collect_interval = update_resource(resource_id)
-    end
+  def perform
+    @queue.bind(@topic, routing_key: '#')
 
-    collected_json = request_json_from_resource_adaptor(uri)
-    unless collected_json
-      LOGGER.info("Invalid json: #{collected_json}")
-      return
+    begin
+      @queue.subscribe(:block => true) do |delivery_info, properties, body|
+        routing_keys = delivery_info.routing_key.split('.')
+        uuid = routing_keys.first
+        resource = PlatformResource.find_by_uuid(uuid)
+        if resource.nil?
+          LOGGER.error("CollectData: Could not find resource #{uuid}")
+        end
+
+        capability_name = routing_keys.last
+        capability = Capability.find_by_name(capability_name)
+        if capability.nil?
+          LOGGER.error("CollectData: Could not find capability #{capability_name}")
+        end
+
+        create_sensor_value(resource, capability, body)
+      end
+    rescue Exception => e
+      @channel.close
+      @conn.close
+      LOGGER.error("CollectData: channel closed - #{e.message}")
     end
-    collected_json['data'].each do |capability_name, value|
-      capability_id = get_capability_id(capability_name)
-      next if capability_id.nil?
-      new_sensor_value(value, collected_json, capability_id, resource_id)
-    end
-    CollectData.perform_in(collect_interval.seconds, uri, resource_id,
-                           collect_interval)
   end
 
   private
 
-  def request_json_from_resource_adaptor(uri)
-    response = RestClient.get(uri + URI_COLLECT)
-    validate_json(JSON.parse(response.body))
-  end
+  def create_sensor_value(resource, capability, body)
+    if resource && capability
+      json = JSON.parse(body)
+      value = SensorValue.new(
+        value: json['value'],
+        date: json['timestamp'],
+        capability_id: capability.id,
+        platform_resource_id: resource.id
+      )
 
-  def validate_json(raw_json)
-    return nil if raw_json['data'].nil? || raw_json['updated_at'].nil?
-    DateTime.parse(raw_json['updated_at'])
-    return nil unless raw_json['data'].is_a? Hash
-    raw_json
-  rescue
-    LOGGER.info("Invalid json: #{raw_json}", raw_json)
-    return nil
-  end
-
-  def update_resource(resource_id)
-    resource = PlatformResource.find(resource_id)
-    uri = resource.uri
-    collect_interval = resource.collect_interval
-    return uri, collect_interval
-  end
-
-  def new_sensor_value(value, collected_json, capability_id, resource_id)
-    build = SensorValue.new
-    build.value = value
-    build.date = collected_json['updated_at']
-    build.capability_id = capability_id
-    build.platform_resource_id = resource_id
-    if !build.save
-      LOGGER.error("Cannot save: #{build.inspect}")
-    end
-  end
-
-  def get_capability_id(capability_name)
-    capability_id = $redis.get(capability_name)
-    unless capability_id
-      current_capability = Capability.find_by_name(capability_name)
-      unless current_capability
-        LOGGER.info('Problem when tried to retrieve/create:' \
-                    " #{capability_name}")
-        return nil
+      if !value.save
+        LOGGER.error("CollectData: Cannot save: #{value.inspect} with body #{body}")
       end
-      $redis.set(capability_name, current_capability.id)
-      return current_capability.id
     end
-    capability_id
   end
-
 end

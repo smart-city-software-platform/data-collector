@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 require 'rails_helper'
 require 'securerandom'
+require 'spec_helper'
 
-RSpec.describe PlatformResourcesController, type: :controller do
+describe PlatformResourcesController, type: :controller do
   subject { response }
 
   # Create objects from factories
   let(:empty_capability) { FactoryGirl.build(:empty_capability) }
 
-  let(:missing_args_params) { FactoryGirl.attributes_for(:missing_args) }
+  let(:missing_args_params) { FactoryGirl.attributes_for(:missing_args).slice(:uuid) }
 
   let(:typo_params) { FactoryGirl.attributes_for(:typo) }
 
@@ -38,10 +39,6 @@ RSpec.describe PlatformResourcesController, type: :controller do
     expect(empty_capability).to be_valid
   end
 
-  before :each do
-    allow(controller).to receive(:sidekiq_collect_data).and_return(true)
-  end
-
   context 'Verify create method by POST using data with no capabilities' do
     it 'Verify request made successfully' do
       post :create, params: { data: essential_args_params }
@@ -51,11 +48,6 @@ RSpec.describe PlatformResourcesController, type: :controller do
     it 'Verify if request was stored successfully' do
       expect { post :create, params: { data: essential_args_params } }
         .to change(PlatformResource, :count).by(1)
-    end
-
-    it 'Typo in parameter to post results in a server error' do
-      post :create, params: { data: typo_params }
-      expect(response.status).to eq(500)
     end
 
     it 'Wrong number of arguments results in a server error' do

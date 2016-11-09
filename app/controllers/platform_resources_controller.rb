@@ -6,15 +6,10 @@ class PlatformResourcesController < ApplicationController
   skip_before_action :verify_authenticity_token
   before_action :find_platform_resource, only: [:update]
 
-  def initialize
-    @supervisor = WorkerSupervisor.instance
-  end
-
   def create
     platform_resource = PlatformResource.new(platform_resource_params)
     platform_resource.save!
     assotiate_capability_with_resource(param_capabilities, platform_resource)
-    sidekiq_collect_data(platform_resource)
     render json: { data: platform_resource }, status: 201
   rescue ActiveRecord::RecordNotUnique => err
     LOGGER.error("Error when tried to create resource. #{err}")
@@ -35,7 +30,6 @@ class PlatformResourcesController < ApplicationController
 
     render json: { data: @retrieved_resource }, status: 201
 
-    # TODO: Restart data collect thread
   rescue ActiveRecord::RecordNotFound => err
     LOGGER.info("Error when tried to update resource. #{err}")
     render json: { error: 'Not found' }, status: 404
@@ -84,11 +78,5 @@ class PlatformResourcesController < ApplicationController
       rm = resource.capabilities.where('name not in (?)', capabilities)
       resource.capabilities.delete(rm)
     end
-  end
-
-  def sidekiq_collect_data(platform_resource)
-    @supervisor.set_resource_as_active(platform_resource.id)
-    @supervisor.start_collect(platform_resource.uri, platform_resource.id,
-                              platform_resource.collect_interval)
   end
 end

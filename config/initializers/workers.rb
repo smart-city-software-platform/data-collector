@@ -1,0 +1,5 @@
+supervisor = WorkerSupervisor.instance
+
+supervisor.start_data_collection
+supervisor.start_resource_creation
+supervisor.start_resource_update
