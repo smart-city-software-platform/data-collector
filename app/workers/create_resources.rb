@@ -19,25 +19,28 @@ class CreateResources
   def perform
     @queue.bind(@topic, routing_key: '#.sensor.#')
 
-    begin
-      @queue.subscribe(:block => true) do |delivery_info, properties, body|
-        routing_keys = delivery_info.routing_key.split('.')
-        json = JSON.parse(body)
-        resource_attributes = json.slice(
-          'uri',
-          'uuid',
-          'status',
-          'collect_interval',
-          'created_at',
-          'updated_at'
-        )
+    while true
+      begin
+        @queue.subscribe(:block => true) do |delivery_info, properties, body|
+          routing_keys = delivery_info.routing_key.split('.')
+          json = JSON.parse(body)
+          resource_attributes = json.slice(
+            'uri',
+            'uuid',
+            'status',
+            'collect_interval',
+            'created_at',
+            'updated_at'
+          )
 
-        create_resource(resource_attributes, json)
+          create_resource(resource_attributes, json)
+          LOGGER.info("ResourcesCreate: Resource Created: #{resource_attributes}")
+        end
+      rescue Exception => e
+        RESOURCE_LOGGER.error("ResourcesCreate: channel closed - #{e.message}")
+        sleep 1
+        next
       end
-    rescue Exception => e
-      @channel.close
-      @conn.close
-      LOGGER.error("ResourcesCreate: channel closed - #{e.message}")
     end
   end
   
@@ -49,9 +52,9 @@ class CreateResources
       resource.save!
       assotiate_capability_with_resource(json['capabilities'], resource)
     rescue ActiveRecord::RecordNotUnique => err
-      LOGGER.error("ResourcesCreate: Error when tried to create resource. #{err}")
+      RESOURCE_LOGGER.error("ResourcesCreate: Error when tried to create resource. #{err}")
     rescue ActiveRecord::RecordInvalid => invalid
-      LOGGER.error("ResourcesCreate: Attempt to store resource: #{invalid.record.errors}")
+      RESOURCE_LOGGER.error("ResourcesCreate: Attempt to store resource: #{invalid.record.errors}")
     end
   end
 
@@ -62,7 +65,7 @@ class CreateResources
         begin
           capability = Capability.find_or_create_by(name: capability_name)
         rescue ActiveRecord::RecordNotUnique => err
-          LOGGER.info("ResourcesCreate: Attempt to create duplicated capability. #{err}")
+          RESOURCE_LOGGER.info("ResourcesCreate: Attempt to create duplicated capability. #{err}")
           capability = Capability.find_by_name(capability_name)
         end
 

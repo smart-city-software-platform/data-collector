@@ -19,25 +19,27 @@ class UpdateResources
   def perform
     @queue.bind(@topic, routing_key: '#.sensor.#')
 
-    begin
-      @queue.subscribe(:block => true) do |delivery_info, properties, body|
-        routing_keys = delivery_info.routing_key.split('.')
-        json = JSON.parse(body)
-        resource_attributes = json.slice(
-          'uri',
-          'uuid',
-          'status',
-          'collect_interval',
-          'created_at',
-          'updated_at'
-        )
+    while true
+      begin
+        @queue.subscribe(:block => true) do |delivery_info, properties, body|
+          routing_keys = delivery_info.routing_key.split('.')
+          json = JSON.parse(body)
+          resource_attributes = json.slice(
+            'uri',
+            'uuid',
+            'status',
+            'collect_interval',
+            'created_at',
+            'updated_at'
+          )
 
-      update_resource(resource_attributes, json)
+          update_resource(resource_attributes, json)
+        end
+      rescue Exception => e
+        RESOURCE_LOGGER.error("UpdateResources: channel closed - #{e.message}")
+        sleep 1
+        next
       end
-    rescue Exception => e
-      @channel.close
-      @conn.close
-      LOGGER.error("UpdateResources: channel closed - #{e.message}")
     end
   end
   
@@ -54,9 +56,9 @@ class UpdateResources
 
       assotiate_capability_with_resource(json['capabilities'], resource)
     rescue ActiveRecord::RecordNotFound => err
-      LOGGER.error("ResourcesUpdate: Could not find resource with uuid #{json['uuid']}. #{err}")
+      RESOURCE_LOGGER.error("ResourcesUpdate: Could not find resource with uuid #{json['uuid']}. #{err}")
     rescue ActiveRecord::RecordInvalid => invalid
-      LOGGER.error("ResourcesUpdate: Attempt to store resource: #{invalid.record.errors}")
+      RESOURCE_LOGGER.error("ResourcesUpdate: Attempt to store resource: #{invalid.record.errors}")
     end
   end
 
@@ -67,7 +69,7 @@ class UpdateResources
         begin
           capability = Capability.find_or_create_by(name: capability_name)
         rescue ActiveRecord::RecordNotUnique => err
-          LOGGER.info("UpdateResources: Attempt to create duplicated capability. #{err}")
+          RESOURCE_LOGGER.info("UpdateResources: Attempt to create duplicated capability. #{err}")
           capability = Capability.find_by_name(capability_name)
         end
 
