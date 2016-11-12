@@ -40,8 +40,6 @@ class CollectData
         end
       rescue Exception => e
         LOGGER.error("CollectData: channel closed - #{e.message}")
-        sleep 1
-        next
       end
     end
   end

@@ -38,8 +38,6 @@ class CreateResources
         end
       rescue Exception => e
         RESOURCE_LOGGER.error("ResourcesCreate: channel closed - #{e.message}")
-        sleep 1
-        next
       end
     end
   end

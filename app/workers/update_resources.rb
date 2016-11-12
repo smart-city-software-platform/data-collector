@@ -37,8 +37,6 @@ class UpdateResources
         end
       rescue Exception => e
         RESOURCE_LOGGER.error("UpdateResources: channel closed - #{e.message}")
-        sleep 1
-        next
       end
     end
   end
