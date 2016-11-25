@@ -7,10 +7,12 @@ services:
 
 variables:
   # Configure PostGreSQL environment variables (https://hub.docker.com/_/postgres/)
-  POSTGRES_PASSWORD: admin
+  POSTGRES_USER: data_collector
+  POSTGRES_PASSWORD: data_collector
   POSTGRES_DB: data_collector_test
 
 before_script:
+  - cp config/database-ci.yml config/database.yml
   - ruby -v
   - which ruby
   - sh setup.sh
