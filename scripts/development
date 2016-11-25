@@ -17,15 +17,18 @@ verify () {
   fi
 }
 
+CURRENT_DIR=`pwd`
+cd $BASE_DIR
+
 if [ "$1" = "start" ]; then
   echo "${CYAN}"
   echo "Starting service $PROJECT_NAME"
   echo "${NC}"
 
-  sudo docker-compose up -d 
+  sudo docker-compose up -d
   verify "Cannot run the container. For more information take a look in docker's log"
 
-  # this always update a database.yml 
+  # this always update a database.yml
   cp $BASE_DIR/config/database.yml.docker $BASE_DIR/config/database.yml
 
   # this should verify weather the database exists
@@ -70,7 +73,7 @@ if [ "$1" = "exec" ]; then
 
   shift
   command="sudo docker-compose exec"
- 
+
   for word in $@; do
      command="$command $word"
   done
@@ -78,3 +81,5 @@ if [ "$1" = "exec" ]; then
   $command
   verify "Cannot execute command into the container. Please verify logs"
 fi
+
+cd $CURRENT_DIR
