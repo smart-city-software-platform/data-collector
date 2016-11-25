@@ -25,17 +25,17 @@ if [ "$1" = "start" ]; then
   echo "Starting service $PROJECT_NAME"
   echo "${NC}"
 
-  sudo docker-compose up -d
+  docker-compose up -d
   verify "Cannot run the container. For more information take a look in docker's log"
 
   # this always update a database.yml
   cp $BASE_DIR/config/database.yml.docker $BASE_DIR/config/database.yml
 
   # this should verify weather the database exists
-  sudo docker-compose exec $PROJECT_NAME rake db:create
+  docker-compose exec $PROJECT_NAME rake db:create
   verify "Cannot create database."
 
-  sudo docker-compose exec $PROJECT_NAME rake db:migrate
+  docker-compose exec $PROJECT_NAME rake db:migrate
   verify "Cannot migrate database."
 
   echo "${CYAN}"
@@ -56,7 +56,7 @@ if [ "$1" = "stop" ]; then
   sudo rm -rf tmp/pids/*
   verify "You have some issue when we try to delete tmp/pids/*. Verify it manually"
 
-  sudo docker-compose stop
+  docker-compose stop
   verify "You have some issue when we try to stop the container. Verify it manually"
 
   echo "${CYAN}"
@@ -72,7 +72,7 @@ if [ "$1" = "exec" ]; then
   echo "${NC}"
 
   shift
-  command="sudo docker-compose exec"
+  command="docker-compose exec"
 
   for word in $@; do
      command="$command $word"

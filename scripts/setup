@@ -20,22 +20,22 @@ verify () {
 CURRENT_DIR=`pwd`
 cd $BASE_DIR/..
 
-sudo docker -v > /dev/null
+docker -v > /dev/null
 verify "Error: You need to install docker first!"
 
-sudo docker-compose -v > /dev/null
+docker-compose -v > /dev/null
 verify "Error: You need to install docker-compose first!"
 
 echo "Installing and updating base image."
-sudo docker pull debian:unstable
+docker pull debian:unstable
 verify "Error: downloading debian:unstable image."
 
 echo "Building docker image."
-sudo docker-compose build
+docker-compose build
 verify "Error: building docker image."
 
 echo "Creating shared network."
-sudo docker network create $PLATFORM 2> /dev/null
+docker network create $PLATFORM 2> /dev/null
 
 cd $CURRENT_DIR
 
