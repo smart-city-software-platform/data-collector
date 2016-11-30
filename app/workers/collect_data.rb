@@ -30,9 +30,16 @@ class CollectData
           end
 
           capability_name = routing_keys.last
-          capability = Capability.find_by_name(capability_name)
-          if capability.nil?
-            LOGGER.error("CollectData: Could not find capability #{capability_name}")
+          capability = Capability.find_or_initialize_by(name: capability_name)
+          if capability.new_record?
+            # Avoid race condition
+            begin
+              capability.save!
+            rescue ActiveRecord::RecordNotUnique
+              capability = Capability.find_by_name(capability_name)
+            end
+            resource.capabilities << capability
+            LOGGER.info("CollectData: Capability #{capability_name} created and associated with resource #{uuid}")
           end
 
           create_sensor_value(resource, capability, body)
