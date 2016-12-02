@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# Responsible for returning and filtering sensor values
 class SensorValuesController < ApplicationController
   skip_before_action :verify_authenticity_token
   before_action :find_platform_resource,
@@ -30,11 +31,10 @@ class SensorValuesController < ApplicationController
     limit = '1000' unless limit.to_i <= 1000
 
     [limit, start].each do |arg|
-      if !arg.nil? && !arg.is_positive_int?
-        render :json => { error: 'Bad Request: pagination args not valid' },
-               status: 400
-        break # Prevents DoubleRenderError
-      end
+      next unless !arg.nil? && !arg.is_positive_int?
+      render json: { error: 'Bad Request: pagination args not valid' },
+             status: 400
+      break # Prevents DoubleRenderError
     end
 
     @sensor_values = @sensor_values.limit(limit) unless limit.nil?
@@ -43,10 +43,9 @@ class SensorValuesController < ApplicationController
 
   def filter_by_uuids
     uuids = sensor_value_params[:uuids]
-    if !uuids.nil? && uuids.is_a?(Array)
-      ids = PlatformResource.where('uuid IN (?)', uuids).pluck(:id)
-      @sensor_values = @sensor_values.where('platform_resource_id IN (?)', ids)
-    end
+    return nil if uuids.nil? || !uuids.is_a?(Array)
+    ids = PlatformResource.where('uuid IN (?)', uuids).pluck(:id)
+    @sensor_values = @sensor_values.where('platform_resource_id IN (?)', ids)
   end
 
   def filter_by_date
@@ -55,29 +54,26 @@ class SensorValuesController < ApplicationController
 
     # Validate 'start_date' and 'end_date' as DateTimes
     [@start_date, @end_date].each do |arg|
-      if !arg.nil?
-        begin
-          DateTime.parse(arg)
-        rescue
-          render json: { error: 'Bad Request: resource not found' }, status: 400
-          break # Prevents DoubleRenderError ('render' occurring two times)
-        end
+      next if arg.nil?
+      begin
+        DateTime.parse(arg)
+      rescue
+        render json: { error: 'Bad Request: resource not found' }, status: 400
+        break # Prevents DoubleRenderError ('render' occurring two times)
       end
     end
     unless @start_date.nil?
       @sensor_values = @sensor_values.where('date >= ?', @start_date)
     end
-    unless @end_date.nil?
-      @sensor_values = @sensor_values.where('date <= ?', @end_date)
-    end
+    return nil if @end_date.nil?
+    @sensor_values = @sensor_values.where('date <= ?', @end_date)
   end
 
   def filter_by_capabilities
     capabilities_name = sensor_value_params[:capabilities]
-    if capabilities_name
-      ids = Capability.where('name in (?)', capabilities_name).pluck(:id)
-      @sensor_values = @sensor_values.where('capability_id in (?)', ids)
-    end
+    return nil unless capabilities_name
+    ids = Capability.where('name in (?)', capabilities_name).pluck(:id)
+    @sensor_values = @sensor_values.where('capability_id in (?)', ids)
   end
 
   def filter_by_value
@@ -87,27 +83,26 @@ class SensorValuesController < ApplicationController
     sensor_trim = nil
     capability_hash.each do |capability_name, range_hash|
       capability = Capability.find_by_name(capability_name)
+      next unless capability
 
-      if capability
-        cap_values = @sensor_values.where('capability_id = ?', capability.id)
-        equal = range_hash['equal']
-        if !equal.blank?
-          cap_values = cap_values.where(value: equal)
-          sensor_trim = concat_value(sensor_trim, cap_values)
-        else
-          min = range_hash['min']
-          max = range_hash['max']
-          filtered = false
-          if !max.blank? && max.is_float?
-            cap_values = cap_values.where(' f_value <= ?', max)
-            filtered = true
-          end
-          if !min.blank? && min.is_float?
-            filtered = true
-            cap_values = cap_values.where(' f_value >= ?', min)
-          end
-          sensor_trim = concat_value(sensor_trim, cap_values) if filtered
+      cap_values = @sensor_values.where('capability_id = ?', capability.id)
+      equal = range_hash['equal']
+      if !equal.blank?
+        cap_values = cap_values.where(value: equal)
+        sensor_trim = concat_value(sensor_trim, cap_values)
+      else
+        min = range_hash['min']
+        max = range_hash['max']
+        filtered = false
+        if !max.blank? && max.is_float?
+          cap_values = cap_values.where(' f_value <= ?', max)
+          filtered = true
         end
+        if !min.blank? && min.is_float?
+          filtered = true
+          cap_values = cap_values.where(' f_value >= ?', min)
+        end
+        sensor_trim = concat_value(sensor_trim, cap_values) if filtered
       end
     end
 
@@ -120,9 +115,9 @@ class SensorValuesController < ApplicationController
 
   def concat_value(sensor_trim, cap_values)
     if sensor_trim.nil?
-      sensor_trim = cap_values
+      cap_values
     else
-      sensor_trim = sensor_trim | cap_values
+      sensor_trim | cap_values
     end
   end
 
@@ -130,41 +125,23 @@ class SensorValuesController < ApplicationController
   # has all the historical values associated with it.
   # @note http://localhost:3000/resources/data
   def resources_data
-    begin
-      generate_response
-    rescue Exception
-      render json: { error: 'Internal server error' }, status: 500
-    end
+    generate_response
   end
 
   def resource_data
-    begin
-      @sensor_values = @sensor_values.where('platform_resource_id = ?',
-                                            @retrieved_resource.id)
-
-      generate_response
-    rescue Exception
-      render json: { error: 'Internal server error' }, status: 500
-    end
+    @sensor_values = @sensor_values.where('platform_resource_id = ?',
+                                          @retrieved_resource.id)
+    generate_response
   end
 
   def resources_data_last
-    begin
-      generate_response
-    rescue Exception
-      render json: { error: 'Internal server error' }, status: 500
-    end
+    generate_response
   end
 
   def resource_data_last
-    begin
-      @sensor_values = @sensor_values.where('platform_resource_id = ?',
-                                            @retrieved_resource.id)
-
-      generate_response
-    rescue Exception
-      render json: { error: 'Internal server error' }, status: 500
-    end
+    @sensor_values = @sensor_values.where('platform_resource_id = ?',
+                                          @retrieved_resource.id)
+    generate_response
   end
 
   private
@@ -189,22 +166,25 @@ class SensorValuesController < ApplicationController
 
   def generate_response
     resources = {}
-    @sensor_values.each do |value|
-      collected = {}
-      collected['value'] = value.value
-      collected['date'] = value.date
+    begin
+      @sensor_values.each do |value|
+        collected = {}
+        collected['value'] = value.value
+        collected['date'] = value.date
 
-      resource = resources[value.platform_resource.uuid] || {}
-      capabilities = resource['capabilities'] || {}
-      capability = capabilities[value.capability.name] || []
-      capability << collected
+        resource = resources[value.platform_resource.uuid] || {}
+        capabilities = resource['capabilities'] || {}
+        capability = capabilities[value.capability.name] || []
+        capability << collected
 
-      capabilities[value.capability.name] = capability
-      resource['uuid'] = value.platform_resource.uuid
-      resource['capabilities'] = capabilities
-      resources[value.platform_resource.uuid] = resource
+        capabilities[value.capability.name] = capability
+        resource['uuid'] = value.platform_resource.uuid
+        resource['capabilities'] = capabilities
+        resources[value.platform_resource.uuid] = resource
+      end
+      render json: { resources: resources.values }
+    rescue Exception
+      render json: { error: 'Internal Server Error' }, status: 500
     end
-
-    render json: { resources: resources.values }
   end
 end
