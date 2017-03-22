@@ -4,7 +4,6 @@ FILE_DIR=`perl -e 'use Cwd "abs_path";print abs_path(shift)' $0`
 BASE_DIR=`dirname $FILE_DIR`/..
 
 PROJECT_NAME="data-collector"
-EXPOSED_PORT=4000
 
 CYAN='\033[0;36m'
 NC='\033[0m'
@@ -36,8 +35,6 @@ if [ "$1" = "start" ]; then
   verify "Cannot migrate database."
 
   echo "${CYAN}"
-  echo "############################################################"
-  echo "     Exposed port is: $EXPOSED_PORT"
   echo "############################################################"
   echo "     To execute commands in container you must run"
   echo "     $ scripts/development exec <service> <command>"
