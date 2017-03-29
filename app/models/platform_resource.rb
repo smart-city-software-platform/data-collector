@@ -7,6 +7,7 @@ class PlatformResource < ApplicationRecord
   field :uuid, type: String
   field :status, type: String
   field :capabilities, type: Array
+  field :collect_interval, type: Integer
 
   has_many :sensor_values
 
