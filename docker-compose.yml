@@ -5,8 +5,7 @@ services:
     container_name: data-collector-mongo
     image: 'mongo:3.4'
     environment:
-      MONGO_USER: 'mongo'
-      MONGO_PASSWORD: 'admin'
+      AUTH: 'no'
 
   redis:
     image: 'redis'
@@ -23,7 +22,7 @@ services:
     volumes:
       - '.:/data-collector'
     environment:
-      MONGO_USER: 'mongo'
+      MONGO_USER: 'admin'
       MONGO_PASSWORD: 'admin'
       MONGO_HOST: 'data-collector-mongo'
       MONGO_PORT: 27017

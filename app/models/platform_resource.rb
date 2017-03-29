@@ -1,7 +1,13 @@
 # frozen_string_literal: true
 class PlatformResource < ApplicationRecord
-  has_many :platform_resource_capabilities
-  has_many :capabilities, through: :platform_resource_capabilities
+  include Mongoid::Document
+  include Mongoid::Timestamps
+
+  field :uri, type: String
+  field :uuid, type: String
+  field :status, type: String
+  field :capabilities, type: Array
+
   has_many :sensor_values
 
   validates :uuid, :status, presence: true
