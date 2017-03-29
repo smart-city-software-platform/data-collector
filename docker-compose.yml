@@ -1,12 +1,12 @@
 version: '2'
 
 services:
-  postgres:
-    container_name: data-collector-pg
-    image: 'postgres:9.5'
+  mongo:
+    container_name: data-collector-mongo
+    image: 'mongo:3.4'
     environment:
-      POSTGRES_USER: 'postgres'
-      POSTGRES_PASSWORD: 'admin'
+      MONGO_USER: 'mongo'
+      MONGO_PASSWORD: 'admin'
 
   redis:
     image: 'redis'
@@ -15,7 +15,7 @@ services:
   data-collector:
     container_name: data-collector 
     depends_on:
-      - 'postgres'
+      - 'mongo'
       - 'redis'
     build: .
     ports:
@@ -23,26 +23,26 @@ services:
     volumes:
       - '.:/data-collector'
     environment:
-      POSTGRES_USER: 'postgres'
-      POSTGRES_PASSWORD: 'admin'
-      POSTGRES_HOST: 'data-collector-pg'
-      POSTGRES_PORT: 5432
+      MONGO_USER: 'mongo'
+      MONGO_PASSWORD: 'admin'
+      MONGO_HOST: 'data-collector-mongo'
+      MONGO_PORT: 27017
       RABBITMQ_HOST: 'rabbitmq'
 
   sidekiq:
     container_name: data-collector-sidekiq
     links:
-      - 'postgres'
+      - 'mongo'
       - 'redis'
     build: .
     command: bundle exec sidekiq
     volumes:
       - '.:/data-collector'
     environment:
-      POSTGRES_USER: 'postgres'
-      POSTGRES_PASSWORD: 'admin'
-      POSTGRES_HOST: 'data-collector-pg'
-      POSTGRES_PORT: 5432
+      MONGO_USER: 'mongo'
+      MONGO_PASSWORD: 'admin'
+      MONGO_HOST: 'data-collector-mongo'
+      MONGO_PORT: 27017
       RABBITMQ_HOST: 'rabbitmq'
 
 networks:

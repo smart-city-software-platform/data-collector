@@ -26,14 +26,7 @@ if [ "$1" = "start" ]; then
   verify "Cannot run the container. For more information take a look in docker's log"
 
   # this always update a database.yml 
-  cp $BASE_DIR/config/database.yml.docker $BASE_DIR/config/database.yml
-
-  # this should verify weather the database exists
-  sudo docker-compose exec $PROJECT_NAME rake db:create
-  verify "Cannot create database."
-
-  sudo docker-compose exec $PROJECT_NAME rake db:migrate
-  verify "Cannot migrate database."
+  # cp $BASE_DIR/config/database.yml.docker $BASE_DIR/config/database.yml
 
   echo "${CYAN}"
   echo "############################################################"
