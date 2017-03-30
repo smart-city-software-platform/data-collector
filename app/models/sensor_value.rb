@@ -26,7 +26,7 @@ class SensorValue < ApplicationRecord
     )
     sensor_last.value = self.value
     sensor_last.date = self.date
-    sensor_last.save
+    sensor_last.save!
   end
 
   def parse_to_float
