@@ -98,12 +98,13 @@ RSpec.describe SensorValuesController, type: :controller do
 
         # Create capabilities
         capability_hash.each do |capability_name, values_list|
-          capability = Capability.find_or_create_by(name: capability_name)
-          resource.capabilities << capability
+          capability = capability_name
+          resource.capabilities << capability.to_s
+          resource.save!
 
           values_list.each do |value_hash|
             SensorValue.create!(capability: capability,
-                                platform_resource: resource,
+                                platform_resource_id: resource.id,
                                 date: Time.parse(value_hash[:date]),
                                 value: value_hash[:value])
           end
@@ -127,8 +128,8 @@ RSpec.describe SensorValuesController, type: :controller do
 
         expect(retrieved_uuids.empty?).to be_falsy
         retrieved_uuids.each do |uuid|
-          platform = PlatformResource.find_by_uuid(uuid)
-          real_capabilities = platform.capabilities.pluck(:name)
+          platform = PlatformResource.find_by(uuid: uuid)
+          real_capabilities = platform.capabilities
           retrieved_capabilities = retrieved_resource.select do |element|
             element['uuid'] == uuid
           end.first['capabilities'].keys
@@ -220,8 +221,8 @@ RSpec.describe SensorValuesController, type: :controller do
 
         expect(retrieved_uuids.empty?).to be_falsy
         retrieved_uuids.each do |uuid|
-          platform = PlatformResource.find_by_uuid(uuid)
-          real_capabilities = platform.capabilities.pluck(:name)
+          platform = PlatformResource.find_by(uuid: uuid)
+          real_capabilities = platform.capabilities
           retrieved_capabilities = retrieved_resource.select do |element|
             element['uuid'] == uuid
           end.first['capabilities'].keys
@@ -274,23 +275,23 @@ RSpec.describe SensorValuesController, type: :controller do
                           .map(&proc { |element| element['uuid'] })
 
         retrieved_uuids.each do |uuid|
-          platform = PlatformResource.find_by_uuid(uuid)
+          platform = PlatformResource.find_by(uuid: uuid)
 
           json_capabilities = retrieved_resource
                               .select { |element| element['uuid'] == uuid }
                               .first['capabilities']
 
           platform.capabilities.each do |cap|
-            next unless json_capabilities.key? cap.name
+            next unless json_capabilities.key? cap
 
             sensor_values =
               SensorValue.where(
-                capability_id: cap.id, platform_resource_id: platform.id
+                capability: cap, platform_resource_id: platform.id
               )
                          .pluck(:value)
 
             retrieved_values = []
-            json_capabilities[cap.name].each do |capability|
+            json_capabilities[cap].each do |capability|
               retrieved_values << capability['value']
             end
             expect(sensor_values).to include(*retrieved_values)
@@ -313,23 +314,23 @@ RSpec.describe SensorValuesController, type: :controller do
                           .map(&proc { |element| element['uuid'] })
 
         retrieved_uuids.each do |uuid|
-          platform = PlatformResource.find_by_uuid(uuid)
+          platform = PlatformResource.find_by(uuid: uuid)
 
           json_capabilities = retrieved_resource
                               .select { |element| element['uuid'] == uuid }
                               .first['capabilities']
 
           platform.capabilities.each do |cap|
-            next unless json_capabilities.key? cap.name
+            next unless json_capabilities.key? cap
 
             sensor_values =
               SensorValue.where(
-                capability_id: cap.id, platform_resource_id: platform.id
+                capability: cap, platform_resource_id: platform.id
               )
                          .pluck(:value)
 
             retrieved_values = []
-            json_capabilities[cap.name].each do |capability|
+            json_capabilities[cap].each do |capability|
               retrieved_values << capability['value']
             end
             expect(sensor_values).to include(*retrieved_values)
@@ -360,8 +361,8 @@ RSpec.describe SensorValuesController, type: :controller do
 
         expect(retrieved_uuids.empty?).to be_falsy
         retrieved_uuids.each do |uuid|
-          platform = PlatformResource.find_by_uuid(uuid)
-          real_capabilities = platform.capabilities.pluck(:name)
+          platform = PlatformResource.find_by(uuid: uuid)
+          real_capabilities = platform.capabilities
           retrieved_capabilities = retrieved_resource.select do |element|
             element['uuid'] == uuid
           end.first['capabilities'].keys
@@ -402,7 +403,7 @@ RSpec.describe SensorValuesController, type: :controller do
                           .map(&proc { |element| element['uuid'] })
 
         retrieved_uuids.each do |uuid|
-          platform = PlatformResource.find_by_uuid(uuid)
+          platform = PlatformResource.find_by(uuid: uuid)
 
           json_capabilities = retrieved_resource
                               .select { |element| element['uuid'] == uuid }
@@ -411,11 +412,11 @@ RSpec.describe SensorValuesController, type: :controller do
           platform.capabilities.each do |cap|
             sensor_values_date =
               SensorValue.where(
-                capability_id: cap.id, platform_resource_id: platform.id
+                capability: cap, platform_resource_id: platform.id
               )
                          .pluck(:date)
             retrieved_values = []
-            json_capabilities[cap.name].each do |capability|
+            json_capabilities[cap].each do |capability|
               retrieved_values << capability['date']
             end
             expect(sensor_values_date).to include(*retrieved_values)
@@ -432,7 +433,7 @@ RSpec.describe SensorValuesController, type: :controller do
                           .map(&proc { |element| element['uuid'] })
 
         retrieved_uuids.each do |uuid|
-          platform = PlatformResource.find_by_uuid(uuid)
+          platform = PlatformResource.find_by(uuid: uuid)
 
           json_capabilities = retrieved_resource
                               .select { |element| element['uuid'] == uuid }
@@ -441,12 +442,12 @@ RSpec.describe SensorValuesController, type: :controller do
           platform.capabilities.each do |cap|
             last_values =
               LastSensorValue.where(
-                capability_id: cap.id, platform_resource_id: platform.id
+                capability: cap, platform_resource_id: platform.id
               )
                              .pluck(:value)
 
             retrieved_values = []
-            json_capabilities[cap.name].each do |capability|
+            json_capabilities[cap].each do |capability|
               retrieved_values << capability['value']
             end
             expect(last_values.size).to eq(1)
@@ -465,19 +466,19 @@ RSpec.describe SensorValuesController, type: :controller do
                           .map(&proc { |element| element['uuid'] })
         expect(retrieved_uuids.size).to eq(1)
         retrieved_uuids.each do |uuid|
-          platform = PlatformResource.find_by_uuid(uuid)
+          platform = PlatformResource.find_by(uuid: uuid)
           json_capabilities = retrieved_resource
                               .select { |element| element['uuid'] == uuid }
                               .first['capabilities']
           platform.capabilities.each do |cap|
             last_values =
               LastSensorValue.where(
-                capability_id: cap.id, platform_resource_id: platform.id
+                capability: cap, platform_resource_id: platform.id
               )
                              .pluck(:value)
 
             retrieved_values = []
-            json_capabilities[cap.name].each do |capability|
+            json_capabilities[cap].each do |capability|
               retrieved_values << capability['value']
             end
             expect(last_values.size).to eq(1)
@@ -502,19 +503,18 @@ RSpec.describe SensorValuesController, type: :controller do
                           .map(&proc { |element| element['uuid'] })
         expect(retrieved_uuids.size).to eq(2)
         retrieved_uuids.each do |uuid|
-          platform = PlatformResource.find_by_uuid(uuid)
+          platform = PlatformResource.find_by(uuid: uuid)
           json_capabilities = retrieved_resource
                               .select { |element| element['uuid'] == uuid }
                               .first['capabilities']
           platform.capabilities.each do |cap|
             last_values =
               LastSensorValue.where(
-                capability_id: cap.id, platform_resource_id: platform.id
-              )
-                             .pluck(:value)
+                capability: cap, platform_resource_id: platform.id
+              ).pluck(:value)
 
             retrieved_values = []
-            json_capabilities[cap.name].each do |capability|
+            json_capabilities[cap].each do |capability|
               retrieved_values << capability['value']
             end
             expect(last_values.size).to eq(1)

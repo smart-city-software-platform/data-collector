@@ -73,7 +73,6 @@ class SensorValuesController < ApplicationController
 
   def filter_by_value
     return unless sensor_value_params[:range]
-
     capability_hash = sensor_value_params[:range]
     sensor_trim = nil
     capability_hash.each do |capability_name, range_hash|
@@ -101,9 +100,9 @@ class SensorValuesController < ApplicationController
     end
 
     if !sensor_trim.blank?
-      @sensor_values = SensorValue.where(id: sensor_trim.pluck(:id))
+      @sensor_values = SensorValue.where(:id.in => sensor_trim.pluck(:_id))
     else
-      @sensor_values = SensorValue.limit(0)
+      @sensor_values = SensorValue.none
     end
   end
 
