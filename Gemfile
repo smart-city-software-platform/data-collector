@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 gem 'rails', '>= 5.0.0', '< 5.1'
 
 gem 'mongoid'
+gem 'database_cleaner'
 
 gem 'puma', '~> 3.0'
 
