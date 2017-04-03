@@ -34,11 +34,12 @@ services:
       - 'mongo'
       - 'redis'
     build: .
-    command: bundle exec sidekiq
+    command: bundle exec sidekiq -C config/sidekiq.yml
     volumes:
       - '.:/data-collector'
     environment:
-      MONGO_USER: 'mongo'
+      RAILS_ENV: 'development'
+      MONGO_USER: 'admin'
       MONGO_PASSWORD: 'admin'
       MONGO_HOST: 'data-collector-mongo'
       MONGO_PORT: 27017
