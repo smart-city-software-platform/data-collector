@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-class SensorValue < ApplicationRecord
+class SensorValue
   include Mongoid::Document
   include Mongoid::Timestamps
 

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-class PlatformResource < ApplicationRecord
+class PlatformResource
   include Mongoid::Document
   include Mongoid::Timestamps
 

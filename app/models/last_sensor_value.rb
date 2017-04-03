@@ -1,4 +1,4 @@
-class LastSensorValue < ApplicationRecord
+class LastSensorValue
   include Mongoid::Document
   include Mongoid::Timestamps
 
