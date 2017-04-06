@@ -30,8 +30,8 @@ RSpec.describe LastSensorValue, type: :model do
   it 'has a capability type' do
     expect(sensor_value_default.capability).to_not be_nil
 
-    expect(FactoryGirl.build(:last_sensor_value, capability_id: '')).not_to be_valid
-    expect(FactoryGirl.build(:last_sensor_value, capability_id: nil))
+    expect(FactoryGirl.build(:last_sensor_value, capability: '')).not_to be_valid
+    expect(FactoryGirl.build(:last_sensor_value, capability: nil))
                               .not_to be_valid
     expect(FactoryGirl.build(:last_sensor_value, capability: nil)).not_to be_valid
   end

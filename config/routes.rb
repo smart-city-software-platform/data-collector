@@ -1,7 +1,10 @@
 # frozen_string_literal: true
+require 'sidekiq/web'
+
 Rails.application.routes.draw do
   get 'pubsub/demo'
 
+  mount Sidekiq::Web => '/sidekiq'
   resources :platform_resources,
             only: [:create, :update],
             param: :uuid, path: 'resources'

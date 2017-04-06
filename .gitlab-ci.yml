@@ -2,24 +2,23 @@ image: ruby:2.3
 
 # More about services: http://docs.gitlab.com/ee/ci/services/postgres.html
 services:
-  - postgres:latest
+  - mongo:latest
   - redis:latest
 
 variables:
   # Configure PostGreSQL environment variables (https://hub.docker.com/_/postgres/)
-  POSTGRES_USER: data_collector
-  POSTGRES_PASSWORD: data_collector
-  POSTGRES_DB: data_collector_test
+  MONGO_USER: admin
+  MONGO_PASSWORD: admin
+  MONGO_HOST: mongo
+  MONGO_PORT: "27017"
 
 before_script:
-  - cp config/database-ci.yml config/database.yml
+  - cp config/mongoid-ci.yml config/mongoid.yml
   - ruby -v
   - which ruby
   - sh setup.sh
   - gem install bundler --no-ri --no-rdoc
   - bundle check || bundle install
-  - bundle exec rake db:create RAILS_ENV=test
-  - bundle exec rake db:migrate RAILS_ENV=test
 
 rspec:
   script:

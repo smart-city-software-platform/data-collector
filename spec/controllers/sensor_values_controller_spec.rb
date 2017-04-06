@@ -101,8 +101,8 @@ RSpec.describe SensorValuesController, type: :controller do
         retrieved_resource = returned_json['resources']
         json_capabilities = retrieved_resource.first['capabilities']
 
-        platform = PlatformResource.find_by_uuid(@uuids[0])
-        real_capabilities = platform.capabilities.pluck(:name)
+        platform = PlatformResource.find_by(uuid: @uuids[0])
+        real_capabilities = platform.capabilities
         retrieved_capabilities = json_capabilities.keys
 
         expect(real_capabilities).to match_array(retrieved_capabilities)
@@ -114,8 +114,8 @@ RSpec.describe SensorValuesController, type: :controller do
         retrieved_resource = returned_json['resources']
 
         @uuids.each do |uuid|
-          platform = PlatformResource.find_by_uuid(uuid)
-          real_capabilities = platform.capabilities.pluck(:name)
+          platform = PlatformResource.find_by(uuid: uuid)
+          real_capabilities = platform.capabilities
 
           retrieved_capabilities = retrieved_resource.select do |element|
             element['uuid'] == uuid
@@ -132,13 +132,13 @@ RSpec.describe SensorValuesController, type: :controller do
         retrieved_resource = returned_json['resources']
         json_capabilities = retrieved_resource.first['capabilities']
 
-        platform = PlatformResource.find_by_uuid(@uuids[0])
+        platform = PlatformResource.find_by(uuid: @uuids[0])
         platform.capabilities.each do |cap|
-          sensor_values = SensorValue.where(capability_id: cap.id,
+          sensor_values = SensorValue.where(capability: cap,
                                             platform_resource_id: platform.id)
                                      .pluck(:value)
           retrieved_values = []
-          json_capabilities[cap.name].each do |capability|
+          json_capabilities[cap].each do |capability|
             retrieved_values << capability['value']
           end
           expect(sensor_values).to match_array(retrieved_values)
@@ -152,18 +152,18 @@ RSpec.describe SensorValuesController, type: :controller do
         retrieved_resource = returned_json['resources']
 
         @uuids.each do |uuid|
-          platform = PlatformResource.find_by_uuid(uuid)
+          platform = PlatformResource.find_by(uuid: uuid)
 
           json_capabilities = retrieved_resource
                               .select { |element| element['uuid'] == uuid }
                               .first['capabilities']
           platform.capabilities.each do |cap|
             sensor_values = SensorValue
-                            .where(capability_id: cap.id,
+                            .where(capability: cap,
                                    platform_resource_id: platform.id)
                             .pluck(:value)
             retrieved_values = []
-            json_capabilities[cap.name].each do |capability|
+            json_capabilities[cap].each do |capability|
               retrieved_values << capability['value']
             end
             expect(sensor_values).to match_array(retrieved_values)
@@ -432,8 +432,7 @@ RSpec.describe SensorValuesController, type: :controller do
       total_cap = Faker::Number.between(1, 3)
       # Create capabilities
       total_cap.times do |index|
-        capability = Capability
-                     .find_or_create_by(name: list_of_capabilities[index])
+        capability = list_of_capabilities[index]
         resource.capabilities << capability
 
         2.times do |j|

@@ -1,6 +1,13 @@
-class LastSensorValue < ApplicationRecord
+class LastSensorValue
+  include Mongoid::Document
+  include Mongoid::Timestamps
 
-  belongs_to :capability
+  field :value, type: String
+  field :f_value, type: Float
+  field :date, type: DateTime
+  field :capability, type: String
+  field :uuid, type: String
+
   belongs_to :platform_resource
 
   validates :value, :date, :capability, :platform_resource, presence: true
@@ -11,5 +18,4 @@ class LastSensorValue < ApplicationRecord
     def parse_to_float
       self.f_value = self.value.to_f if self.value.is_float? rescue nil
     end
-
 end

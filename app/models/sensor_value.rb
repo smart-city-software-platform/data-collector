@@ -1,6 +1,14 @@
 # frozen_string_literal: true
-class SensorValue < ApplicationRecord
-  belongs_to :capability
+class SensorValue
+  include Mongoid::Document
+  include Mongoid::Timestamps
+
+  field :value, type: String
+  field :f_value, type: Float
+  field :date, type: DateTime
+  field :capability, type: String
+  field :uuid, type: String
+
   belongs_to :platform_resource
 
   validates :value, :date, :capability, :platform_resource, presence: true
@@ -11,10 +19,14 @@ class SensorValue < ApplicationRecord
   private
 
   def save_last_value
-    sensor_last = LastSensorValue.find_or_create_by(capability_id: self.capability_id, platform_resource_id: self.platform_resource_id)
+    sensor_last = LastSensorValue.find_or_create_by(
+      capability: self.capability,
+      platform_resource_id: self.platform_resource_id,
+      uuid: self.uuid
+    )
     sensor_last.value = self.value
     sensor_last.date = self.date
-    sensor_last.save
+    sensor_last.save!
   end
 
   def parse_to_float

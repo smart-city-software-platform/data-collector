@@ -8,19 +8,6 @@ puts '=' * 50
 puts 'This operations will take some time...'
 puts '=' * 50
 
-puts '.' * 50
-puts 'Removing old data...'
-puts '.' * 50
-
-SensorValue.delete_all
-PlatformResource.delete_all
-Capability.delete_all
-PlatformResourceCapability.delete_all
-
-puts '.' * 50
-puts 'Creating Platform resource without capability'
-puts '.' * 50
-
 def create_resource(uuid, uri, status, interval)
   PlatformResource.create_with(uri: uri,
                                status: status,
@@ -39,11 +26,7 @@ puts '.' * 50
 puts 'Creating Platform resource with capability'
 puts '.' * 50
 
-fake_capabilities = Faker::Hipster.words(10)
-list_capabilities = []
-fake_capabilities.each do |capability_name|
-  list_capabilities << Capability.create!(name: capability_name)
-end
+list_capabilities = Faker::Hipster.words(10)
 
 20.times do
   uri = "/basic_resources/#{Faker::Number.between(50, 300)}/components/" \
@@ -57,8 +40,6 @@ end
   total_capability.times do |index|
     cap = list_capabilities[index]
     resource.capabilities << cap
-    resource.capabilities.where(name: cap.name).exists?
-
     Faker::Number.between(1, 5).times do
       SensorValue.create!(capability: cap,
                           platform_resource: resource,
@@ -84,12 +65,7 @@ puts '.' * 50
 puts 'Creating Resources for Sports tests'
 puts '.' * 50
 
-list_capabilities = []
-sport_capabilities = %w(pollution uv humidity temperature info_green_percentage)
-sport_capabilities.each do |cap_name|
-  Capability.find_or_create_by(name: cap_name)
-  list_capabilities << Capability.find_or_create_by(name: cap_name)
-end
+list_capabilities = %w(pollution uv humidity temperature info_green_percentage)
 
 20.times do
   uri = "/basic_resources/#{Faker::Number.between(50, 300)}/components/" \
