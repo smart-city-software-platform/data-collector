@@ -43,13 +43,13 @@ RSpec.describe SensorValuesController, type: :controller do
       expect(response.content_type).to eq('application/json')
     end
 
-    it 'filters by capabilities values range' do
-      do_range_value_filter('resources_data', false)
-    end
+    #it 'filters by capabilities values range' do
+      #do_range_value_filter('resources_data', false)
+    #end
 
-    it 'filters by capabilities equal value' do
-      do_equal_value_filter('resources_data', false, sensor_value_default.value)
-    end
+    #it 'filters by capabilities equal value' do
+      #do_equal_value_filter('resources_data', false, sensor_value_default.value)
+    #end
 
     it 'Returns 400 status code when sending invalid data ranges argunments' do
       do_wrong_date_filter('resources_data', false)
@@ -214,13 +214,13 @@ RSpec.describe SensorValuesController, type: :controller do
       do_wrong_date_filter('resource_data', true)
     end
 
-    it 'filters by capabilities values range' do
-      do_range_value_filter('resource_data', true)
-    end
+    #it 'filters by capabilities values range' do
+      #do_range_value_filter('resource_data', true)
+    #end
 
-    it 'filters by capabilities equal value' do
-      do_equal_value_filter('resource_data', true, sensor_value_default.value)
-    end
+    #it 'filters by capabilities equal value' do
+      #do_equal_value_filter('resource_data', true, sensor_value_default.value)
+    #end
 
     it 'fails when sending invalid pagination arguments' do
       do_wrong_pagination_filter('resource_data', true)
@@ -255,14 +255,14 @@ RSpec.describe SensorValuesController, type: :controller do
       do_wrong_date_filter('resources_data_last', false)
     end
 
-    it 'filters by capabilities values range' do
-      do_range_value_filter('resources_data_last', false)
-    end
+    #it 'filters by capabilities values range' do
+      #do_range_value_filter('resources_data_last', false)
+    #end
 
-    it 'filters by capabilities equal value' do
-      do_equal_value_filter('resources_data_last',
-                            false, sensor_value_default.value)
-    end
+    #it 'filters by capabilities equal value' do
+      #do_equal_value_filter('resources_data_last',
+                            #false, sensor_value_default.value)
+    #end
 
     it 'fails when sending invalid pagination arguments' do
       do_wrong_pagination_filter('resources_data_last', false)
@@ -310,14 +310,14 @@ RSpec.describe SensorValuesController, type: :controller do
       do_wrong_date_filter('resource_data_last', true)
     end
 
-    it 'filters by capabilities values range' do
-      do_range_value_filter('resource_data_last', true)
-    end
+    #it 'filters by capabilities values range' do
+      #do_range_value_filter('resource_data_last', true)
+    #end
 
-    it 'filters by capabilities equal value' do
-      do_equal_value_filter('resource_data_last',
-                            true, sensor_value_default.value)
-    end
+    #it 'filters by capabilities equal value' do
+      #do_equal_value_filter('resource_data_last',
+                        #    true, sensor_value_default.value)
+    #end
 
     it 'fails when sending invalid pagination arguments' do
       do_wrong_pagination_filter('resource_data_last', true)

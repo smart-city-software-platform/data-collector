@@ -2,6 +2,7 @@
 class PlatformResource
   include Mongoid::Document
   include Mongoid::Timestamps
+  include Mongoid::Attributes::Dynamic
 
   field :uri, type: String
   field :uuid, type: String

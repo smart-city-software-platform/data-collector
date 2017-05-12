@@ -8,7 +8,7 @@ class SensorValuesController < ApplicationController
   before_action :set_sensor_values_last,
                 only: [:resources_data_last, :resource_data_last]
   before_action :filter_by_uuids, only: [:resources_data, :resources_data_last]
-  before_action :filter_by_date, :filter_by_capabilities, :filter_by_value
+  before_action :filter_by_date, :filter_by_capabilities
 
   def set_sensor_values
     @sensor_values = SensorValue.where(:capability.nin => ['', nil])
@@ -72,6 +72,7 @@ class SensorValuesController < ApplicationController
     @sensor_values = @sensor_values.where(:capability.in => capabilities_name)
   end
 
+=begin
   def filter_by_value
     return unless sensor_value_params[:range]
     capability_hash = sensor_value_params[:range]
@@ -105,6 +106,7 @@ class SensorValuesController < ApplicationController
       @sensor_values = SensorValue.none
     end
   end
+=end
 
   def concat_value(sensor_trim, cap_values)
     if sensor_trim.nil?
