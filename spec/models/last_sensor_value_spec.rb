@@ -2,11 +2,7 @@ require 'rails_helper'
 
 RSpec.describe LastSensorValue, type: :model do
 
-  let(:sensor_value_default) {
-    obj = create(:default_last_value)
-    obj.write_attribute(:value, "68.6345")
-    obj
-   }
+  let(:sensor_value_default) { create(:default_last_value) }
 
   it 'has a valid factory' do
     expect(sensor_value_default).to be_valid
@@ -52,6 +48,7 @@ RSpec.describe LastSensorValue, type: :model do
   it 'has a value' do
     expect(sensor_value_default.value).not_to be_nil
     expect(sensor_value_default.value).not_to eq('')
+
     expect(FactoryGirl.build(:last_sensor_value, value: ' ')).not_to be_valid
     expect(FactoryGirl.build(:last_sensor_value, value: nil)).not_to be_valid
   end

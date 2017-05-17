@@ -12,7 +12,6 @@ class SensorValue
 
   validates :date, :capability, :platform_resource, presence: true
 
-  before_save :parse_to_float
   before_create :save_last_value
 
   private
@@ -23,11 +22,9 @@ class SensorValue
       platform_resource_id: self.platform_resource_id,
       uuid: self.uuid
     )
-    sensor_last.date = self.date
+    new_attributes = self.attributes.except("create_at", "update_at", "capability", "platform_resource_id", "uuid", "_id")
+    new_attributes.each {|attribute, value| sensor_last.process_attribute(attribute, value)}
     sensor_last.save!
   end
 
-  def parse_to_float
-    self.f_value = self.value.to_f if self.value.is_float? rescue nil
-  end
 end
