@@ -114,16 +114,28 @@ RSpec.describe SensorValuesController, type: :controller do
 
     context 'Request resources_data with range values' do
       it 'Correct response' do
-        post 'resources_data', params: { sensor_value:
-                                  { range: { pressure: { min: 0, max: 22 } } } }
+        post 'resources_data',
+              params: {
+                sensor_value: {
+                  range: {
+                    pressure: { value: { min: 0, max: 22 } }
+                  }
+                }
+              }
         expect(response.status).to eq(200)
         expect(response.body).to_not be_nil
         expect(response.body.empty?).to be_falsy
       end
 
       it 'Correct list of capabilities for range with existing capability' do
-        post 'resources_data', params: { sensor_value:
-                              { range: { temperature: { min: 0, max: 100 } } } }
+        post 'resources_data',
+              params: {
+                sensor_value: {
+                  range: {
+                    temperature: { value: { min: 0, max: 100 } }
+                  }
+                }
+              }
         retrieved_uuids, retrieved_resource = parse_response
 
         expect(retrieved_uuids.empty?).to be_falsy
@@ -140,8 +152,12 @@ RSpec.describe SensorValuesController, type: :controller do
       end
 
       it 'Correct return for range with inexistent capability' do
-        post 'resources_data', params: { sensor_value:
-                            { range: { wontfindnocap: { min: 0, max: 22 } } } }
+        post 'resources_data',
+             params: {
+                sensor_value: {
+                  range: { wontfindnocap: { value: { min: 0, max: 22 } } }
+                }
+             }
         retrieved_uuids, = parse_response
 
         expect(retrieved_uuids.size).to eq(0)
@@ -152,8 +168,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   temperature: { min: 0, max: 100 },
-                   quality: { min: 0, max: 100 }
+                   temperature: { value: { min: 0, max: 100 } },
+                   quality: { value: { min: 0, max: 100 } }
                  }
                }
              }
@@ -167,8 +183,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   temperature: { min: 'Foo', max: 'Zeni' },
-                   quality: { max: 'Fakebook' }
+                   temperature: { value: { min: 'Foo', max: 'Zeni' } },
+                   quality: { value: { max: 'Fakebook' } }
                  }
                }
              }
@@ -182,8 +198,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   temperature: { min: 0, max: 100 },
-                   quality: { max: 'Foo' }
+                   temperature: { value: { min: 0, max: 100 } },
+                   quality: { value: { max: 'Foo' } }
                  }
                }
              }
@@ -197,8 +213,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   pressure: { min: 1000 },
-                   people: { equal: 'weak' }
+                   pressure: { value: { min: 1000 } },
+                   people: { value: { equal: 'weak'} }
                  }
                }
              }
@@ -212,8 +228,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   temperature: { min: 1, max: 101 },
-                   humidity: { min: 2, max: 102 }
+                   temperature: { value: { min: 1, max: 101 } },
+                   humidity: { value: { min: 2, max: 102 } }
                  }
                }
              }
@@ -246,8 +262,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   temperature: { min: 150, max: 160 },
-                   humidity: { min: 130, max: 200 }
+                   temperature: { value: { min: 150, max: 160 } },
+                   humidity: { value: { min: 130, max: 200 } }
                  }
                }
              }
@@ -263,8 +279,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   temperature: { min: 0, max: 170 },
-                   humidity: { min: 2, max: 102 }
+                   temperature: { value: { min: 0, max: 170 } },
+                   humidity: { value: { min: 2, max: 102 } }
                  }
                }
              }
@@ -302,11 +318,11 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'Correct return resources_data to equal value' do
         post 'resources_data',
              params: {
-               sensor_value: {
-                 range: {
-                   temperature: { equal: 29.5 }
-                 }
-               }
+                sensor_value: {
+                  range: {
+                    temperature: { value: { equal: 29.5 } }
+                  }
+                }
              }
         returned_json = JSON.parse(response.body)
         retrieved_resource = returned_json['resources']

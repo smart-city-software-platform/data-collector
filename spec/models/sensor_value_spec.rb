@@ -64,7 +64,7 @@ RSpec.describe SensorValue, type: :model do
       platform_resource_id: sensor_value.platform_resource_id
     )
 
-    expect(last_value_before.value).to eq('10')
+    expect(last_value_before.value).to eq(10)
     expect{FactoryGirl.create(:default_sensor_value, value: '15')}.not_to change{LastSensorValue.count}
 
     last_value_after = LastSensorValue.find_by(
@@ -72,7 +72,7 @@ RSpec.describe SensorValue, type: :model do
       platform_resource_id: sensor_value.platform_resource_id
     )
 
-    expect(last_value_after.value).to eq('15')
+    expect(last_value_after.value).to eq(15)
 
  end
 end

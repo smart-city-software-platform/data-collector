@@ -12,6 +12,7 @@ class SensorValue
 
   validates :date, :capability, :platform_resource, presence: true
 
+  before_save :parse_to_float
   before_create :save_last_value
 
   private
@@ -26,5 +27,15 @@ class SensorValue
     new_attributes.each {|attribute, value| sensor_last.process_attribute(attribute, value)}
     sensor_last.save!
   end
+
+  def parse_to_float
+    self.attributes.each do |key, value|
+      if value.try(:is_float?)
+        self[key.to_sym] = value.to_f
+      end
+    end
+  end
+
+
 
 end

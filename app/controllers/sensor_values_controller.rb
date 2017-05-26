@@ -8,7 +8,7 @@ class SensorValuesController < ApplicationController
   before_action :set_sensor_values_last,
                 only: [:resources_data_last, :resource_data_last]
   before_action :filter_by_uuids, only: [:resources_data, :resources_data_last]
-  before_action :filter_by_date, :filter_by_capabilities
+  before_action :filter_by_date, :filter_by_capabilities, :filter_by_value
 
   def set_sensor_values
     @sensor_values = SensorValue.where(:capability.nin => ['', nil])
@@ -72,7 +72,6 @@ class SensorValuesController < ApplicationController
     @sensor_values = @sensor_values.where(:capability.in => capabilities_name)
   end
 
-=begin
   def filter_by_value
     return unless sensor_value_params[:range]
     capability_hash = sensor_value_params[:range]
@@ -80,23 +79,26 @@ class SensorValuesController < ApplicationController
     capability_hash.each do |capability_name, range_hash|
       next unless capability_name
       cap_values = @sensor_values.where(capability: capability_name)
-      equal = range_hash['equal']
-      if !equal.blank?
-        cap_values = cap_values.where(value: equal)
-        sensor_trim = concat_value(sensor_trim, cap_values)
-      else
-        min = range_hash['min']
-        max = range_hash['max']
-        filtered = false
-        if !max.blank? && max.is_float?
-          cap_values = cap_values.where(:f_value.lte => max)
-          filtered = true
+      range_hash.each do |attribute_name, range|
+        attribute_name = attribute_name.to_sym
+        equal = range['equal']
+        if !equal.blank?
+          cap_values = cap_values.where({attribute_name => equal})
+          sensor_trim = concat_value(sensor_trim, cap_values)
+        else
+          min = range['min']
+          max = range['max']
+          filtered = false
+          if !max.blank? && max.is_float?
+            cap_values = cap_values.where(attribute_name.lte => max.to_f)
+            filtered = true
+          end
+          if !min.blank? && min.is_float?
+            filtered = true
+            cap_values = cap_values.where(attribute_name.gte => min.to_f)
+          end
+          sensor_trim = concat_value(sensor_trim, cap_values) if filtered
         end
-        if !min.blank? && min.is_float?
-          filtered = true
-          cap_values = cap_values.where(:f_value.gte => min)
-        end
-        sensor_trim = concat_value(sensor_trim, cap_values) if filtered
       end
     end
 
@@ -106,7 +108,6 @@ class SensorValuesController < ApplicationController
       @sensor_values = SensorValue.none
     end
   end
-=end
 
   def concat_value(sensor_trim, cap_values)
     if sensor_trim.nil?
