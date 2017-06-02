@@ -15,6 +15,15 @@ class SensorValue
   before_save :parse_to_float
   before_create :save_last_value
 
+  def self.static_attributes
+    ["_id", "created_at", "updated_at", "capability", "uuid",
+     "platform_resource_id"]
+  end
+
+  def dynamic_attributes
+    self.attributes.except(*SensorValue.static_attributes)
+  end
+
   private
 
   def save_last_value
@@ -23,7 +32,7 @@ class SensorValue
       platform_resource_id: self.platform_resource_id,
       uuid: self.uuid
     )
-    new_attributes = self.attributes.except("create_at", "update_at", "capability", "platform_resource_id", "uuid", "_id")
+    new_attributes = self.attributes.except(*SensorValue.static_attributes)
     new_attributes.each {|attribute, value| sensor_last.process_attribute(attribute, value)}
     sensor_last.save!
   end
@@ -35,7 +44,5 @@ class SensorValue
       end
     end
   end
-
-
 
 end

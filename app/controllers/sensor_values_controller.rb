@@ -10,6 +10,10 @@ class SensorValuesController < ApplicationController
   before_action :filter_by_uuids, only: [:resources_data, :resources_data_last]
   before_action :filter_by_date, :filter_by_capabilities, :filter_by_value
 
+  def except_names
+    ["_id", "created_at", "updated_at", "capability", "uuid", "platform_resource_id"]
+  end
+
   def set_sensor_values
     @sensor_values = SensorValue.where(:capability.nin => ['', nil])
 
@@ -165,11 +169,13 @@ class SensorValuesController < ApplicationController
 
   def generate_response
     resources = {}
+
     @sensor_values.each do |value|
       collected = {}
-      collected['value'] = value.value
-      collected['date'] = value.date
 
+      value.dynamic_attributes.each do |attribute, attribute_value|
+        collected[attribute] = attribute_value
+      end
       resource = resources[value.platform_resource.uuid] || {}
       capabilities = resource['capabilities'] || {}
       capability = capabilities[value.capability] || []

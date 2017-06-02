@@ -44,35 +44,62 @@ RSpec.describe SensorValue, type: :model do
     expect(uuid_pattern.match(uuid)).not_to be_nil
   end
 
-  it 'has a value' do
-    expect(sensor_value_default.value).not_to be_nil
-    expect(sensor_value_default.value).not_to eq('')
+  it 'has temperature' do
+    expect(sensor_value_default.temperature).not_to be_nil
+    expect(sensor_value_default.temperature).not_to eq('')
 
-    expect(FactoryGirl.build(:sensor_value, value: '')).not_to be_valid
-    expect(FactoryGirl.build(:sensor_value, value: nil)).not_to be_valid
+    expect(FactoryGirl.build(:sensor_value, temperature: '')).not_to be_valid
+    expect(FactoryGirl.build(:sensor_value, temperature: nil)).not_to be_valid
+  end
+
+  it 'has pressure' do
+    expect(sensor_value_default.pressure).not_to be_nil
+    expect(sensor_value_default.pressure).not_to eq('')
+
+    expect(FactoryGirl.build(:sensor_value, pressure: '')).not_to be_valid
+    expect(FactoryGirl.build(:sensor_value, pressure: nil)).not_to be_valid
   end
 
   it 'creates a new last sensor value' do
     expect{sensor_value_default}.to change{LastSensorValue.count}.by(1)
   end
 
-  it 'updates an existing last sensor value' do
-    sensor_value = FactoryGirl.create(:default_sensor_value, value: '10')
+  it 'updates an existing last sensor temperature' do
+    sensor_value = FactoryGirl.create(:default_sensor_value, temperature: '10')
 
     last_value_before = LastSensorValue.find_by(
       capability: sensor_value.capability,
       platform_resource_id: sensor_value.platform_resource_id
     )
 
-    expect(last_value_before.value).to eq(10)
-    expect{FactoryGirl.create(:default_sensor_value, value: '15')}.not_to change{LastSensorValue.count}
+    expect(last_value_before.temperature).to eq(10)
+    expect{FactoryGirl.create(:default_sensor_value, temperature: '15')}.not_to change{LastSensorValue.count}
 
     last_value_after = LastSensorValue.find_by(
       capability: sensor_value.capability,
       platform_resource_id: sensor_value.platform_resource_id
     )
 
-    expect(last_value_after.value).to eq(15)
+    expect(last_value_after.temperature).to eq(15)
+  end
 
- end
+  it 'updates an existing last sensor pressure' do
+    sensor_value = FactoryGirl.create(:default_sensor_value, pressure: '3')
+
+    last_value_before = LastSensorValue.find_by(
+      capability: sensor_value.capability,
+      platform_resource_id: sensor_value.platform_resource_id
+    )
+
+    expect(last_value_before.pressure).to eq(3)
+    expect{FactoryGirl.create(:default_sensor_value, pressure: '5.2')}.not_to change{LastSensorValue.count}
+
+    last_value_after = LastSensorValue.find_by(
+      capability: sensor_value.capability,
+      platform_resource_id: sensor_value.platform_resource_id
+    )
+
+    expect(last_value_after.pressure).to eq(5.2)
+  end
+
 end

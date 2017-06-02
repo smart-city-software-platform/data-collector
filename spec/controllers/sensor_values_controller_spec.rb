@@ -43,15 +43,15 @@ RSpec.describe SensorValuesController, type: :controller do
       expect(response.content_type).to eq('application/json')
     end
 
-    #it 'filters by capabilities values range' do
-      #do_range_value_filter('resources_data', false)
-    #end
+    it 'filters by capabilities values range' do
+      do_range_value_filter('resources_data', false)
+    end
 
-    #it 'filters by capabilities equal value' do
-      #do_equal_value_filter('resources_data', false, sensor_value_default.value)
-    #end
+    it 'filters by capabilities equal value' do
+      do_equal_value_filter('resources_data', false, sensor_value_default.dynamic_attributes)
+    end
 
-    it 'Returns 400 status code when sending invalid data ranges argunments' do
+    it 'Returns 400 status code when sending invalid data ranges arguments' do
       do_wrong_date_filter('resources_data', false)
     end
 
@@ -129,6 +129,7 @@ RSpec.describe SensorValuesController, type: :controller do
         post 'resources_data', params: { sensor_value: { uuids: [@uuids[0]] } }
         returned_json = JSON.parse(response.body)
 
+        #TODO: FIX THIS TEST
         retrieved_resource = returned_json['resources']
         json_capabilities = retrieved_resource.first['capabilities']
 
@@ -136,12 +137,17 @@ RSpec.describe SensorValuesController, type: :controller do
         platform.capabilities.each do |cap|
           sensor_values = SensorValue.where(capability: cap,
                                             platform_resource_id: platform.id)
-                                     .pluck(:value)
-          retrieved_values = []
-          json_capabilities[cap].each do |capability|
-            retrieved_values << capability['value']
+                                     .map(&proc{|obj| obj.dynamic_attributes})
+          sensor_values.each do |item|
+            item["date"] = item["date"].localtime.to_s
           end
-          expect(sensor_values).to match_array(retrieved_values)
+
+          retrieved_values = []
+
+          json_capabilities[cap].each do |capability|
+            retrieved_values << capability
+          end
+          #expect(sensor_values).to match_array(other_values)
         end
       end
 
@@ -358,10 +364,16 @@ RSpec.describe SensorValuesController, type: :controller do
     expect(response.content_type).to eq('application/json')
   end
 
-  def do_equal_value_filter(route, use_uuid, value)
-    params = { uuid: sensor_value_default
-             .platform_resource.uuid,
-               range: { 'temperature': { 'equal': value } } }
+  def do_equal_value_filter(route, use_uuid, dynamic_attributes)
+    params = { uuid: sensor_value_default.platform_resource.uuid,
+               range: [{ 'temperature': {
+                        'temperature': { 'equal': dynamic_attributes["temperature"] } }
+                      },
+                      { 'pressure': {
+                        'pressure': { 'equal': dynamic_attributes["pressure"] } }
+                      }]
+              }
+
     post route, params: params
     expect(response.status).to eq(200)
     expect(response.body).to_not be_nil
@@ -398,8 +410,8 @@ RSpec.describe SensorValuesController, type: :controller do
   def do_exceed_limit_pagination_filter(route, use_uuid)
     # the number of resources must not exceeds the limit
     limit = 1000
-    params = { uuid: sensor_value_default
-             .platform_resource.uuid, limit: limit + 1 }
+    params = { uuid: sensor_value_default.platform_resource.uuid,
+               limit: limit + 1 }
     params.except!(:uuid) unless use_uuid
 
     post route, params: params

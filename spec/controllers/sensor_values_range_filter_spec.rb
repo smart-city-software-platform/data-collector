@@ -428,8 +428,7 @@ RSpec.describe SensorValuesController, type: :controller do
           platform.capabilities.each do |cap|
             sensor_values_date =
               SensorValue.where(
-                capability: cap, platform_resource_id: platform.id
-              )
+                capability: cap, platform_resource_id: platform.id)
                          .pluck(:date)
             retrieved_values = []
             json_capabilities[cap].each do |capability|
