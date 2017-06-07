@@ -186,7 +186,6 @@ class SensorValuesController < ApplicationController
       resource['capabilities'] = capabilities
       resources[value.platform_resource.uuid] = resource
     end
-
     render json: { resources: resources.values }
   end
 end

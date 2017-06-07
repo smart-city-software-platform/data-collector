@@ -129,7 +129,6 @@ RSpec.describe SensorValuesController, type: :controller do
         post 'resources_data', params: { sensor_value: { uuids: [@uuids[0]] } }
         returned_json = JSON.parse(response.body)
 
-        #TODO: FIX THIS TEST
         retrieved_resource = returned_json['resources']
         json_capabilities = retrieved_resource.first['capabilities']
 
@@ -139,7 +138,7 @@ RSpec.describe SensorValuesController, type: :controller do
                                             platform_resource_id: platform.id)
                                      .map(&proc{|obj| obj.dynamic_attributes})
           sensor_values.each do |item|
-            item["date"] = item["date"].localtime.to_s
+            item["date"] = item["date"].as_json
           end
 
           retrieved_values = []
@@ -147,7 +146,7 @@ RSpec.describe SensorValuesController, type: :controller do
           json_capabilities[cap].each do |capability|
             retrieved_values << capability
           end
-          #expect(sensor_values).to match_array(other_values)
+          expect(sensor_values).to match_array(retrieved_values)
         end
       end
 

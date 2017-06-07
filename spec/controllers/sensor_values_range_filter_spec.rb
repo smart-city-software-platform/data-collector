@@ -8,80 +8,88 @@ RSpec.describe SensorValuesController, type: :controller do
       uuids_hash = {
         '2de545ae-841a-4e4a-b961-a43bb324a2b9': {
           'temperature': [
-            { 'value': '18.5',
+            { 'temperature': '18.5',
               'date': '2016-03-01 09:00:00' },
-            { 'value': '22.15',
+            { 'temperature': '22.15',
               'date': '2016-03-01 10:00:00' },
-            { 'value': '27',
+            { 'temperature': '27',
               'date': '2016-03-02 08:00:00' },
-            { 'value': '19.5',
+            { 'temperature': '19.5',
               'date': '2016-03-03 07:00:00' }
           ],
           'humidity': [
-            { 'value': '68',
+            { 'humidity': '68',
               'date': '2016-03-01 09:00:00' },
-            { 'value': '72',
+            { 'humidity': '72',
               'date': '2016-03-01 10:00:00' },
-            { 'value': '87',
+            { 'humidity': '87',
               'date': '2016-03-02 08:00:00' },
-            { 'value': '50',
+            { 'humidity': '50',
               'date': '2016-03-03 07:00:00' }
           ]
         },
         '8fcbba32-ea98-4a84-9abf-c97c9c65c3c4': {},
         '989e93f2-35e1-4a2b-b80a-4bf91030085c': {
           'people': [
-            { 'value': '70',
+            { 'name': 'Thomas S. Seibel',
+              'age': '18',
               'date': '2016-03-01 09:01:00' },
-            { 'value': '11',
+            { 'name': 'Jose R. Garcia',
+              'age': '17',
               'date': '2016-03-01 10:01:00' },
-            { 'value': '22',
+            { 'name': 'Débora M. Wright',
+              'age': '26',
               'date': '2016-03-02 08:01:00' },
-            { 'value': 'weak',
-              'date': '2016-03-03 07:01:00' }
+            { 'name': 'Jose J. Whetsel',
+              'age': '55',
+              'date': '2016-03-03 07:01:00'}
           ],
           'quality': [
-            { 'value': '1',
+            { 'quality': '1',
               'date': '2016-03-01 09:30:00' },
-            { 'value': '2',
+            { 'quality': '2',
               'date': '2016-03-01 10:30:00' },
-            { 'value': '7',
+            { 'quality': '7',
               'date': '2016-03-02 08:30:00' },
-            { 'value': '5',
+            { 'quality': '5',
               'date': '2016-03-03 07:30:00' }
           ]
         },
         'a9f4d13b-1c10-474c-9754-a0a92adcc72d': {
           'temperature': [
-            { 'value': '28.5',
+            { 'temperature': '28.5',
               'date': '2016-03-01 09:00:00' },
-            { 'value': '29.5',
+            { 'temperature': '29.5',
               'date': '2016-03-03 07:00:00' }
           ],
           'pressure': [
-            { 'value': '1038',
+            { 'pressure': '1038',
               'date': '2016-03-01 09:00:00' },
-            { 'value': '1012',
+            { 'pressure': '1012',
               'date': '2016-03-03 07:00:00' }
           ],
           'humidity': [
-            { 'value': '70',
+            { 'humidity': '70',
               'date': '2016-03-01 09:30:00' },
-            { 'value': '72',
+            { 'humidity': '72',
               'date': '2016-03-01 10:30:00' },
-            { 'value': '67',
+            { 'humidity': '67',
               'date': '2016-03-02 08:30:00' },
-            { 'value': '75',
+            { 'humidity': '75',
               'date': '2016-03-03 07:30:00' }
           ],
           'people': [
-            { 'value': '70',
+            { 'name': 'Robert M. Celentano',
+              'age': 45,
               'date': '2016-03-01 09:30:00' },
-            { 'value': '0',
+            { 'name': 'Kelly N. Bean',
+              'age': 35,
               'date': '2016-03-01 10:30:00' },
-            { 'value': 'old',
+            { 'name': 'Mary K. Hickey',
+              'age': 25,
               'date': '2016-03-02 08:30:00' },
-            { 'value': 'strong',
+            { 'name': 'William N. Florence',
+              'age': 17,
               'date': '2016-03-03 07:30:00' }
           ]
         }
@@ -103,10 +111,12 @@ RSpec.describe SensorValuesController, type: :controller do
           resource.save!
 
           values_list.each do |value_hash|
-            SensorValue.create!(capability: capability,
-                                platform_resource_id: resource.id,
-                                date: Time.parse(value_hash[:date]),
-                                value: value_hash[:value])
+            fields = {
+              capability: capability,
+              platform_resource_id: resource.id,
+            }
+            fields.merge!(value_hash)
+            SensorValue.create!(fields)
           end
         end
       end
@@ -118,7 +128,7 @@ RSpec.describe SensorValuesController, type: :controller do
               params: {
                 sensor_value: {
                   range: {
-                    pressure: { value: { min: 0, max: 22 } }
+                    pressure: { pressure: { min: 0, max: 22 } }
                   }
                 }
               }
@@ -132,7 +142,7 @@ RSpec.describe SensorValuesController, type: :controller do
               params: {
                 sensor_value: {
                   range: {
-                    temperature: { value: { min: 0, max: 100 } }
+                    temperature: { temperature: { min: 0, max: 100 } }
                   }
                 }
               }
@@ -168,8 +178,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   temperature: { value: { min: 0, max: 100 } },
-                   quality: { value: { min: 0, max: 100 } }
+                   temperature: { temperature: { min: 0, max: 100 } },
+                   quality: { quality: { min: 0, max: 100 } }
                  }
                }
              }
@@ -183,8 +193,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   temperature: { value: { min: 'Foo', max: 'Zeni' } },
-                   quality: { value: { max: 'Fakebook' } }
+                   temperature: { temperature: { min: 'Foo', max: 'Zeni' } },
+                   quality: { quality: { max: 'Fakebook' } }
                  }
                }
              }
@@ -198,8 +208,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   temperature: { value: { min: 0, max: 100 } },
-                   quality: { value: { max: 'Foo' } }
+                   temperature: { temperature: { min: 0, max: 100 } },
+                   quality: { quality: { max: 'Foo' } }
                  }
                }
              }
@@ -213,8 +223,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   pressure: { value: { min: 1000 } },
-                   people: { value: { equal: 'weak'} }
+                   pressure: { pressure: { min: 1000 } },
+                   people: { name: { equal: 'Débora M. Wright'} }
                  }
                }
              }
@@ -228,8 +238,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   temperature: { value: { min: 1, max: 101 } },
-                   humidity: { value: { min: 2, max: 102 } }
+                   temperature: { temperature: { min: 1, max: 101 } },
+                   humidity: { humidity: { min: 2, max: 102 } }
                  }
                }
              }
@@ -241,11 +251,10 @@ RSpec.describe SensorValuesController, type: :controller do
           real_capabilities = platform.capabilities
           retrieved_capabilities = retrieved_resource.select do |element|
             element['uuid'] == uuid
-          end.first['capabilities'].keys
+          end.last['capabilities'].keys
 
           expect(real_capabilities).to include(*retrieved_capabilities)
-          expect(%w(temperature humidity))
-            .to match_array(retrieved_capabilities)
+          expect(%w(temperature humidity)).to match_array(retrieved_capabilities)
         end
       end
 
@@ -262,8 +271,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   temperature: { value: { min: 150, max: 160 } },
-                   humidity: { value: { min: 130, max: 200 } }
+                   temperature: { temperature: { min: 150, max: 160 } },
+                   humidity: { humidity: { min: 130, max: 200 } }
                  }
                }
              }
@@ -279,8 +288,8 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                sensor_value: {
                  range: {
-                   temperature: { value: { min: 0, max: 170 } },
-                   humidity: { value: { min: 2, max: 102 } }
+                   temperature: { temperature: { min: 0, max: 170 } },
+                   humidity: { humidity: { min: 2, max: 102 } }
                  }
                }
              }
@@ -304,11 +313,11 @@ RSpec.describe SensorValuesController, type: :controller do
               SensorValue.where(
                 capability: cap, platform_resource_id: platform.id
               )
-                         .pluck(:value)
+              .map(&proc{|obj| obj.dynamic_attributes})
 
             retrieved_values = []
             json_capabilities[cap].each do |capability|
-              retrieved_values << capability['value']
+              retrieved_values << capability
             end
             expect(sensor_values).to include(*retrieved_values)
           end
@@ -320,7 +329,7 @@ RSpec.describe SensorValuesController, type: :controller do
              params: {
                 sensor_value: {
                   range: {
-                    temperature: { value: { equal: 29.5 } }
+                    temperature: { temperature: { equal: 29.5 } }
                   }
                 }
              }
@@ -343,11 +352,11 @@ RSpec.describe SensorValuesController, type: :controller do
               SensorValue.where(
                 capability: cap, platform_resource_id: platform.id
               )
-                         .pluck(:value)
+                         .map(&proc{|obj| obj.dynamic_attributes})
 
             retrieved_values = []
             json_capabilities[cap].each do |capability|
-              retrieved_values << capability['value']
+              retrieved_values << capability
             end
             expect(sensor_values).to include(*retrieved_values)
           end
@@ -430,6 +439,7 @@ RSpec.describe SensorValuesController, type: :controller do
               SensorValue.where(
                 capability: cap, platform_resource_id: platform.id)
                          .pluck(:date)
+
             retrieved_values = []
             json_capabilities[cap].each do |capability|
               retrieved_values << capability['date']
@@ -459,11 +469,11 @@ RSpec.describe SensorValuesController, type: :controller do
               LastSensorValue.where(
                 capability: cap, platform_resource_id: platform.id
               )
-                             .pluck(:value)
+                             .map(&proc{|obj| obj.dynamic_attributes.to_json})
 
             retrieved_values = []
             json_capabilities[cap].each do |capability|
-              retrieved_values << capability['value']
+              retrieved_values << capability.to_json
             end
             expect(last_values.size).to eq(1)
             expect(retrieved_values.size).to eq(1)
@@ -490,11 +500,11 @@ RSpec.describe SensorValuesController, type: :controller do
               LastSensorValue.where(
                 capability: cap, platform_resource_id: platform.id
               )
-                             .pluck(:value)
+                             .map(&proc{|obj| obj.dynamic_attributes.to_json})
 
             retrieved_values = []
             json_capabilities[cap].each do |capability|
-              retrieved_values << capability['value']
+              retrieved_values << capability.to_json
             end
             expect(last_values.size).to eq(1)
             expect(retrieved_values.size).to eq(1)
@@ -526,11 +536,11 @@ RSpec.describe SensorValuesController, type: :controller do
             last_values =
               LastSensorValue.where(
                 capability: cap, platform_resource_id: platform.id
-              ).pluck(:value)
+              ).map(&proc{|obj| obj.dynamic_attributes.to_json})
 
             retrieved_values = []
             json_capabilities[cap].each do |capability|
-              retrieved_values << capability['value']
+              retrieved_values << capability.to_json
             end
             expect(last_values.size).to eq(1)
             expect(retrieved_values.size).to eq(1)
