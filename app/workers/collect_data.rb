@@ -54,16 +54,13 @@ class CollectData
   def create_sensor_value(resource, capability, body)
     if resource && capability
       json = JSON.parse(body)
-      value = SensorValue.new(
-        uuid: resource.uuid,
-        capability: capability,
-        value: json['value'],
-        date: json['timestamp'],
-        platform_resource_id: resource.id
-      )
-
+      attributes = {uuid: resource.uuid,
+                    capability: capability,
+                    platform_resource_id: resource.id}
+      attributes.merge! json
+      value = SensorValue.new(attributes)
       if !value.save
-        logger.error("CollectData: Cannot save: #{value.inspect} with body #{body}")
+        logger.error("CollectData: Cannot save: #{value.inspect} with body #{body} and the errors: #{value.errors.messages}")
       end
     end
   end
