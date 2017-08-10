@@ -5,9 +5,6 @@ Rails.application.routes.draw do
   get 'pubsub/demo'
 
   mount Sidekiq::Web => '/sidekiq'
-  resources :platform_resources,
-            only: [:create, :update],
-            param: :uuid, path: 'resources'
 
   scope 'resources', via: [:post], defaults: { format: :json } do
     match 'data', as: 'resources_data',
