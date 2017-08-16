@@ -1,13 +1,10 @@
-<p align="center"><img src="documentation/collect250.png" alt="logo data collector" width="250" height="250"/> </p>
-<p align="center"><h1 align="center"> Smart City Platform - Data Collector</h1></p>
+# Data Collector - InterSCity
 
 ![Build Status](https://gitlab.com/smart-city-software-platform/data-collector/badges/master/build.svg)
 [![Mezuro](https://img.shields.io/badge/mezuro-green-green.svg)](http://mezuro.org/en/repositories/73)
 [![Mezuro](https://img.shields.io/badge/freenode-%40data__collector-blue.svg)]()
 
 ---
-
-# Data Collector
 
 Data Collector is a microservice of the
 [InterSCity platform](http://interscity.org/). It's main goal is to provide
