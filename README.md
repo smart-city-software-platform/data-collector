@@ -7,40 +7,26 @@
 
 ---
 
-# Welcome to Data Collector
+# Data Collector
 
-> The *Data Collector*'s main goal is to provide methods to search data collected
-from *Resources*.
+Data Collector is a microservice of the
+[InterSCity platform](http://interscity.org/). It's main goal is to provide
+methods to search data collected from city resources.
 
-> This service is used both by applications and the Catalog Service, and offers
-developers access to information coming from different sensors scattered
-throughout the city. For example, with this service one could obtain data of
-all temperature sensors on USP.
-
-# Architecture
-
-<p align="center"><img src="documentation/pci-overview-datacollector.png" alt="Architecture Diagram" /></p>
+This microservice offers to developers access to information coming from
+different sensors scattered throughout the city. For example, with this
+service one could obtain data of all temperature sensors on a city,
+either historical or the most recent data.
 
 # How to use
 
-> We developed a [step-by-step](https://gitlab.com/smart-city-software-platform/data-collector/wikis/basic-setup) to configure the application.
-After configure the application, it should be possible to request data and filter it by some parameters.
+You must see:
+* [How to setup](#docker-setup) the environment with Docker.
+* [Request examples](requests.md) to understand the Data Collector API. 
+In this manual you will find a set of requests and responses examples with *curl*,
+and the required data structures.
 
-> We developed a [manual](https://gitlab.com/smart-city-software-platform/data-collector/wikis/home) to understand our API.In this manual can be found a data structure used to return the data and some usage examples.
-
-> We developed a [pub/sub](https://gitlab.com/smart-city-software-platform/data-collector/wikis/pub-sub) system,to be possible receive a notification every time that a new data is collected.
-
-# Setup and references
-
-> If you need help, look at:
-
-> * [Basic setup](https://gitlab.com/smart-city-software-platform/data-collector/wikis/basic-setup)
-> * [Publish/Subscribe](https://gitlab.com/smart-city-software-platform/data-collector/wikis/pub-sub)
-> * [Our API](https://gitlab.com/smart-city-software-platform/data-collector/wikis/home)
-> * [Base architecture overview](http://s32.postimg.org/a16hueg79/Arquitetura_geral_da_plataforma_de_cidades_intel.jpg)
-> * Data Collector's [Class Diagram](documentation/ClassDiagram.png)
-
-# Docker setup
+## Docker setup
 
 * Install Docker and docker-compose (versão 1.6+): (google it)
 * Run on terminal:
@@ -52,12 +38,12 @@ After configure the application, it should be possible to request data and filte
 
 Now you can access the application on http://localhost:4000
 
-## Workaround
+### Workaround
 
 Please, try the following approaches to fix possible errors raised when 
 trying to start docker services:
 
-### Bind problem
+#### Bind problem
 
 If you have bind errors while trying to start a docker service, try
 to remove the docker-network **platform** and create it again. If this not fix
@@ -69,7 +55,7 @@ the problem, run the following commands:
 * Create the network again: ```sudo docker network create platform```
 * Run the container: ```./script/development start```
 
-### Name problem
+#### Name problem
 
 If get any name conflicts while trying to run a docker container, try to 
 follow these steps:

@@ -1,13 +1,4 @@
-**Data Collector**
-==================
-
-Data Collector's main goal is to provide methods to search data collected from
-city resources.
-
-This microservice offers to developers access to information coming from
-different sensors scattered throughout the city. For example, with this
-service one could obtain data of all temperature sensors on USP.
-
+# Requests
 
 Requests to this service usually involve receiving or sending a data structure
 in JSON format. Check out the example below:
