@@ -2,8 +2,6 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
-  get 'pubsub/demo'
-
   mount Sidekiq::Web => '/sidekiq'
 
   scope 'resources', via: [:post], defaults: { format: :json } do
