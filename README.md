@@ -7,10 +7,10 @@
 ---
 
 Data Collector is a microservice of the
-[InterSCity platform](http://interscity.org/). It's main goal is to provide
+[InterSCity platform](http://interscity.org/). Its main goal is to provide
 methods to search data collected from city resources.
 
-This microservice offers to developers access to information coming from
+This microservice offers to developers the access to information coming from
 different sensors scattered throughout the city. For example, with this
 service one could obtain data of all temperature sensors on a city,
 either historical or the most recent data.
