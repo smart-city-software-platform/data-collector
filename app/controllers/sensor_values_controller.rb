@@ -61,8 +61,8 @@ class SensorValuesController < ApplicationController
       @sensor_values = @sensor_values
                        .where(:date.lte => DateTime.parse(@end_date))
     end
-    rescue
-      render json: { error: 'Bad Request: resource not found' }, status: 400
+  rescue
+    render json: { error: 'Bad Request: resource not found' }, status: 400
   end
 
   def filter_by_capabilities
@@ -77,7 +77,7 @@ class SensorValuesController < ApplicationController
     capability_hash = sensor_value_params[:range]
     sensor_trim = nil
     capability_hash.each do |capability_name, range_hash|
-      next if !capability_name
+      next unless capability_name
       cap_values = @sensor_values.where(capability: capability_name)
       equal = range_hash['equal']
       if !equal.blank?
@@ -120,16 +120,16 @@ class SensorValuesController < ApplicationController
   # @note http://localhost:3000/resources/data
   def resources_data
     generate_response
-    rescue => e
-      render json: { error: 'Internal server error: ' + e }, status: 500
+  rescue => e
+    render json: { error: 'Internal server error: ' + e }, status: 500
   end
 
   def resource_data
     @sensor_values = @sensor_values
                      .where(platform_resource_id: @retrieved_resource.id)
     generate_response
-    rescue => e
-      render json: { error: 'Internal server error: ' + e }, status: 500
+  rescue => e
+    render json: { error: 'Internal server error: ' + e }, status: 500
   end
 
   def resources_data_last
@@ -138,7 +138,7 @@ class SensorValuesController < ApplicationController
 
   def resource_data_last
     @sensor_values = @sensor_values
-                     .where(platform_resource_id: @retrieved_resource.id)
+                       .where(platform_resource_id: @retrieved_resource.id)
 
     resources_data_last
   end
@@ -150,9 +150,8 @@ class SensorValuesController < ApplicationController
     # it from the json sent
     @retrieved_resource = PlatformResource.find_by(uuid: params[:uuid])
     raise Mongoid::Errors::DocumentNotFound unless @retrieved_resource
-
-    rescue Mongoid::Errors::DocumentNotFound
-      render json: { error: 'Resource not found' }, status: 404
+  rescue Mongoid::Errors::DocumentNotFound
+    render json: { error: 'Resource not found' }, status: 404
   end
 
   def sensor_value_params
