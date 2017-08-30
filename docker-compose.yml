@@ -21,14 +21,16 @@ services:
       - 4000:3000
     volumes:
       - '.:/data-collector'
+    command: bash -c "bundle install && bundle exec rails s -p 3000 -b 0.0.0.0"
     environment:
       MONGO_USER: 'admin'
       MONGO_PASSWORD: 'admin'
       MONGO_HOST: 'data-collector-mongo'
       MONGO_PORT: 27017
       RABBITMQ_HOST: 'rabbitmq'
-      KONG_HOST: 'kong:8001'
+      KONG_URI: 'http://kong:8001'
       SELF_HOST: 'data-collector:3000'
+      REGISTER_METHOD: 'target'
 
   sidekiq:
     container_name: data-collector-sidekiq
@@ -36,7 +38,7 @@ services:
       - 'mongo'
       - 'redis'
     build: .
-    command: bundle exec sidekiq -C config/sidekiq.yml
+    command: bash -c "bundle install && bundle exec sidekiq -C config/sidekiq.yml"
     volumes:
       - '.:/data-collector'
     environment:
@@ -46,8 +48,9 @@ services:
       MONGO_HOST: 'data-collector-mongo'
       MONGO_PORT: 27017
       RABBITMQ_HOST: 'rabbitmq'
-      KONG_HOST: 'kong:8001'
+      KONG_URI: 'http://kong:8001'
       SELF_HOST: 'data-collector:3000'
+      REGISTER_METHOD: 'none'
 
 networks:
   default:
