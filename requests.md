@@ -29,36 +29,36 @@ in JSON format. Check out the example below:
       "capabilities": {
         "medical_procedure": [
           {
-            'patient': {
-              'name': 'Thomas S. Seibel',
-              'age': '18',
+            "patient": {
+              "name": "Thomas S. Seibel",
+              "age": "18",
             },
-            'speciality': 'surgery',
-            'date': '2016-03-01 09:01:00'
+            "speciality": "surgery",
+            "date": "2016-03-01 09:01:00"
           },
           {
-            'patient': {
-              'name': 'Jose R. Garcia',
-              'age': '17',
+            "patient": {
+              "name": "Jose R. Garcia",
+              "age": "17",
             },
-            'speciality': 'psychiatry',
-            'date': '2016-03-01 10:01:00'
+            "speciality": "psychiatry",
+            "date": "2016-03-01 10:01:00"
           },
           {
-            'patient': {
-              'name': 'Débora M. Wright',
-              'age': '26',
+            "patient": {
+              "name": "Débora M. Wright",
+              "age": "26",
             },
-            'speciality': 'psychiatry',
-            'date': '2016-03-02 08:01:00'
+            "speciality": "psychiatry",
+            "date": "2016-03-02 08:01:00"
           },
           {
-            'patient': {
-              'name': 'Jose J. Whetsel',
-              'age': '55',
+            "patient": {
+              "name": "Jose J. Whetsel",
+              "age": "55",
             },
-            'speciality': 'surgery',
-            'date': '2016-03-03 07:01:00'
+            "speciality": "surgery",
+            "date": "2016-03-03 07:01:00"
           }
         ]
       }
@@ -130,36 +130,36 @@ Returns a JSON data structure similar to the following:
       "capabilities": {
         "medical_procedure": [
           {
-            'patient': {
-              'name': 'Thomas S. Seibel',
-              'age': '18',
+            "patient": {
+              "name": "Thomas S. Seibel",
+              "age": "18",
             },
-            'speciality': 'surgery',
-            'date': '2016-03-01 09:01:00'
+            "speciality": "surgery",
+            "date": "2016-03-01 09:01:00"
           },
           {
-            'patient': {
-              'name': 'Jose R. Garcia',
-              'age': '17',
+            "patient": {
+              "name": "Jose R. Garcia",
+              "age": "17",
             },
-            'speciality': 'psychiatry',
-            'date': '2016-03-01 10:01:00'
+            "speciality": "psychiatry",
+            "date": "2016-03-01 10:01:00"
           },
           {
-            'patient': {
-              'name': 'Débora M. Wright',
-              'age': '26',
+            "patient": {
+              "name": "Débora M. Wright",
+              "age": "26",
             },
-            'speciality': 'psychiatry',
-            'date': '2016-03-02 08:01:00'
+            "speciality": "psychiatry",
+            "date": "2016-03-02 08:01:00"
           },
           {
-            'patient': {
-              'name': 'Jose J. Whetsel',
-              'age': '55',
+            "patient": {
+              "name": "Jose J. Whetsel",
+              "age": "55",
             },
-            'speciality': 'surgery',
-            'date': '2016-03-03 07:01:00'
+            "speciality": "surgery",
+            "date": "2016-03-03 07:01:00"
           }
         ]
       }
@@ -314,12 +314,12 @@ Returns a JSON data structure similar to the following:
       "capabilities": {
         "medical_procedure": [
           {
-            'patient': {
-              'name': 'Jose J. Whetsel',
-              'age': '55',
+            "patient": {
+              "name": "Jose J. Whetsel",
+              "age": "55",
             },
-            'speciality': 'surgery',
-            'date': '2016-03-03 07:01:00'
+            "speciality": "surgery",
+            "date": "2016-03-03 07:01:00"
           }
         ]
       }
