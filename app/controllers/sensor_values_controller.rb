@@ -72,8 +72,8 @@ class SensorValuesController < ApplicationController
   end
 
   def filter_by_value
-    return unless params[:range]
-    dynamic_values = params[:range].to_unsafe_h
+    return unless params[:matchers]
+    dynamic_values = params[:matchers].to_unsafe_h
     filters = create_filters(dynamic_values)
     @sensor_values = @sensor_values.where(filters)
   end
@@ -153,7 +153,7 @@ class SensorValuesController < ApplicationController
     dynamic_values.each do |key, value|
       filters = extract_filter(filters, key, value)
       if filters.nil?
-        render json: { error: "Bad Request: impossible to apply range filters: #{dynamic_values}" }, status: 400
+        render json: { error: "Bad Request: impossible to apply matchers filters: #{dynamic_values}" }, status: 400
       end
     end
     filters

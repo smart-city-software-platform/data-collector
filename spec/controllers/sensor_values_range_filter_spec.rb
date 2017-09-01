@@ -134,11 +134,11 @@ RSpec.describe SensorValuesController, type: :controller do
       end
     end
 
-    context 'with the range of values parameters' do
+    context 'with the matchers of values parameters' do
       it 'responds with success' do
         post 'resources_data',
               params: {
-                range: {
+                matchers: {
                   "pressure.gte": 0,
                   "pressure.lte": 22
                 }
@@ -151,7 +151,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'correctly list value by their capabilities' do
         post 'resources_data',
               params: {
-                range: {
+                matchers: {
                   "temperature.gte": 0,
                   "temperature.lte": 100
                 }
@@ -174,7 +174,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'returns no resource for a request with inexistent capability values' do
         post 'resources_data',
              params: {
-               range: {
+               matchers: {
                  "wontfindnocap.gte": 0,
                  "wontfindnocap.lte": 22
                }
@@ -184,10 +184,10 @@ RSpec.describe SensorValuesController, type: :controller do
         expect(retrieved_uuids.size).to eq(0)
       end
 
-      it 'returns the data that match the range filters for multiple values' do
+      it 'returns the data that match the matchers filters for multiple values' do
         post 'resources_data',
              params: {
-               range: {
+               matchers: {
                  "temperature.gte": 0,
                  "temperature.lte": 100,
                  "humidity.gte": 40,
@@ -201,7 +201,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'returns an empty list for invalid gte/lte params' do
         post 'resources_data',
              params: {
-               range: {
+               matchers: {
                  "temperature.gte": "Zeni",
                  "temperature.lte": "Foo",
                }
@@ -214,7 +214,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'correctly filter resources data by greater than (gt) operator' do
         post 'resources_data',
              params: {
-               range: {
+               matchers: {
                  "temperature.gt": 22.15,
                }
              }
@@ -231,7 +231,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'correctly filter resources data by greater than or equal (gte) operator' do
         post 'resources_data',
              params: {
-               range: {
+               matchers: {
                  "temperature.gte": 22.15,
                }
              }
@@ -248,7 +248,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'correctly filter resources data by less than (lt) operator' do
         post 'resources_data',
              params: {
-               range: {
+               matchers: {
                  "temperature.lt": 22.15,
                }
              }
@@ -265,7 +265,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'correctly filter resources data by less than or equal (lte) operator' do
         post 'resources_data',
              params: {
-               range: {
+               matchers: {
                  "temperature.lte": 22.15,
                }
              }
@@ -282,7 +282,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'correctly filter resources data by equal (eq) operator on numbers' do
         post 'resources_data',
              params: {
-               range: {
+               matchers: {
                  "temperature.eq": 22.15,
                }
              }
@@ -299,7 +299,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'correctly filter resources data by equal (eq) operator on non-numbers' do
         post 'resources_data',
              params: {
-               range: {
+               matchers: {
                  'speciality.eq': 'psychiatry',
                }
              }
@@ -317,7 +317,7 @@ RSpec.describe SensorValuesController, type: :controller do
         post 'resources_data',
              params: {
                capabilities: ["medical_procedure"],
-               range: {
+               matchers: {
                  'speciality.ne': 'psychiatry',
                }
              }
@@ -334,7 +334,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'correctly filter resources data by in (in) operator' do
         post 'resources_data',
              params: {
-               range: {
+               matchers: {
                  "humidity.in": [70, 72, 68]
                }
              }
@@ -352,7 +352,7 @@ RSpec.describe SensorValuesController, type: :controller do
         post 'resources_data',
              params: {
                capabilities: ["environment_monitoring"],
-               range: {
+               matchers: {
                  "humidity.nin": [70, 72, 68]
                }
              }
@@ -369,7 +369,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'correctly filter resources when mixing several simultaneously' do
         post 'resources_data',
              params: {
-               range: {
+               matchers: {
                  "temperature.gte": 25,
                  "temperature.lte": 30,
                  "humidity.gt": 40,
@@ -387,10 +387,10 @@ RSpec.describe SensorValuesController, type: :controller do
         end
       end
 
-      it 'returns an empty list for invalid range' do
+      it 'returns an empty list for invalid matchers' do
         post 'resources_data',
              params: {
-               range: {
+               matchers: {
                  "humidity.gte": 100,
                  "humidity.lte": 0
                }
@@ -404,7 +404,7 @@ RSpec.describe SensorValuesController, type: :controller do
       it 'applies eq operator over othe comparissing operators' do
         post 'resources_data',
              params: {
-               range: {
+               matchers: {
                  "humidity.eq": 72,
                  "humidity.gte": 0,
                }
@@ -419,7 +419,7 @@ RSpec.describe SensorValuesController, type: :controller do
       end
     end
 
-    context 'without range parameters' do
+    context 'without matchers parameters' do
       it 'correctly filters based on a single capability' do
         post 'resources_data',
              params: { capabilities: %w(environment_monitoring) }
