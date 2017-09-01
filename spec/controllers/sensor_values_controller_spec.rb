@@ -61,21 +61,21 @@ RSpec.describe SensorValuesController, type: :controller do
 
     context 'Verify request with uuid : ' do
       it 'Correct response, using only one uuid inside Array' do
-        post 'resources_data', params: { sensor_value: { uuids: [@uuids[0]] } }
+        post 'resources_data', params: {  uuids: [@uuids[0]] }
         expect(response.status).to eq(200)
         expect(response.body).to_not be_nil
         expect(response.body.empty?).to be_falsy
       end
 
       it 'Correct response, using more than one uuid inside Array' do
-        post 'resources_data', params: { sensor_value: { uuids: @uuids } }
+        post 'resources_data', params: { uuids: @uuids }
         expect(response.status).to eq(200)
         expect(response.body).to_not be_nil
         expect(response.body.empty?).to be_falsy
       end
 
       it 'Correct return of single uuid' do
-        post 'resources_data', params: { sensor_value: { uuids: [@uuids[0]] } }
+        post 'resources_data', params: { uuids: [@uuids[0]] }
         returned_json = JSON.parse(response.body)
 
         retrieved_resource = returned_json['resources']
@@ -85,7 +85,7 @@ RSpec.describe SensorValuesController, type: :controller do
       end
 
       it 'Correct return of multiple uuids' do
-        post 'resources_data', params: { sensor_value: { uuids: @uuids } }
+        post 'resources_data', params: { uuids: @uuids }
         returned_json = JSON.parse(response.body)
         retrieved_resource = returned_json['resources']
 
@@ -96,7 +96,7 @@ RSpec.describe SensorValuesController, type: :controller do
       end
 
       it 'Correct list of capabilities for one uuid' do
-        post 'resources_data', params: { sensor_value: { uuids: [@uuids[0]] } }
+        post 'resources_data', params: { uuids: [@uuids[0]] }
         returned_json = JSON.parse(response.body)
         retrieved_resource = returned_json['resources']
         json_capabilities = retrieved_resource.first['capabilities']
@@ -109,7 +109,7 @@ RSpec.describe SensorValuesController, type: :controller do
       end
 
       it 'Correct list of capabilities for multiple uuids' do
-        post 'resources_data', params: { sensor_value: { uuids: @uuids } }
+        post 'resources_data', params: { uuids: @uuids }
         returned_json = JSON.parse(response.body)
         retrieved_resource = returned_json['resources']
 
@@ -126,7 +126,7 @@ RSpec.describe SensorValuesController, type: :controller do
       end
 
       it 'Correct returned sensors values with one uuid' do
-        post 'resources_data', params: { sensor_value: { uuids: [@uuids[0]] } }
+        post 'resources_data', params: { uuids: [@uuids[0]] }
         returned_json = JSON.parse(response.body)
 
         retrieved_resource = returned_json['resources']
@@ -151,7 +151,7 @@ RSpec.describe SensorValuesController, type: :controller do
       end
 
       it 'Correct returned sensors values with multiple uuids' do
-        post 'resources_data', params: { sensor_value: { uuids: @uuids[0] } }
+        post 'resources_data', params: {  uuids: @uuids[0] }
         returned_json = JSON.parse(response.body)
 
         retrieved_resource = returned_json['resources']
@@ -329,23 +329,12 @@ RSpec.describe SensorValuesController, type: :controller do
     end
   end
 
-  describe 'Stressing the pagination limits' do
-    it 'returns no more than the limit resources' do
-      generate_data(1005)
-      # pass through all routes
-      do_exceed_limit_pagination_filter('resources_data', false)
-      do_exceed_limit_pagination_filter('resource_data', true)
-      do_exceed_limit_pagination_filter('resources_data_last', false)
-      do_exceed_limit_pagination_filter('resource_data_last', true)
-    end
-  end
-
   def do_wrong_date_filter(route, use_uuid)
     err_data = ['foobar', 9.68]
 
     err_data.each do |data|
       params = { uuid: sensor_value_default.platform_resource.uuid,
-                 start_range: data, end_range: data }
+                 start_date: data, end_date: data }
       params.except!(:uuid) unless use_uuid
 
       post route, params: params
@@ -354,9 +343,16 @@ RSpec.describe SensorValuesController, type: :controller do
   end
 
   def do_range_value_filter(route, use_uuid)
-    params = { uuid: sensor_value_default.platform_resource.uuid,
-               range: { 'temperature': { 'min': 20, 'max': 70 } } }
+    params = {
+      uuid: sensor_value_default.platform_resource.uuid,
+      range: {
+        'temperature.gte': 20,
+        'temperature.lte': 70,
+      }
+    }
+
     post route, params: params
+
     expect(response.status).to eq(200)
     expect(response.body).to_not be_nil
     expect(response.body.empty?).to be_falsy
@@ -364,16 +360,16 @@ RSpec.describe SensorValuesController, type: :controller do
   end
 
   def do_equal_value_filter(route, use_uuid, dynamic_attributes)
-    params = { uuid: sensor_value_default.platform_resource.uuid,
-               range: [{ 'temperature': {
-                        'temperature': { 'equal': dynamic_attributes["temperature"] } }
-                      },
-                      { 'pressure': {
-                        'pressure': { 'equal': dynamic_attributes["pressure"] } }
-                      }]
-              }
+    params = {
+      uuid: sensor_value_default.platform_resource.uuid,
+      range: {
+        'temperature.eq': dynamic_attributes["temperature"],
+        'pressure.eq': dynamic_attributes["pressure"]
+      }
+    }
 
     post route, params: params
+
     expect(response.status).to eq(200)
     expect(response.body).to_not be_nil
     expect(response.body.empty?).to be_falsy
@@ -406,52 +402,34 @@ RSpec.describe SensorValuesController, type: :controller do
     end
   end
 
-  def do_exceed_limit_pagination_filter(route, use_uuid)
-    # the number of resources must not exceeds the limit
-    limit = 1000
-    params = { uuid: sensor_value_default.platform_resource.uuid,
-               limit: limit + 1 }
-    params.except!(:uuid) unless use_uuid
-
-    post route, params: params
-    expect(response.status).to eq(200)
-    expect(response.body).to_not be_nil
-    expect(response.body.empty?).to be_falsy
-
-    returned_json = JSON.parse(response.body)
-    retrieved_resource = returned_json['resources']
-
-    expect(retrieved_resource.size).to be <= (limit)
-  end
-
   def generate_data(total)
     status_opt = %w(on off unknown wtf)
-    list_of_capabilities = %w(no temperature humidity pressure)
+    capability = 'environment_monitoring'
+    list_of_data = %w(no temperature humidity pressure)
     @uuids = []
 
     # Creating data on database
     total.times do |index|
       @uuids.push(SecureRandom.uuid)
-      uri = "/basic_resources/#{Faker::Number.between(1, 10)}/components/" \
-            "#{Faker::Number.between(1, 10)}/collect"
+      resource = PlatformResource.create!(
+        uuid: @uuids[index],
+        status: status_opt[rand(status_opt.size)]
+      )
 
-      resource = PlatformResource
-                 .create!(uuid: @uuids[index],
-                          uri: uri,
-                          status: status_opt[rand(status_opt.size)],
-                          collect_interval: Faker::Number.between(60, 1000))
+      resource.capabilities << capability
       total_cap = Faker::Number.between(1, 3)
       # Create capabilities
       total_cap.times do |index|
-        capability = list_of_capabilities[index]
-        resource.capabilities << capability
+        data = list_of_data[index]
 
         2.times do |j|
-          SensorValue.create!(capability: capability,
-                              platform_resource: resource,
-                              date: Faker::Time.between(DateTime
-                                .now - 1, DateTime.now),
-                              value: Faker::Number.decimal(2, 3))
+          sensor_value = SensorValue.new(
+            capability: capability,
+            platform_resource: resource,
+            date: Faker::Time.between(DateTime.now - 1, DateTime.now)
+          )
+          sensor_value[data] = Faker::Number.decimal(2, 3)
+          sensor_value.save!
         end
       end
     end

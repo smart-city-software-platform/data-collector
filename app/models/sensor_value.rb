@@ -13,6 +13,7 @@ class SensorValue
   validates :date, :capability, :platform_resource, presence: true
 
   before_save :parse_to_float
+  before_save :set_uuid
   before_create :save_last_value
 
   def self.static_attributes
@@ -30,9 +31,9 @@ class SensorValue
     sensor_last = LastSensorValue.find_or_create_by(
       capability: self.capability,
       platform_resource_id: self.platform_resource_id,
-      uuid: self.uuid
+      uuid: self.uuid,
     )
-    new_attributes = self.attributes.except(*SensorValue.static_attributes)
+    new_attributes = self.dynamic_attributes
     new_attributes.each {|attribute, value| sensor_last.process_attribute(attribute, value)}
     sensor_last.save!
   end
@@ -45,4 +46,7 @@ class SensorValue
     end
   end
 
+  def set_uuid
+    self.uuid = self.platform_resource.uuid
+  end
 end

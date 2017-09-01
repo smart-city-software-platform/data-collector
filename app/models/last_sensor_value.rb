@@ -13,7 +13,7 @@ class LastSensorValue
 
   def self.static_attributes
     ["_id", "created_at", "updated_at", "capability", "uuid",
-     "platform_resource_id"]
+     "platform_resource_id", "date"]
   end
 
   def dynamic_attributes

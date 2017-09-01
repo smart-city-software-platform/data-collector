@@ -42,16 +42,15 @@ class SensorValuesController < ApplicationController
   end
 
   def filter_by_uuids
-    uuids = sensor_value_params[:uuids]
+    uuids = params[:uuids]
     return if uuids.nil? || !uuids.is_a?(Array)
 
-    ids = PlatformResource.where(:uuid.in => uuids).pluck(:id)
-    @sensor_values = @sensor_values.where(:platform_resource_id.in => ids)
+    @sensor_values = @sensor_values.where(:uuid.in => uuids)
   end
 
   def filter_by_date
-    @start_date = params[:start_range]
-    @end_date = params[:end_range]
+    @start_date = params[:start_date]
+    @end_date = params[:end_date]
 
     unless @start_date.nil?
       @sensor_values = @sensor_values
@@ -66,47 +65,17 @@ class SensorValuesController < ApplicationController
   end
 
   def filter_by_capabilities
-    capabilities_name = sensor_value_params[:capabilities]
+    capabilities_name = params[:capabilities]
     return unless capabilities_name
 
     @sensor_values = @sensor_values.where(:capability.in => capabilities_name)
   end
 
   def filter_by_value
-    return unless sensor_value_params[:range]
-    capability_hash = sensor_value_params[:range]
-    sensor_trim = nil
-    capability_hash.each do |capability_name, range_hash|
-      next unless capability_name
-      cap_values = @sensor_values.where(capability: capability_name)
-      range_hash.each do |attribute_name, range|
-        attribute_name = attribute_name.to_sym
-        equal = range['equal']
-        if !equal.blank?
-          cap_values = cap_values.where({attribute_name => equal})
-          sensor_trim = concat_value(sensor_trim, cap_values)
-        else
-          min = range['min']
-          max = range['max']
-          filtered = false
-          if !max.blank? && max.is_float?
-            cap_values = cap_values.where(attribute_name.lte => max.to_f)
-            filtered = true
-          end
-          if !min.blank? && min.is_float?
-            filtered = true
-            cap_values = cap_values.where(attribute_name.gte => min.to_f)
-          end
-          sensor_trim = concat_value(sensor_trim, cap_values) if filtered
-        end
-      end
-    end
-
-    if !sensor_trim.blank?
-      @sensor_values = SensorValue.where(:id.in => sensor_trim.pluck(:_id))
-    else
-      @sensor_values = SensorValue.none
-    end
+    return unless params[:range]
+    dynamic_values = params[:range].to_unsafe_h
+    filters = create_filters(dynamic_values)
+    @sensor_values = @sensor_values.where(filters)
   end
 
   def concat_value(sensor_trim, cap_values)
@@ -157,12 +126,6 @@ class SensorValuesController < ApplicationController
     render json: { error: 'Resource not found' }, status: 404
   end
 
-  def sensor_value_params
-    params.permit(sensor_value: [:limit, :start, :start_range, :end_range,
-                                 :uuid, range: {}, uuids: [], capabilities: []])
-    params[:sensor_value] || {}
-  end
-
   def generate_response
     resources = {}
 
@@ -183,5 +146,36 @@ class SensorValuesController < ApplicationController
       resources[value.platform_resource.uuid] = resource
     end
     render json: { resources: resources.values }
+  end
+
+  def create_filters(dynamic_values)
+    filters = {}
+    dynamic_values.each do |key, value|
+      filters = extract_filter(filters, key, value)
+      if filters.nil?
+        render json: { error: "Bad Request: impossible to apply range filters: #{dynamic_values}" }, status: 400
+      end
+    end
+    filters
+  end
+
+  def extract_filter(filters, key, value)
+    acceptable_filters = ['gt', 'gte', 'lt', 'lte', 'eq', 'in', 'ne', 'nin']
+    index = key.to_s.rindex('.')
+    return nil if index.nil?
+    name = key.to_s[0..index-1]
+    operator = key.to_s[index+1..-1]
+    return nil unless acceptable_filters.include? operator
+    if value.is_a?(Array)
+      value.map!{ |x| x.try(:is_float?) ? x.to_f : x }
+    elsif value.try(:is_float?)
+      value = value.to_f
+    end
+    if filters[name]
+      filters[name] = filters[name].merge({'$'+operator => value})
+    else
+      filters[name] = {'$'+operator => value}
+    end
+    filters
   end
 end
