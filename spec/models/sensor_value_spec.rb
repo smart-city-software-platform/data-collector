@@ -27,6 +27,11 @@ RSpec.describe SensorValue, type: :model do
       .not_to be_valid
   end
 
+  it "stores its resources' uuid" do
+    expect(sensor_value_default.uuid).to_not be_nil
+    expect(sensor_value_default.uuid).to eq(sensor_value_default.platform_resource.uuid)
+  end
+
   it 'has a capability type' do
     expect(sensor_value_default.capability).to_not be_nil
 
