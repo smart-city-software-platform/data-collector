@@ -1,9 +1,6 @@
 # frozen_string_literal: true
-require 'sidekiq/web'
 
 Rails.application.routes.draw do
-  mount Sidekiq::Web => '/sidekiq'
-
   scope 'resources', via: [:post], defaults: { format: :json } do
     match 'data', as: 'resources_data',
                   to: 'sensor_values#resources_data'
