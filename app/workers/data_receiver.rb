@@ -56,9 +56,8 @@ class DataReceiver
                     capability: capability,
                     platform_resource_id: resource.id}
       attributes.merge! json
-      attributes["date"] = attributes["timestamp"]
+      attributes["date"] = attributes["timestamp"] unless attributes["date"]
       attributes.delete("timestamp")
-      puts "="*100, attributes
       value = SensorValue.new(attributes)
       if !value.save
         raise "Cannot save: #{value.inspect} with body #{body} and the errors: #{value.errors.messages}"
