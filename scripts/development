@@ -22,10 +22,10 @@ if [ "$1" = "start" ]; then
   echo "Starting service $PROJECT_NAME"
   echo "${NC}"
 
-  sudo docker-compose up -d 
+  sudo docker-compose up -d
   verify "Cannot run the container. For more information take a look in docker's log"
 
-  # this always update a database.yml 
+  # this always update a database.yml
   # cp $BASE_DIR/config/database.yml.docker $BASE_DIR/config/database.yml
 
   echo "${CYAN}"
@@ -63,11 +63,22 @@ if [ "$1" = "exec" ]; then
 
   shift
   command="sudo docker-compose exec"
- 
+
   for word in $@; do
      command="$command $word"
   done
 
   $command
   verify "Cannot execute command into the container. Please verify logs"
+fi
+
+if [ "$1" = "test" ]; then
+  echo "${CYAN}"
+  echo "Executing tests into the container's work directory"
+  echo "${NC}"
+
+  shift
+  command="sudo docker-compose exec $PROJECT_NAME rspec"
+
+  $command
 fi
