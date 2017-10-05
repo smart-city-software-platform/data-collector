@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
+  get 'health_check', to: 'health_check#index'
   scope 'resources', via: [:post], defaults: { format: :json } do
     match 'data', as: 'resources_data',
                   to: 'sensor_values#resources_data'
