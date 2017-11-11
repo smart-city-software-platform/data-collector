@@ -1,5 +1,4 @@
 defaults: &defaults
-  allow_dynamic_fields: true
   persist_in_safe_mode: true
   hosts:
     - <%= ENV['MONGO_HOST'] %>:<%= ENV['MONGO_PORT'] %>
@@ -27,7 +26,6 @@ production:
 
   # Configure Mongoid specific options. (optional)
   options:
-    allow_dynamic_fields: true
     # Includes the root model name in json serialization. (default: false)
     # include_root_in_json: false
 
@@ -63,12 +61,10 @@ production:
 test:
   clients:
     default:
-      allow_dynamic_fields: true
       database: data_collector_test
       hosts:
         - <%= ENV['MONGO_HOST'] %>:<%= ENV['MONGO_PORT'] %>
       options:
-        allow_dynamic_fields: true
         read:
           mode: :primary
         max_pool_size: 1

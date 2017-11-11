@@ -27,6 +27,7 @@ module DataCollector
         resource '*', :headers => :any, :methods => [:get, :post, :options]
       end
     end
+    config.enable_dependency_loading = true
     config.autoload_paths << Rails.root.join('lib')
   end
 end

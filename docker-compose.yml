@@ -6,6 +6,8 @@ services:
     image: 'mongo:3.4'
     environment:
       AUTH: 'no'
+    volumes:
+      - '/tmp:/data/db/backup'
 
   data-collector:
     container_name: data-collector 
