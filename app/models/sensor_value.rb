@@ -8,6 +8,10 @@ class SensorValue
   field :capability, type: String
   field :uuid, type: String
 
+  index({ uuid: 1 }, { name: "sensor_uuid_index" })
+  index({ capability: 1 }, { name: "sensor_capability_index" })
+  index({ uuid: 1, capability: 1 }, { name: "sensor_capability_uuid_index" })
+
   belongs_to :platform_resource
 
   validates :date, :capability, :platform_resource, presence: true
