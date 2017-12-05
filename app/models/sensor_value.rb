@@ -34,7 +34,6 @@ class SensorValue
   def save_last_value
     sensor_last = LastSensorValue.find_or_create_by(
       capability: self.capability,
-      platform_resource_id: self.platform_resource_id,
       uuid: self.uuid,
     )
     new_attributes = self.dynamic_attributes

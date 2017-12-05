@@ -17,14 +17,11 @@ RSpec.describe LastSensorValue, type: :model do
   end
 
   it 'belongs to a resource in the platform' do
-    expect(sensor_value_default.platform_resource).to_not be_nil
-    expect(sensor_value_default.platform_resource.uuid).to_not be_nil
+    expect(sensor_value_default.uuid).to_not be_nil
 
-    expect(FactoryGirl.build(:last_sensor_value, platform_resource_id: ''))
+    expect(FactoryGirl.build(:last_sensor_value, uuid: ''))
                               .not_to be_valid
-    expect(FactoryGirl.build(:last_sensor_value, platform_resource_id: nil))
-                              .not_to be_valid
-    expect(FactoryGirl.build(:last_sensor_value, platform_resource: nil))
+    expect(FactoryGirl.build(:last_sensor_value, uuid: nil))
                               .not_to be_valid
   end
 
@@ -38,7 +35,7 @@ RSpec.describe LastSensorValue, type: :model do
   end
 
   it 'has a valid resource id' do
-    uuid = sensor_value_default.platform_resource.uuid
+    uuid = sensor_value_default.uuid
     expect(uuid).not_to eq('')
 
     uuid_pattern = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/

@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 class SensorValuesController < ApplicationController
   skip_before_action :verify_authenticity_token
-  before_action :find_platform_resource,
-                only: [:resource_data, :resource_data_last]
   before_action :set_sensor_values,
                 only: [:resources_data, :resource_data]
   before_action :set_sensor_values_last,
                 only: [:resources_data_last, :resource_data_last]
+  before_action :set_specific_resource,
+                only: [:resource_data, :resource_data_last]
   before_action :filter_by_uuids, only: [:resources_data, :resources_data_last]
   before_action :filter_by_date, :filter_by_capabilities, :filter_by_value
 
@@ -92,16 +92,14 @@ class SensorValuesController < ApplicationController
   # @note http://localhost:3000/resources/data
   def resources_data
     generate_response
-  rescue => e
-    render json: { error: 'Internal server error: ' + e }, status: 500
+  rescue StandardError => e
+    render json: { error: 'Internal server error: ' + e.message }, status: 500
   end
 
   def resource_data
-    @sensor_values = @sensor_values
-                     .where(platform_resource_id: @retrieved_resource.id)
     generate_response
-  rescue => e
-    render json: { error: 'Internal server error: ' + e }, status: 500
+  rescue StandardError => e
+    render json: { error: 'Internal server error: ' + e.message }, status: 500
   end
 
   def resources_data_last
@@ -109,19 +107,16 @@ class SensorValuesController < ApplicationController
   end
 
   def resource_data_last
-    @sensor_values = @sensor_values
-                       .where(platform_resource_id: @retrieved_resource.id)
-
     resources_data_last
   end
 
   private
 
-  def find_platform_resource
+  def set_specific_resource
     # params[:uuid] gets from the uri, while sensor_value_params gets
     # it from the json sent
-    @retrieved_resource = PlatformResource.find_by(uuid: params[:uuid])
-    raise Mongoid::Errors::DocumentNotFound unless @retrieved_resource
+    @sensor_values = @sensor_values.where(uuid: params[:uuid])
+    raise Mongoid::Errors::DocumentNotFound.new(LastSensorValue, uuid: params["uuid"]) if @sensor_values.blank?
   rescue Mongoid::Errors::DocumentNotFound
     render json: { error: 'Resource not found' }, status: 404
   end
@@ -135,15 +130,15 @@ class SensorValuesController < ApplicationController
       value.dynamic_attributes.each do |attribute, attribute_value|
         collected[attribute] = attribute_value
       end
-      resource = resources[value.platform_resource.uuid] || {}
+      resource = resources[value.uuid] || {}
       capabilities = resource['capabilities'] || {}
       capability = capabilities[value.capability] || []
       capability << collected
 
       capabilities[value.capability] = capability
-      resource['uuid'] = value.platform_resource.uuid
+      resource['uuid'] = value.uuid
       resource['capabilities'] = capabilities
-      resources[value.platform_resource.uuid] = resource
+      resources[value.uuid] = resource
     end
     render json: { resources: resources.values }
   end

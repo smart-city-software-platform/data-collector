@@ -40,12 +40,15 @@ RSpec.configure do |config|
   end
 
   config.before :each do
-    DatabaseCleaner.strategy = :truncation
-    DatabaseCleaner.start
+    DatabaseCleaner[:mongoid, { :connection => :default }].strategy = :truncation
+    DatabaseCleaner[:mongoid, { :connection => :cache }].strategy = :truncation
+    DatabaseCleaner[:mongoid, { :connection => :default }].start
+    DatabaseCleaner[:mongoid, { :connection => :cache }].start
   end
 
   config.after do
-    DatabaseCleaner.clean
+    DatabaseCleaner[:mongoid, { :connection => :default }].clean
+    DatabaseCleaner[:mongoid, { :connection => :cache }].clean
   end
 
   # rspec-mocks config goes here. You can use an alternate test double

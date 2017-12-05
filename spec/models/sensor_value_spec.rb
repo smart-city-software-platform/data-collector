@@ -74,7 +74,7 @@ RSpec.describe SensorValue, type: :model do
 
     last_value_before = LastSensorValue.find_by(
       capability: sensor_value.capability,
-      platform_resource_id: sensor_value.platform_resource_id
+      uuid: sensor_value.uuid
     )
 
     expect(last_value_before.temperature).to eq(10)
@@ -82,7 +82,7 @@ RSpec.describe SensorValue, type: :model do
 
     last_value_after = LastSensorValue.find_by(
       capability: sensor_value.capability,
-      platform_resource_id: sensor_value.platform_resource_id
+      uuid: sensor_value.uuid
     )
 
     expect(last_value_after.temperature).to eq(15)
@@ -93,7 +93,7 @@ RSpec.describe SensorValue, type: :model do
 
     last_value_before = LastSensorValue.find_by(
       capability: sensor_value.capability,
-      platform_resource_id: sensor_value.platform_resource_id
+      uuid: sensor_value.uuid
     )
 
     expect(last_value_before.pressure).to eq(3)
@@ -101,7 +101,7 @@ RSpec.describe SensorValue, type: :model do
 
     last_value_after = LastSensorValue.find_by(
       capability: sensor_value.capability,
-      platform_resource_id: sensor_value.platform_resource_id
+      uuid: sensor_value.uuid
     )
 
     expect(last_value_after.pressure).to eq(5.2)

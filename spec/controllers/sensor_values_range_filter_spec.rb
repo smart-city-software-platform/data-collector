@@ -126,6 +126,7 @@ RSpec.describe SensorValuesController, type: :controller do
             fields = {
               capability: capability,
               platform_resource_id: resource.id,
+              uuid: resource.uuid,
             }
             fields.merge!(value_hash)
             SensorValue.create!(fields)
@@ -545,7 +546,7 @@ RSpec.describe SensorValuesController, type: :controller do
             platform.capabilities.each do |cap|
               last_values =
                 LastSensorValue.where(
-                  capability: cap, platform_resource_id: platform.id
+                  capability: cap, uuid: platform.uuid
               )
                 .map(&proc{|obj| obj.dynamic_attributes.to_json})
 
@@ -578,7 +579,7 @@ RSpec.describe SensorValuesController, type: :controller do
             platform.capabilities.each do |cap|
               last_values =
                 LastSensorValue.where(
-                  capability: cap, platform_resource_id: platform.id
+                  capability: cap, uuid: platform.uuid
               )
                 .map(&proc{|obj| obj.dynamic_attributes.to_json})
 
@@ -615,7 +616,7 @@ RSpec.describe SensorValuesController, type: :controller do
             platform.capabilities.each do |cap|
               last_values =
                 LastSensorValue.where(
-                  capability: cap, platform_resource_id: platform.id
+                  capability: cap, uuid: platform.uuid
               ).map(&proc{|obj| obj.dynamic_attributes.to_json})
 
               retrieved_values = []

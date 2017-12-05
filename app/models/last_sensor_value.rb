@@ -3,6 +3,8 @@ class LastSensorValue
   include Mongoid::Timestamps
   include Mongoid::Attributes::Dynamic
 
+  store_in client: "cache"
+
   field :date, type: DateTime
   field :capability, type: String
   field :uuid, type: String
@@ -11,13 +13,10 @@ class LastSensorValue
   index({ capability: 1 }, { name: "last_capability_index" })
   index({ uuid: 1, capability: 1 }, { name: "last_capability_uuid_index" })
 
-  belongs_to :platform_resource
-
-  validates :date, :capability, :platform_resource, presence: true
+  validates :date, :capability, :uuid, presence: true
 
   def self.static_attributes
-    ["_id", "created_at", "updated_at", "capability", "uuid",
-     "platform_resource_id", "date"]
+    ["_id", "created_at", "updated_at", "capability", "uuid", "date"]
   end
 
   def dynamic_attributes
