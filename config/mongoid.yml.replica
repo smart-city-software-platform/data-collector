@@ -8,14 +8,27 @@ defaults: &defaults
     connect: :replica_set
     replica_set: <%= ENV['MONGO_REPLICA_SET'] %>
 
+caches: &caches
+  hosts: <%= "[#{ENV['MONGO_CACHE_ADDRESSES'].split(',').map {|addr| "\"#{addr}:27017\""}.join(',')}]" %>
+  options:
+    max_pool_size: <%= ENV['MONGO_POOL_SIZE'] %>
+    wait_queue_timeout: 60
+    read:
+      mode: :secondary_preferred
+    connect: :replica_set
+    replica_set: <%= ENV['MONGO_CACHE_REPLICA_SET'] %>
+
 development:
   # Configure available database clients. (required)
   clients:
     # Defines the default client. (required)
-
     default:
       <<: *defaults
       database: data_collector_development
+    # Defines the cache database client. (required)
+    cache:
+      <<: *caches
+      database: data_collector_cache_development
 
 production:
   # Configure available database clients. (required)
@@ -24,6 +37,10 @@ production:
     default:
       <<: *defaults
       database: data_collector_production
+    # Defines the cache database client. (required)
+    cache:
+      <<: *caches
+      database: data_collector_cache_production
 
 
   # Configure Mongoid specific options. (optional)
@@ -69,3 +86,6 @@ test:
         read:
           mode: :primary
         max_pool_size: 1
+    cache:
+      <<: *caches
+      database: data_collector_cache_test
