@@ -9,6 +9,8 @@ class PlatformResource
   field :capabilities, type: Array, default: []
   field :collect_interval, type: Integer
 
+  index({ uuid: 1 }, { name: "platform_resource_uuid_index" })
+
   has_many :sensor_values
 
   validates :uuid, :status, presence: true
